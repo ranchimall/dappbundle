@@ -29,7 +29,7 @@ jobs:
           cd /home/production/deployed/dappbundle && git clone "https://github.com/ranchimall/${{ github.event.repository.name }}.git"
 
           cd "/home/production/deployed/dappbundle/${{ github.event.repository.name }}" && rm -r .gitattributes
-
+          cd /home/production/deployed/dappbundle/ && git add . && git commit -m "Workflow updating files of ${{ github.event.repository.name }}" && git push "https://ranchimalldev:${{ secrets.RM_ACCESS_TOKEN }}@github.com/ranchimall/dappbundle.git"
 
 
           
