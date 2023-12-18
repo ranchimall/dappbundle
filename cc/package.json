@@ -1,0 +1,22 @@
+{
+  "name": "p2p-content-collaboration",
+  "version": "1.0.0",
+  "description": "",
+  "main": "components.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ranchimall/p2p-content-collaboration.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ranchimall/p2p-content-collaboration/issues"
+  },
+  "homepage": "https://github.com/ranchimall/p2p-content-collaboration#readme",
+  "dependencies": {
+    "tiny-editor": "^0.2.5"
+  }
+}
