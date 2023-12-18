@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLO LogSheet</title>
+    <link rel="stylesheet" href="css/main.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
+    <script id="floGlobals">
+        /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
+        const floGlobals = {
+
+            //Required for all
+            blockchain: "FLO",
+            adminID: "FLf3jtkPQryh1ide7AJ8tigBmYzLj3h7Cq",
+            application: "logSheet",
+            // for storing single log sheet data 
+            currentSheet: {}
+        }
+    </script>
+    <script src="scripts/lib.js" defer></script>
+    <script src="scripts/floCrypto.js" defer></script>
+    <script src="scripts/floBlockchainAPI.js" defer></script>
+    <script src="scripts/compactIDB.js" defer></script>
+    <script src="scripts/floCloudAPI.js" defer></script>
+    <script src="scripts/floDapps.js" defer></script>
+    <script src="scripts/btcOperator.js" defer></script>
+    <script src="scripts/logsheet.js" defer></script>
+    <script id="onLoadStartUp">
+        function onLoadStartUp() {
+            //display loading screen
+            showLoader()
+            //set the custom Privkey input
+            floDapps.setCustomPrivKeyInput(() => {
+                return new Promise((resolve, reject) => {
+                    hideLoader()
+                    showPage('sign_in_page')
+                    getRef('sign_in_btn').onclick = () => {
+                        closePopup()
+                        showLoader()
+                        resolve(getRef('get_priv_key_field').value.trim())
+                        getRef('get_priv_key_field').value = ''
+                    }
+                })
+            })
+            //invoke the startup functions
+            floDapps.launchStartUp().then(result => {
+                console.log(result)
+                let floId = floDapps.user.id
+                if (!floCrypto.validateFloID(floId)) {
+                    const type = coinjs.addressDecode(floId).type
+                    if (type === 'standard') {
+                        floId = btcOperator.convert.legacy2legacy(floId, 0x23);
+                    } else if (type === 'bech32') {
+                        floId = btcOperator.convert.bech2legacy(floId, 0x23);
+                    } else {
+                        notify(`Multisig address can't be used to sign in`, 'error');
+                        return;
+                    }
+                }
+                floGlobals.myFloID = floId
+                floGlobals.myBtcID = btcOperator.convert.legacy2bech(floId)
+                getRef('user_profile_id').textContent = floGlobals.myFloID
+                let showingFloID = true
+                // alternating between floID and btcID every 10 seconds
+                setInterval(() => {
+                    getRef('user_profile_id').textContent = showingFloID ? floGlobals.myBtcID : floGlobals.myFloID
+                    showingFloID = !showingFloID
+                }, 10000)
+                //request object data from Supernode
+                logSheet.init().then(result => {
+                    console.log(result)
+                    floGlobals.isSubAdmin = floGlobals.subAdmins.includes(myFloID)
+                    floGlobals.isTrustedID = floGlobals.trustedIDs.includes(myFloID)
+                    hideLoader()
+                    showPage(window.location.hash, { firstLoad: true })
+                    //display add buttons if subAdmin, else hide
+                    if (floGlobals.isSubAdmin) {
+                        document.querySelectorAll('.sub-admin-option').forEach(option => option.classList.remove('hidden'))
+                    } else {
+                        document.querySelectorAll('.sub-admin-option').forEach(option => option.classList.add('hidden'))
+                    }
+                }).catch(error => {
+                    console.error(`Failed to download objectData`);
+                    notify(error, "error")
+                })
+            }).catch(error => notify(error, "error"))
+        }
+    </script>
+</head>
+
+<body onload="onLoadStartUp()" class="hidden">
+    <sm-notifications id="notification_drawer"></sm-notifications>
+    <sm-popup id="confirmation_popup">
+        <h4 id="confirm_title"></h4>
+        <p id="confirm_message" class="breakable"></p>
+        <div class="flex align-center gap-0-5 margin-left-auto">
+            <button class="button cancel-button">Cancel</button>
+            <button class="button button--primary confirm-button">OK</button>
+        </div>
+    </sm-popup>
+    <!-- Loading screen-->
+    <section id="main_loader" class="grid">
+        <sm-spinner></sm-spinner>
+        <h4 id="tip_container">Loading RanchiMall FLO LogSheet</h4>
+        <sm-button onclick="signOut()">Sign Out</sm-button>
+    </section>
+    <div id="save_button" class="hidden flex align-center space-between" data-unsaved="0">
+        <span id="changes_indicator"></span>
+        <p>Changes need to be saved!</p>
+        <sm-button>Save</sm-button>
+    </div>
+
+    <main>
+        <div id="sign_in_page" class="page grid space-between">
+            <div class="info">
+                <h4>RanchiMall</h4>
+                <h1>LogSheet</h1>
+                <p>Open &bull; Distributed &bull; Reliable</p>
+            </div>
+            <div class="sign-in-box flex flex-direction-column gap-2">
+                <sm-chips id="entry_type_selector" class="align-self-start">
+                    <sm-chip value="sign-in" selected>Sign in</sm-chip>
+                    <sm-chip value="sign-up">Sign up</sm-chip>
+                </sm-chips>
+                <div id="user_entry">
+                    <div>
+                        <h3>Welcome back</h3>
+                        <p>Just enter your FLO private key to continue.</p>
+                        <sm-form>
+                            <sm-input id="get_priv_key_field" data-privateKey placeholder="FLO private key"
+                                type="password" required animate>
+                            </sm-input>
+                            <button id="sign_in_btn" class="button button--primary" type="submit" disabled>
+                                Sign In
+                            </button>
+                        </sm-form>
+                    </div>
+                    <div class="hidden">
+                        <h3>Get started</h3>
+                        <p>Create your FLO public and private key pair. <Strong>Don't forget to store them
+                                securely!</Strong></p>
+                        <sm-button id="generate_flo_id" onclick="generateId()" variant="primary">Get FLO credentials
+                        </sm-button>
+                        <section id="credentials_section" class="hidden grid gap-1">
+                            <div class="grid gap-0-3">
+                                <h5>FLO ID</h5>
+                                <sm-copy id="generated_id"></sm-copy>
+                            </div>
+                            <div class="grid gap-0-3">
+                                <h5>Private key</h5>
+                                <sm-copy id="generated_key"></sm-copy>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <header id="main_header" class="grid">
+            <div class="flex flex-direction-column hide-on-mobile">
+                <h5>RanchiMall</h5>
+                <h4>FLO LogSheet</h4>
+            </div>
+            <theme-toggle class="margin-left-auto"></theme-toggle>
+            <button id="user_profile_button" class="user-content button--small" onclick="openPopup('profile_popup')">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon margin-right-0-5" height="24px" viewBox="0 0 24 24"
+                    width="24px" fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none"></path>
+                    <path
+                        d="M12 5.9c1.16 0 2.1.94 2.1 2.1s-.94 2.1-2.1 2.1S9.9 9.16 9.9 8s.94-2.1 2.1-2.1m0 9c2.97 0 6.1 1.46 6.1 2.1v1.1H5.9V17c0-.64 3.13-2.1 6.1-2.1M12 4C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z">
+                    </path>
+                </svg>
+                <div id="user_profile_id" class="overflow-ellipsis"></div>
+            </button>
+        </header>
+        <section id="home_page" class="page grid hidden">
+            <section id="main_section">
+                <header class="flex align-center space-between section-header">
+                    <h4>Sheets</h4>
+                    <sm-input id="search_sheets" placeholder="Search sheets" type="search">
+                        <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
+                            viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path
+                                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        </svg>
+                    </sm-input>
+                </header>
+                <section id="sheets_container" class="grid"></section>
+            </section>
+        </section>
+        <section id="sheet_view" class="page grid hidden">
+            <nav id="side_bar">
+                <div class="flex align-center">
+                    <button class="hide-on-desktop" onclick="toggleSideBar()">
+                        <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px"
+                            viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                        </svg>
+                    </button>
+                    <h4 class="section-header">People</h4>
+                    <button class="button button--small margin-left-auto sub-admin-option"
+                        onclick="openPopup('add_person_popup')">Add
+                        person</button>
+                </div>
+                <div id="people_container" class="grid"></div>
+            </nav>
+            <section id="right">
+                <section id="sheet_details">
+                    <div class="flex align-center">
+                        <a href="#/home_page" class="flex align-center">
+                            <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0V0z" fill="none" />
+                                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                            </svg>
+                            Sheets
+                        </a>
+                        <div id="sheet_processing_options" class="flex gap-0-5 margin-left-auto hidden">
+                            <button class="button button--small" onclick="initSheetProcessing('group')">Group
+                                by</button>
+                            <button class="button button--small" onclick="initSheetProcessing('aggregate')">Aggregate
+                                by</button>
+                        </div>
+                    </div>
+                    <div class="flex align-center">
+                        <button onclick="toggleSideBar()">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M0 0h24v24H0V0z" fill="none" />
+                                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                            </svg>
+                        </button>
+                        <h3 id="sheet_heading"></h3>
+                        <h5 id="sheet_type"></h5>
+                        <button id="toggle_details" class="margin-left-auto" onclick="toggleDetails()">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                                width="24px" fill="#000000">
+                                <path d="M24 24H0V0h24v24z" fill="none" opacity=".87" />
+                                <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6-1.41-1.41z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div id="sheet_editors" class="flex align-center flex-wrap"></div>
+                    <p id="sheet_description"></p>
+                </section>
+                <div id="sheet_container">
+                    <table>
+                        <thead id="sheet_container__header"></thead>
+                        <tbody id="sheet_container__body"></tbody>
+                    </table>
+                </div>
+                <form id="new-log" style="display: none;" onsubmit="enterLog(event); return false;"></form>
+                <button type="submit" form="new-log" style="display: none;"></button>
+            </section>
+        </section>
+    </main>
+    <!-- User settings popup -->
+    <sm-popup id="profile_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close justify-self-start" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+            <h3>Profile</h3>
+        </header>
+        <div id="profile_popup__content" class="grid gap-3"></div>
+    </sm-popup>
+
+    <!-- Add a person popup -->
+    <sm-popup id="add_person_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="none" d="M0 0h24v24H0z" />
+                    <path
+                        d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z" />
+                </svg>
+            </button>
+            <h3>Add new person</h3>
+        </header>
+        <sm-form>
+            <div class="grid gap-0-5">
+                <sm-input id="person_flo_id_input" floId placeholder="FLO ID*" animate autofocus required></sm-input>
+                <sm-input id="person_name_input" placeholder="Name*" animate required></sm-input>
+            </div>
+            <div id="specify_details" class="grid gap-0-5">
+                <div class="flex flex-direction-column gap-0-3">
+                    <h4>Additional details</h4>
+                    <p>Add more details about a person. Specify type of information and actual detail.</p>
+                </div>
+                <div id="additional_fields" class="grid"></div>
+                <div id="add_detail" class="grid align-center">
+                    <sm-input id="add_detail_type_input" exclude placeholder="Type"></sm-input>
+                    <sm-input id="add_detail_value_input" exclude placeholder="Value"></sm-input>
+                    <button class="button margin-left-auto" onclick="addDetails()">
+                        <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
+                            viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+                        </svg>
+                        Add
+                    </button>
+                </div>
+            </div>
+            <button onclick="addPerson()" class="button button--primary" type="submit" disabled>
+                Add person
+            </button>
+        </sm-form>
+    </sm-popup>
+    <!-- Create new sheet popup -->
+    <sm-popup id="new_sheet_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="none" d="M0 0h24v24H0z" />
+                    <path
+                        d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z" />
+                </svg>
+            </button>
+            <h3>Create new sheet</h3>
+        </header>
+        <sm-form>
+            <sm-input id="sheet_title_input" placeholder="Name*" autofocus animate required></sm-input>
+            <sm-textarea id="sheet_description_input" placeholder="Description" rows="4" animate required></sm-textarea>
+            <div id="specify_columns" class="grid gap-0-5">
+                <div class="flex flex-direction-column">
+                    <h4>Add Columns</h4>
+                    <p>Columns will be added as the order you added them.</p>
+                </div>
+                <div id="columns_container" class="flex flex-wrap"></div>
+                <div id="add_column" class="flex align-center space-between">
+                    <sm-input id="add_column_input" exclude placeholder="Column title"></sm-input>
+                    <button class="button" onclick="addColumn()">
+                        Add
+                    </button>
+                </div>
+            </div>
+            <sm-switch id="sheet_type_switch" onchange="toggleEditors()">
+                <div slot="left" class="flex align-center space-between">
+                    Make sheet private
+                </div>
+            </sm-switch>
+            <div id="specify_editors" class="grid gap-0-5 hidden">
+                <div class="flex flex-direction-column">
+                    <h4>Add editors</h4>
+                    <p>Only specified editors will be able to update this sheet.</p>
+                </div>
+                <div id="editors_container" class="grid gap-0-3"></div>
+                <div id="add_editor" class="flex align-center space-between">
+                    <sm-input id="add_editor_input" exclude placeholder="Editor's FLO Address"></sm-input>
+                    <button class="button" onclick="addEditor()">
+                        Add
+                    </button>
+                </div>
+            </div>
+            <button onclick="createSheet()" class="button button--primary" type="submit" disabled>
+                Create
+            </button>
+        </sm-form>
+    </sm-popup>
+
+    <!-- Group by popup -->
+    <sm-popup id="sheet_processing_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="none" d="M0 0h24v24H0z" />
+                    <path
+                        d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z" />
+                </svg>
+            </button>
+            <h3 id="sheet_processing_title"> </h3>
+        </header>
+        <div class="flex align-center" id="group_by_menu">
+            <sm-select id="process_by_method_selector">
+                <sm-option value="count">Count</sm-option>
+                <sm-option value="total" selected>Total</sm-option>
+                <sm-option value="avg">Avg</sm-option>
+                <sm-option value="max">Max</sm-option>
+                <sm-option value="min">Min</sm-option>
+            </sm-select>
+            <sm-select id="process_by_attribute_selector"></sm-select>
+        </div>
+        <div id="processed_sheet_view" class="grid"></div>
+    </sm-popup>
+    <script src="components.js"></script>
+    <script>
+        /*jshint esversion: 8 */
+        /**
+          * @yaireo/relative-time - javascript function to transform timestamp or date to local relative-time
+          *
+          * @version v1.0.0
+          * @homepage https://github.com/yairEO/relative-time
+          */
+
+        !function (e, t) { var o = o || {}; "function" == typeof o && o.amd ? o([], t) : "object" == typeof exports && "object" == typeof module ? module.exports = t() : "object" == typeof exports ? exports.RelativeTime = t() : e.RelativeTime = t() }(this, (function () { const e = { year: 31536e6, month: 2628e6, day: 864e5, hour: 36e5, minute: 6e4, second: 1e3 }, t = "en", o = { numeric: "auto" }; function n(e) { e = { locale: (e = e || {}).locale || t, options: { ...o, ...e.options } }, this.rtf = new Intl.RelativeTimeFormat(e.locale, e.options) } return n.prototype = { from(t, o) { const n = t - (o || new Date); for (let t in e) if (Math.abs(n) > e[t] || "second" == t) return this.rtf.format(Math.round(n / e[t]), t) } }, n }));
+
+        const relativeTime = new RelativeTime({ style: 'narrow' });
+    </script>
+    <script id="default_ui_library">
+        // Global variables
+        const { html, render: renderElem } = uhtml;
+        const domRefs = {}
+        let frag = document.createDocumentFragment();
+        //Checks for internet connection status
+        if (!navigator.onLine)
+            notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error', '', true)
+        window.addEventListener('offline', () => {
+            notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error', true, true)
+        })
+        window.addEventListener('online', () => {
+            getRef('notification_drawer').clearAll()
+            notify('We are back online.', 'success')
+        })
+        // Use instead of document.getElementById
+        function getRef(elementId) {
+            if (!domRefs.hasOwnProperty(elementId)) {
+                domRefs[elementId] = {
+                    count: 1,
+                    ref: null,
+                };
+                return document.getElementById(elementId);
+            } else {
+                if (domRefs[elementId].count < 3) {
+                    domRefs[elementId].count = domRefs[elementId].count + 1;
+                    return document.getElementById(elementId);
+                } else {
+                    if (!domRefs[elementId].ref)
+                        domRefs[elementId].ref = document.getElementById(elementId);
+                    return domRefs[elementId].ref;
+                }
+            }
+        }
+
+        // returns dom with specified element
+        function createElement(tagName, options = {}) {
+            const { className, textContent, innerHTML, attributes = {} } = options
+            const elem = document.createElement(tagName)
+            for (let attribute in attributes) {
+                elem.setAttribute(attribute, attributes[attribute])
+            }
+            if (className)
+                elem.className = className
+            if (textContent)
+                elem.textContent = textContent
+            if (innerHTML)
+                elem.innerHTML = innerHTML
+            return elem
+        }
+
+        // Use when a function needs to be executed after user finishes changes
+        const debounce = (callback, wait) => {
+            let timeoutId = null;
+            return (...args) => {
+                window.clearTimeout(timeoutId);
+                timeoutId = window.setTimeout(() => {
+                    callback.apply(null, args);
+                }, wait);
+            };
+        }
+        let zIndex = 50
+        // function required for popups or modals to appear
+        function openPopup(popupId, pinned) {
+            zIndex++
+            getRef(popupId).setAttribute('style', `z-index: ${zIndex}`)
+            return getRef(popupId).show({ pinned })
+        }
+
+        // hides the popup or modal
+        function closePopup(options = {}) {
+            if (popupStack.peek() === undefined)
+                return;
+            popupStack.peek().popup.hide(options)
+        }
+
+
+        // displays a popup for asking permission. Use this instead of JS confirm
+        const getConfirmation = (title, options = {}) => {
+            return new Promise(resolve => {
+                const { message = '', cancelText = 'Cancel', confirmText = 'OK', danger = false } = options
+                getRef('confirm_title').innerText = title;
+                getRef('confirm_message').innerText = message;
+                const cancelButton = getRef('confirmation_popup').querySelector('.cancel-button');
+                const confirmButton = getRef('confirmation_popup').querySelector('.confirm-button')
+                confirmButton.textContent = confirmText
+                cancelButton.textContent = cancelText
+                if (danger)
+                    confirmButton.classList.add('button--danger')
+                else
+                    confirmButton.classList.remove('button--danger')
+                const { opened, closed } = openPopup('confirmation_popup')
+                confirmButton.onclick = () => {
+                    closePopup({ payload: true })
+                }
+                cancelButton.onclick = () => {
+                    closePopup()
+                }
+                closed.then((payload) => {
+                    confirmButton.onclick = null
+                    cancelButton.onclick = null
+                    if (payload)
+                        resolve(true)
+                    else
+                        resolve(false)
+                })
+            })
+        }
+
+        //Function for displaying toast notifications. pass in error for mode param if you want to show an error.
+        function notify(message, mode, options = {}) {
+            let icon
+            switch (mode) {
+                case 'success':
+                    icon = `<svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"/></svg>`
+                    break;
+                case 'error':
+                    icon = `<svg class="icon icon--error" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z"/></svg>`
+                    options.pinned = true
+                    break;
+            }
+            getRef("notification_drawer").push(message, { icon, ...options });
+            if (mode === 'error') {
+                console.error(message)
+            }
+        }
+
+        // detect browser version
+        function detectBrowser() {
+            let ua = navigator.userAgent,
+                tem,
+                M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+            if (/trident/i.test(M[1])) {
+                tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+                return 'IE ' + (tem[1] || '');
+            }
+            if (M[1] === 'Chrome') {
+                tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
+                if (tem != null) return tem.slice(1).join(' ').replace('OPR', 'Opera');
+            }
+            M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, '-?'];
+            if ((tem = ua.match(/version\/(\d+)/i)) != null) M.splice(1, 1, tem[1]);
+            return M.join(' ');
+        }
+        window.addEventListener('hashchange', e => showPage(window.location.hash))
+        window.addEventListener("load", () => {
+            const [browserName, browserVersion] = detectBrowser().split(' ');
+            const supportedVersions = {
+                Chrome: 85,
+                Firefox: 75,
+                Safari: 13,
+            }
+            if (browserName in supportedVersions) {
+                if (parseInt(browserVersion) < supportedVersions[browserName]) {
+                    notify(`${browserName} ${browserVersion} is not fully supported, some features may not work properly. Please update to ${supportedVersions[browserName]} or higher.`, 'error')
+                }
+            } else {
+                notify('Browser is not fully compatible, some features may not work. for best experience please use Chrome, Edge, Firefox or Safari', 'error')
+            }
+            document.body.classList.remove('hidden')
+            document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateAddr)
+            document.querySelectorAll('sm-input[data-private-key]').forEach(input => input.customValidation = floCrypto.getPubKeyHex)
+            document.addEventListener('keyup', (e) => {
+                if (e.code === 'Escape') {
+                    closePopup()
+                }
+            })
+            document.addEventListener("pointerdown", (e) => {
+                if (e.target.closest("button:not([disabled]), sm-button:not([disabled]), .interactive")) {
+                    createRipple(e, e.target.closest("button, sm-button, .interactive"));
+                }
+            });
+            document.addEventListener('copy', () => {
+                notify('copied', 'success')
+            })
+        });
+
+        function createRipple(event, target) {
+            const circle = document.createElement("span");
+            const diameter = Math.max(target.clientWidth, target.clientHeight);
+            const radius = diameter / 2;
+            const targetDimensions = target.getBoundingClientRect();
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - (targetDimensions.left + radius)}px`;
+            circle.style.top = `${event.clientY - (targetDimensions.top + radius)}px`;
+            circle.classList.add("ripple");
+            const rippleAnimation = circle.animate(
+                [
+                    {
+                        transform: "scale(4)",
+                        opacity: 0,
+                    },
+                ],
+                {
+                    duration: 600,
+                    fill: "forwards",
+                    easing: "ease-out",
+                }
+            );
+            target.append(circle);
+            rippleAnimation.onfinish = () => {
+                circle.remove();
+            };
+        }
+
+        function getFormattedTime(timestamp, format) {
+            try {
+                timestamp = parseInt(timestamp)
+                if (String(timestamp).length < 13)
+                    timestamp *= 1000
+                let [day, month, date, year] = new Date(timestamp).toString().split(' '),
+                    minutes = new Date(timestamp).getMinutes(),
+                    hours = new Date(timestamp).getHours(),
+                    currentTime = new Date().toString().split(' ')
+
+                minutes = minutes < 10 ? `0${minutes}` : minutes
+                let finalHours = ``;
+                if (hours > 12)
+                    finalHours = `${hours - 12}:${minutes}`
+                else if (hours === 0)
+                    finalHours = `12:${minutes}`
+                else
+                    finalHours = `${hours}:${minutes}`
+
+                finalHours = hours >= 12 ? `${finalHours} PM` : `${finalHours} AM`
+                switch (format) {
+                    case 'date-only':
+                        return `${month} ${date}, ${year}`;
+                        break;
+                    case 'time-only':
+                        return finalHours;
+                    case 'relative':
+                        // check if timestamp is older than a day
+                        if (Date.now() - new Date(timestamp) < 60 * 60 * 24 * 1000)
+                            return `${finalHours}`;
+                        else
+                            return relativeTime.from(timestamp)
+                    default:
+                        return `${month} ${date}, ${year} at ${finalHours}`;
+                }
+            } catch (e) {
+                console.error(e);
+                return timestamp;
+            }
+        }
+        function buttonLoader(id, show) {
+            const button = typeof id === 'string' ? getRef(id) : id;
+            button.disabled = show;
+            const animOptions = {
+                duration: 200,
+                fill: 'forwards',
+                easing: 'ease'
+            }
+            if (show) {
+                button.animate([
+                    {
+                        clipPath: 'circle(100%)',
+                    },
+                    {
+                        clipPath: 'circle(0)',
+                    },
+                ], animOptions).onfinish = e => {
+                    e.target.commitStyles()
+                    e.target.cancel()
+                }
+                button.parentNode.append(createElement('sm-spinner'))
+            } else {
+                button.style = ''
+                const potentialTarget = button.parentNode.querySelector('sm-spinner')
+                if (potentialTarget) potentialTarget.remove();
+            }
+        }
+        // implement event delegation
+        function delegate(el, event, selector, fn) {
+            el.addEventListener(event, function (e) {
+                const potentialTarget = e.target.closest(selector)
+                if (potentialTarget) {
+                    e.delegateTarget = potentialTarget
+                    fn.call(this, e)
+                }
+            })
+        }
+        const slideInLeft = [
+            {
+                opacity: 0,
+                transform: 'translateX(1rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            }
+        ]
+        const slideOutLeft = [
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateX(-1rem)'
+            },
+        ]
+        const slideInRight = [
+            {
+                opacity: 0,
+                transform: 'translateX(-1rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            }
+        ]
+        const slideOutRight = [
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateX(1rem)'
+            },
+        ]
+        const slideInDown = [
+            {
+                opacity: 0,
+                transform: 'translateY(-1rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateY(0)'
+            },
+        ]
+        const slideOutUp = [
+            {
+                opacity: 1,
+                transform: 'translateY(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateY(-1rem)'
+            },
+        ]
+        function showChildElement(id, index, options = {}) {
+            return new Promise((resolve) => {
+                const { mobileView = false, entry, exit } = options
+                const animOptions = {
+                    duration: 150,
+                    easing: 'ease',
+                    fill: 'forwards'
+                }
+                const visibleElement = [...getRef(id).children].find(elem => !elem.classList.contains(mobileView ? 'hide-on-mobile' : 'hidden'));
+                if (visibleElement === getRef(id).children[index]) return;
+                visibleElement.getAnimations().forEach(anim => anim.cancel())
+                getRef(id).children[index].getAnimations().forEach(anim => anim.cancel())
+                if (visibleElement) {
+                    if (exit) {
+                        visibleElement.animate(exit, animOptions).onfinish = () => {
+                            visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+                            getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                            if (entry)
+                                getRef(id).children[index].animate(entry, animOptions).onfinish = () => resolve()
+                        }
+                    } else {
+                        visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+                        getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                        resolve()
+                    }
+                } else {
+                    getRef(id).children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                    getRef(id).children[index].animate(entry, animOptions).onfinish = () => resolve()
+                }
+            })
+        }
+
+        document.addEventListener('popupopened', e => {
+            switch (e.target.id) {
+                case 'sheet_processing_popup':
+                    renderProcessedSheet()
+                    break;
+                case 'profile_popup':
+                    renderElem(getRef('profile_popup__content'), render.profile())
+                    break;
+            }
+        })
+        document.addEventListener('popupclosed', e => {
+            switch (e.target.id) {
+                case 'new_sheet_popup':
+                    getRef('columns_container').innerHTML = ''
+                    getRef('editors_container').innerHTML = ''
+                    break;
+                case 'sheet_processing_popup':
+                    renderElem(getRef("processed_sheet_view"), html``)
+                    break;
+            }
+        })
+        function showLoader() {
+            document.body.classList.remove('hidden')
+            getRef('main_loader').classList.remove('hidden')
+            document.querySelector('main').classList.add('hidden')
+            getRef('main_header').classList.add('hidden')
+        }
+        function hideLoader() {
+            getRef('main_loader').classList.add('hidden')
+            document.querySelector('main').classList.remove('hidden')
+            getRef('main_header').classList.remove('hidden')
+        }
+
+
+        function setAttributes(el, attrs) {
+            for (var key in attrs) {
+                el.setAttribute(key, attrs[key]);
+            }
+        }
+        delegate(getRef('people_container'), 'click', '.person-card', e => {
+            copyToLogInput(e.delegateTarget.dataset.floId)
+        })
+        let currentTableHeader
+        delegate(getRef('sheet_container__header'), 'click', 'th', e => {
+            if (currentTableHeader && currentTableHeader !== e.delegateTarget)
+                currentTableHeader.classList.remove('ascending', 'descending')
+            sortTable(e.delegateTarget.cellIndex, e.delegateTarget.classList.contains('descending'))
+            if (e.delegateTarget.classList.contains('descending'))
+                e.delegateTarget.classList.add('ascending')
+            else
+                e.delegateTarget.classList.remove('ascending')
+            e.delegateTarget.classList.toggle('descending')
+            currentTableHeader = e.delegateTarget
+        })
+        const intersectionObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    renderSheetView({ ...floGlobals.currentSheet, onlyRenderTable: true, lazyLoad: true })
+                    observer.disconnect()
+                }
+            })
+        }, {
+            root: getRef('sheet_container'),
+        })
+
+        const watchLastElement = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                if (mutation.addedNodes.length) {
+                    intersectionObserver.observe(mutation.addedNodes[mutation.addedNodes.length - 1])
+                }
+            })
+        })
+        watchLastElement.observe(getRef('sheet_container__body'), { childList: true, subtree: true })
+
+        getRef('search_sheets').addEventListener('input', function () {
+            if (this.value.trim !== '') {
+                for (child of getRef('sheets_container').children) {
+                    if (child.id === 'add_new_sheet') continue
+                    if (child.dataset.name.toLowerCase().includes(this.value.trim().toLowerCase())) {
+                        child.classList.remove('hidden')
+                    } else {
+                        child.classList.add('hidden')
+                    }
+                }
+            }
+        })
+
+        const render = {
+            sheetCard(sheetId, details) {
+                const { title, editors } = details
+                const type = editors ? 'Private' : 'Public'
+                return html`
+                    <a class="sheet-card interactive" href=${`#/sheet_view?id=${sheetId}`} .dataset=${{ name: title }}>
+                        <div class="sheet-card__icon">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M8 16h8v2H8zm0-4h8v2H8zm6-10H6c-1.1 0-2 .9-2 2v16c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
+                        </div>
+                        <h4>${title}</h4>
+                        <span class="sheet-card__type">${type}</span>
+                    </a>
+                `;
+            },
+            personCard(floId, details, ref) {
+                const { name } = details
+                return html.for(ref, floId)`
+                    <div class="person-card interactive" .dataset=${{ floId, name }}>
+                        <h3 class="person-initials">${name.charAt(0)}</h3>
+                        <h4 class="person-name">${name}</h4>
+                        <h5 class="person-flo-id overflow-ellipsis">${floId}</h5>
+                    </div>
+                `;
+            },
+            editorCard(floId) {
+                let card = document.createElement('div')
+                card.classList.add('editor-card', 'flex', 'space-between', 'align-center')
+                setAttributes(card, {
+                    'data-flo-id': floId
+                })
+                card.innerHTML = `
+                    <h4 class="editor-address wrap-around">${floId}</h4>
+                    <button onclick="this.parentNode.remove()">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/></svg>
+                    </button>
+                `
+                return card
+            },
+            columnCard(title) {
+                let card = document.createElement('div')
+                card.classList.add('column-card', 'flex', 'space-between', 'align-center')
+                setAttributes(card, {
+                    'data-column-title': title
+                })
+                card.innerHTML = `
+                    <h5 class="column-title">${title}</h5>
+                    <button onclick="this.parentNode.remove()">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/></svg>
+                    </button>
+                `
+                return card
+            },
+            detailsCard(type, value) {
+                let card = document.createElement('div')
+                card.classList.add('details-card', 'grid', 'align-center')
+                setAttributes(card, {
+                    'data-type': type,
+                    'data-value': value
+                })
+                card.innerHTML = `
+                    <h5 class="type">${type}</h5>
+                    <h4 class="value">${value}</h4>
+                    <button onclick="this.parentNode.remove()">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/></svg>
+                    </button>
+                `
+                return card
+            },
+            profile() {
+                return html`
+                    <div class="grid gap-1-5">
+                        <div class="grid gap-0-5">
+                            <h4>
+                                BTC integrated with FLO
+                            </h4>
+                            <p>
+                                You can use your FLO private key to perform transactions on the BTC network within our
+                                app
+                                ecosystem. The private key is the same for both.
+                            </p>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <b>My FLO address</b>
+                            <sm-copy class="user-flo-id" clip-text value=${floGlobals.myFloID}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <b>My Bitcoin address</b>
+                            <sm-copy class="user-btc-id" clip-text value=${floGlobals.myBtcID}></sm-copy>
+                        </div>
+                        <button class="button button--danger justify-self-start" onclick="signOut()">Sign out</button>
+                    </div>
+                `;
+            }
+        }
+
+        function addEditor() {
+            let address = getRef('add_editor_input').value.trim()
+            if (address === '') return;
+            if (floCrypto.validateAddr(address)) {
+                getRef('editors_container').append(render.editorCard(address))
+                getRef('add_editor_input').value = ''
+            } else {
+                notify('Invalid editor FLO address', 'error')
+            }
+        }
+        function addColumn() {
+            let columnTitle = getRef('add_column_input').value.trim()
+            if (columnTitle !== '') {
+                getRef('columns_container').append(render.columnCard(columnTitle))
+                getRef('add_column_input').value = ''
+                getRef('add_column_input').focusIn()
+            } else
+                notify("Column name should be specified.", 'error')
+        }
+
+        function addDetails() {
+            let type = getRef('add_detail_type_input').value.trim()
+            let value = getRef('add_detail_value_input').value.trim()
+            if (type !== '' && value !== '') {
+                getRef('additional_fields').append(render.detailsCard(type, value))
+                getRef('add_detail_type_input').value = ''
+                getRef('add_detail_value_input').value = ''
+                getRef('add_detail_type_input').focusIn()
+            }
+            else
+                notify('Please enter both type and value', 'error')
+        }
+
+        function toggleDetails() {
+            getRef('sheet_details').classList.toggle('collapse')
+        }
+        function toggleSideBar() {
+            getRef('sheet_view').classList.toggle('toggle-side-bar')
+        }
+        function toggleEditors() {
+            getRef('specify_editors').classList.toggle('hidden')
+        }
+        let lastPage
+        function showPage(targetPage, options = {}) {
+            const { firstLoad, hashChange } = options
+            let pageId
+            let searchParams
+            let params
+            if (targetPage === '') {
+                pageId = 'home_page'
+            }
+            else {
+                if (targetPage.includes('/')) {
+                    let path;
+                    [path, searchParams] = targetPage.split('?');
+                    [, pageId] = path.split('/')
+                } else {
+                    pageId = targetPage
+                }
+            }
+
+            if (!document.querySelector(`#${pageId}.page`)) return
+
+            if (searchParams) {
+                const urlSearchParams = new URLSearchParams('?' + searchParams);
+                params = Object.fromEntries(urlSearchParams.entries());
+            }
+            switch (pageId) {
+                case 'sign_in_page':
+                    getRef('get_priv_key_field').focusIn();
+                    break;
+                case 'home_page':
+                    getRef('sheet_container__body').innerHTML = ''
+                    getRef('sheet_heading').textContent = ''
+                    getRef('sheet_type').textContent = ''
+                    getRef('sheet_description').textContent = ''
+                    getRef('main_header').classList.remove('hidden')
+                    renderSheetList()
+                    break;
+                case 'sheet_view':
+                    renderPersonList()
+                    if (params) {
+                        viewSheet(params.id)
+                    }
+                    break;
+            }
+            if (pageId !== 'home_page') {
+                getRef('main_header').classList.add('hidden')
+            }
+            if (document.querySelector('.nav-list__item--active'))
+                document.querySelector('.nav-list__item--active').classList.remove('nav-list__item--active');
+            const targetListItem = [...document.querySelectorAll(`a.nav-list__item`)].find(item => item.href.includes(pageId))
+            if (targetListItem)
+                targetListItem.classList.add('nav-list__item--active')
+            if (pageId !== lastPage && document.querySelector('.page:not(.hidden)')) {
+                document.querySelector('.page:not(.hidden)').classList.add('hidden')
+            }
+            getRef(pageId).classList.remove('hidden')
+            lastPage = pageId
+        }
+
+        function generateId() {
+            getRef('generate_flo_id').classList.add('hidden')
+            getRef('credentials_section').classList.remove('hidden')
+            let { floID, privKey } = floCrypto.generateNewID()
+            getRef('generated_id').value = floID
+            getRef('generated_key').value = privKey
+        }
+
+        function signOut() {
+            getConfirmation('Sign out?', { message: 'You are about to sign out of the app, continue?', confirmText: 'Leave', cancelText: 'Stay' })
+                .then(async (res) => {
+                    if (res) {
+                        await floDapps.clearCredentials();
+                        location.reload();
+                    }
+                });
+        }
+
+        getRef('entry_type_selector').addEventListener('change', e => {
+            if (e.target.value === 'sign-in') {
+                showChildElement('user_entry', 0, { entry: slideInRight, exit: slideOutRight }).then(() => {
+                    getRef('get_priv_key_field').focusIn()
+                })
+            } else {
+                showChildElement('user_entry', 1, { entry: slideInLeft, exit: slideOutLeft }).then(() => {
+                })
+            }
+        })
+
+        getRef('save_button').children[2].addEventListener("click", function (e) {
+            logSheet.commitUpdates().then(result => {
+                getRef('save_button').animate([
+                    {
+                        transform: 'none',
+                        opacity: 1
+                    },
+                    {
+                        transform: 'translateY(1rem)',
+                        opacity: 0
+                    },
+                ], {
+                    duration: 300,
+                    easing: 'ease',
+                    fill: 'forwards'
+                }).onfinish = e => {
+                    getRef('save_button').classList.add('hidden')
+                    getRef('save_button').dataset["unsaved"] = '0'
+                    notify("Save Successful", 'success')
+                }
+            }).catch(error => notify(`Save Unsuccessful [${error}]`, error))
+        })
+        function initSheetProcessing(type) {
+            floGlobals.sheetProcessingMode = type
+            switch (type) {
+                case 'group':
+                    getRef('sheet_processing_title').textContent = `Group ${floGlobals.currentSheet.title} by`
+                    break;
+                case 'aggregate':
+                    getRef('sheet_processing_title').textContent = `Aggregate ${floGlobals.currentSheet.title} by`
+                    break;
+                default:
+                    break;
+            }
+            getRef('sheet_processing_popup').dataset.mode = type
+            openPopup('sheet_processing_popup')
+        }
+
+        getRef('process_by_method_selector').addEventListener("change", renderProcessedSheet)
+
+        getRef('process_by_attribute_selector').addEventListener("change", renderProcessedSheet)
+
+        function renderProcessedSheet() {
+            try {
+                const type = getRef('process_by_method_selector').value
+                const column = getRef('process_by_attribute_selector').value
+                const { sheetId, sheet } = floGlobals.currentSheet
+                switch (floGlobals.sheetProcessingMode) {
+                    case 'group':
+                        if (type === 'count') {
+                            getRef('process_by_attribute_selector').classList.add("hidden")
+                            let data = logSheet.groupBy.count(sheetId, sheet)
+                            renderGroupByView("count", data)
+                        } else {
+                            getRef('process_by_attribute_selector').classList.remove("hidden")
+                            let data = logSheet.groupBy[type](sheetId, sheet, column);
+                            renderGroupByView(`${type}(${column})`, data)
+                        }
+                        break;
+                    case 'aggregate':
+                        let data = logSheet.aggBy[type](sheetId, sheet, column);
+                        if (type === 'count') {
+                            getRef('process_by_attribute_selector').classList.add("hidden")
+                        } else {
+                            getRef('process_by_attribute_selector').classList.remove("hidden")
+                        }
+                        if (data) {
+                            if (type === 'count') {
+                                renderElem(getRef('processed_sheet_view'), html`
+                                    <div class="grid gap-0-5 text-center" style="padding: 3rem 0;">
+                                        <h1>${data}</h1>
+                                        Total entries
+                                    </div>
+                                `)
+                            } else {
+                                renderElem(getRef('processed_sheet_view'), html`
+                                    <div class="grid gap-0-5 text-center" style="padding: 3rem 0;">
+                                        <h1>${data}</h1>
+                                        <div class="capitalize">${type} ${column}</div>
+                                    </div>
+                                `)
+                            }
+                        } else {
+                            renderElem(getRef('processed_sheet_view'), html`
+                                <h4 style="padding: 1.5rem 0;">${column} doesn't have numeric values</h4>
+                            `)
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            } catch (error) {
+                notify(error, "error")
+            }
+        }
+
+        function showSave() {
+            getRef('save_button').classList.remove('hidden')
+            getRef('save_button').dataset["unsaved"] = parseInt(getRef('save_button').dataset["unsaved"]) + 1
+            getRef('save_button').animate([
+                {
+                    transform: 'translateY(1rem)',
+                    opacity: 0
+                },
+                {
+                    transform: 'none',
+                    opacity: 1
+                }
+            ], {
+                duration: 300,
+                easing: 'ease',
+                fill: 'forwards'
+            }).onfinish = e => {
+                getRef('save_button').children[0].style.background = `#F${Math.max(9 - parseInt(getRef('save_button').dataset["unsaved"]), 0)}0`;
+            }
+        }
+
+        function addPerson() {
+            try {
+                let floID = getRef('person_flo_id_input').value.trim();
+                let name = getRef('person_name_input').value.trim();
+                let otherDetails = {}
+                let fields = getRef('additional_fields').querySelectorAll('.type, .value')
+                for (let i = 0; i < fields.length; i += 2)
+                    otherDetails[fields[i].textContent] = fields[i + 1].textContent
+                console.log(fields, otherDetails)
+                logSheet.addPerson(floID, name, otherDetails)
+                renderPersonList()
+                closePopup()
+                notify(`Added person: ${floID}`, 'success')
+                showSave()
+            } catch (error) {
+                notify(error, "error")
+            }
+        }
+
+        function createSheet() {
+            try {
+                let title = getRef('sheet_title_input').value.trim();
+                let description = getRef('sheet_description_input').value.trim();
+                let columns = []
+                getRef('columns_container').querySelectorAll('.column-title').forEach(column => columns.push(column.textContent))
+                if (!columns.length) {
+                    notify('Every LogSheet should contain at least 1 column.', 'error')
+                    return
+                }
+                let editors = [...new Set([...getRef('editors_container').querySelectorAll('.editor-address')].map(editor => editor.textContent))]
+                if (!getRef('sheet_type_switch').checked)
+                    editors = null;
+                else
+                    if (!editors.length)
+                        editors = floGlobals.subAdmins;
+                let sheetId = logSheet.createNewSheet(title, description, columns, editors)
+                let sheet = {}
+                sheet[sheetId] = { editors }
+                renderSheetList()
+                closePopup()
+                notify(`Created New Sheet: ${sheetId} (${title})`, 'success')
+                showSave()
+            } catch (error) {
+                notify(error, "error")
+            }
+        }
+
+        function copyToLogInput(floID) {
+            let input = document.forms['new-log'][0]
+            if (input.tagName === 'INPUT')
+                input.value = floID;
+        }
+
+        function enterLog(e) {
+            e.preventDefault()
+            let sheetId = floGlobals.currentSheet.sheetId;
+            let form = document.forms['new-log'],
+                allFormElements = document.querySelectorAll('input[form="new-log"]')
+            if (form[0].tagName === 'INPUT') {
+                let floID = form[0].value.trim();
+                if (floID === '' || !floCrypto.validateAddr(floID)) {
+                    notify('Please enter a valid FLO ID', 'error')
+                    form[0].focus()
+                    return
+                }
+                let log = []
+                let isValid = false;
+                for (let i = 1; i < form.length - 1; i++) {
+                    const value = form[i].value.trim()
+                    log.push(value)
+                    if (value !== '')
+                        isValid = true
+                }
+                if (!isValid) {
+                    form[1].focus()
+                    return notify('Please enter value in at least one column', 'error')
+                }
+                allFormElements.forEach(element => element.disabled = true)
+                logSheet.enterLog(sheetId, floID, log).then(result => {
+                    form.reset();
+                    notify('Log entry successful', 'success')
+                    getRef('sheet_container__body').prepend(html.node`
+                        <tr>
+                            <td>${floID}</td>
+                            <td><input type="text" class="grade-input" disabled></td>
+                            ${log.map(l => html`<td>${l}</td>`)}
+                        </tr>
+                    `)
+                }).catch(error => {
+                    notify(error, "error")
+                }).finally(() => {
+                    allFormElements.forEach(element => element.disabled = false)
+                })
+            }
+        }
+
+        function viewSheet(sheetId) {
+            getRef('sheet_container').classList.add('placeholder')
+            getRef('sheet_heading').classList.add('placeholder')
+            getRef('sheet_type').classList.add('placeholder')
+            getRef('sheet_description').classList.add('placeholder')
+            getRef('sheet_container__header').classList.add('hidden')
+            getRef('sheet_processing_options').classList.add('hidden')
+            showPage('sheet_view')
+            logSheet.refreshLogs(sheetId).then(result => {
+                getRef('sheet_container').classList.remove('placeholder')
+                getRef('sheet_heading').classList.remove('placeholder')
+                getRef('sheet_type').classList.remove('placeholder')
+                getRef('sheet_description').classList.remove('placeholder')
+                getRef('sheet_container__header').classList.remove('hidden')
+                const { id, title, description, editors, attributes, sheet } = logSheet.viewLogs(sheetId)
+                renderSheetView({ sheetId: id, title, description, editors, attributes, sheet: sheet.reverse() })
+            }).catch(error => notify(error, "error"))
+        }
+
+        function renderPersonList(personList = logSheet.listPersons()) {
+            let list = []
+            for (person in personList)
+                list.push(render.personCard(person, personList[person], getRef("people_container")))
+            renderElem(getRef("people_container"), html`${list}`)
+        }
+
+        function renderSheetList() {
+            const sheetList = logSheet.listSheets()
+            const list = []
+            if (floGlobals.isSubAdmin) {
+                const firstCard = html`
+                    <div id="add_new_sheet" class="sheet-card interactive" onclick="openPopup('new_sheet_popup')">
+                        <div class="sheet-card__icon">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+                        </div>
+                        <h4>Add new sheet</h4>
+                    </div>
+                `;
+                list.push(firstCard)
+            }
+            for (const sheet in sheetList) {
+                list.push(render.sheetCard(sheet, sheetList[sheet]))
+            }
+            renderElem(getRef('sheets_container'), html`${list}`)
+        }
+        let startingIndex = 0,
+            endingIndex = 0
+
+        function renderSheetView(details = {}) {
+            const { sheetId, title, description, editors, attributes, sheet, onlyRenderTable = false, lazyLoad = false } = details
+            console.log(sheet)
+
+            const isWriteable = !editors || editors.includes(myFloID) || floGlobals.isSubAdmin
+            const lazyLoadRows = 4
+            if (!lazyLoad)
+                floGlobals.currentSheet = { sheetId, title, description, editors, attributes, sheet, }
+            if (lazyLoad) {
+                startingIndex = sheet.length > endingIndex ? endingIndex : sheet.length
+                endingIndex = sheet.length - endingIndex > lazyLoadRows ? endingIndex + lazyLoadRows : sheet.length
+            } else {
+                startingIndex = 0
+                endingIndex = sheet.length > lazyLoadRows ? lazyLoadRows : sheet.length
+            }
+            if (!onlyRenderTable) {
+                //Add Sheet Details
+                getRef('sheet_heading').textContent = title;
+                getRef('sheet_type').textContent = editors ? 'Private' : 'Public';
+                renderElem(getRef('sheet_editors'), html`${editors ? html`Maintained by: ${editors.map(editor => html`<div class="editor">${editor}</div>`)}` : ''}`)
+                getRef('sheet_description').textContent = description;
+                let addLogRow = null
+                //Add input fields if writable
+                if (isWriteable && !lazyLoad) {
+                    const blockEditingID = editors ? false : !floGlobals.isSubAdmin;
+                    addLogRow = html`
+                        <tr>
+                            <td>${html`<input form="new-log" class="log-input" style="width: 22rem" value=${blockEditingID ? myFloID : ''} ?readonly=${blockEditingID}>`}</td>
+                            <td></td>
+                            ${attributes.map(attr => html`<td><input form="new-log" class="log-input"></td>`)}
+                        </tr>
+                    `;
+                }
+                renderElem(getRef('sheet_container__header'), html`
+                    <tr>
+                        <th>FLO ID</th>
+                        <th>Grade</th>
+                        ${attributes.map(attr => html`<th>${attr}</th>`)}
+                    </tr>
+                    ${addLogRow}
+                `)
+
+            }
+            if (onlyRenderTable) {
+                if (!lazyLoad)
+                    getRef('sheet_container__body').innerHTML = ''
+            }
+            const parseVectorClock = (vc) => {
+                const [vectorClock, floID] = vc.split('_')
+                let time = getFormattedTime(parseInt(vectorClock));
+                return `by ${floID} (${time})`
+            }
+            const createGradeField = (grade) => {
+                const isDisabled = (!isWriteable || (!floGlobals.isSubAdmin && !floGlobals.isTrustedID))
+                return html`<input type="number" class="grade-input" min="0" max="100" value=${grade} ?disabled=${isDisabled}>`
+            }
+            for (let i = startingIndex; i < endingIndex; i++) {
+                const { log, floID, vc, grade } = sheet[i]
+                if (!log || !floID || !vc)
+                    continue;
+                frag.append(html.node`
+                    <tr title="${parseVectorClock(vc)}" .dataset=${{ vc }}>
+                        <td>${floID}</td>
+                        <td>${createGradeField(grade)}</td>
+                        ${log.map(l => html`<td>${l}</td>`)}
+                    </tr>
+                `)
+            }
+            getRef('sheet_container__body').append(frag)
+            if (!onlyRenderTable) {
+                //Add options for groupBy 
+                renderElem(getRef('process_by_attribute_selector'), html`${attributes.map(attr => html`<sm-option value="${attr}" class="wrap-around">${attr}</sm-option>`)}`)
+                getRef('sheet_processing_options').classList.remove('hidden')
+            }
+        }
+
+        delegate(getRef('sheet_container'), 'keydown', 'input[type="number"]', e => {
+            if (e.key.length === 1) {
+                if (e.key === '.' && (e.target.value.includes('.') || e.target.value.length === 0)) {
+                    e.preventDefault();
+                } else if (!['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'].includes(e.key)) {
+                    e.preventDefault();
+                }
+            } else if (e.key === 'Enter' && floGlobals.isSubAdmin) {
+                // Grade an entry
+                e.preventDefault();
+                e.delegateTarget.disabled = true;
+                const vc = e.delegateTarget.closest('tr').dataset.vc;
+                let grade = e.delegateTarget.value.trim();
+                if (grade === '' || grade == 0)
+                    grade = null
+                logSheet.gradeLog(floGlobals.currentSheet.sheetId, vc, grade)
+                    .then(result => notify("Graded Log", 'success'))
+                    .catch(error => notify("Grading failed: " + error, "error"))
+                    .finally(_ => e.delegateTarget.disabled = false)
+            }
+        })
+
+        function renderGroupByView(groupName, groupData) {
+            renderElem(getRef("processed_sheet_view"), html`
+                <table class="margin-top-1">
+                    <thead>
+                        <tr>
+                            <th>FLO ID</th>
+                            <th>${groupName}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.keys(groupData).map(floID => html`
+                            <tr>
+                                <td>${floID}</td>
+                                <td>${groupData[floID]}</td>
+                            </tr>
+                        `)}
+                    </tbody>
+                </table>
+            `)
+        }
+
+        function sortTable(n, ascending) {
+            if (ascending) {
+                if (n === 0)
+                    floGlobals.currentSheet.sheet.sort((a, b) => a.floID.toLowerCase().localeCompare(b.floID.toLowerCase()))
+                else if (n === 1)
+                    floGlobals.currentSheet.sheet.sort((a, b) => {
+                        if (a.grade === b.grade) {
+                            return 0;
+                        } else {
+                            return (a.grade < b.grade) ? -1 : 1;
+                        }
+                    })
+                else
+                    floGlobals.currentSheet.sheet.sort((a, b) => {
+                        if (isNaN(a.log[n - 2])) {
+                            let x = (a.log[n - 2]) ? a.log[n - 2].toLowerCase() : a.log[n - 2]
+                            let y = (b.log[n - 2]) ? b.log[n - 2].toLowerCase() : b.log[n - 2]
+                            if (x === y) {
+                                return 0;
+                            } else {
+                                return (x < y) ? -1 : 1;
+                            }
+                        } else
+                            return a.log[n - 2] - b.log[n - 2]
+                    })
+            } else {
+                if (n === 0)
+                    floGlobals.currentSheet.sheet.sort((a, b) => b.floID.toLowerCase().localeCompare(a.floID.toLowerCase()))
+                else if (n === 1)
+                    floGlobals.currentSheet.sheet.sort((a, b) => {
+                        if (a.grade === b.grade) {
+                            return 0;
+                        } else {
+                            return (a.grade > b.grade) ? -1 : 1;
+                        }
+                    })
+                else
+                    floGlobals.currentSheet.sheet.sort((a, b) => {
+                        if (isNaN(a.log[n - 2])) {
+                            let x = (a.log[n - 2]) ? a.log[n - 2].toLowerCase() : a.log[n - 2]
+                            let y = (b.log[n - 2]) ? b.log[n - 2].toLowerCase() : b.log[n - 2]
+                            if (x === y) {
+                                return 0;
+                            } else {
+                                return (x > y) ? -1 : 1;
+                            }
+                        } else
+                            return b.log[n - 2] - a.log[n - 2]
+                    })
+            }
+            renderSheetView({ ...floGlobals.currentSheet, onlyRenderTable: true })
+        }
+    </script>
+</body>
+
+</html>
