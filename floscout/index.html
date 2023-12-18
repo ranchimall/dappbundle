@@ -1,0 +1,3303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>FLO Scout</title>
+	<link rel="stylesheet" href="css/main.min.css" />
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+	<script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
+	<script src="scripts/components.min.js"></script>
+	<script src="scripts/flexsearch.light.js" defer></script>
+	<script src="scripts/lib.js" defer></script>
+	<script src="scripts/floCrypto.js" defer></script>
+	<script src="scripts/floBlockchainAPI.js" defer></script>
+	<script src="scripts/floTokenAPI.js" defer></script>
+	<link rel="shortcut icon" href="floscout.svg" type="image/x-icon">
+</head>
+
+<body class="hidden">
+	<sm-notifications id="notification_drawer"></sm-notifications>
+	<sm-popup id="confirmation_popup">
+		<h4 id="confirm_title"></h4>
+		<p id="confirm_message" class="breakable"></p>
+		<div class="flex align-center gap-0-5 margin-left-auto">
+			<button class="button cancel-button">Cancel</button>
+			<button class="button button--primary confirm-button">OK</button>
+		</div>
+	</sm-popup>
+	<div id="loading">
+		<sm-spinner></sm-spinner>
+		<h4>Loading RanchiMall FLO Scout</h4>
+	</div>
+	<header id="main_header" class="margin">
+		<a href="#/home" id="logo" class="app-brand hide-on-small">
+			<svg id="main_logo" class="icon" viewBox="0 0 27.25 32">
+				<title>RanchiMall</title>
+				<path
+					d="M27.14,30.86c-.74-2.48-3-4.36-8.25-6.94a20,20,0,0,1-4.2-2.49,6,6,0,0,1-1.25-1.67,4,4,0,0,1,0-2.26c.37-1.08.79-1.57,3.89-4.55a11.66,11.66,0,0,0,3.34-4.67,6.54,6.54,0,0,0,.05-2.82C20,3.6,18.58,2,16.16.49c-.89-.56-1.29-.64-1.3-.24a3,3,0,0,1-.3.72l-.3.55L13.42.94C13,.62,12.4.26,12.19.15c-.4-.2-.73-.18-.72.05a9.39,9.39,0,0,1-.61,1.33s-.14,0-.27-.13C8.76.09,8-.27,8,.23A11.73,11.73,0,0,1,6.76,2.6C4.81,5.87,2.83,7.49.77,7.49c-.89,0-.88,0-.61,1,.22.85.33.92,1.09.69A5.29,5.29,0,0,0,3,8.33c.23-.17.45-.29.49-.26a2,2,0,0,1,.22.63A1.31,1.31,0,0,0,4,9.34a5.62,5.62,0,0,0,2.27-.87L7,8l.13.55c.19.74.32.82,1,.65a7.06,7.06,0,0,0,3.46-2.47l.6-.71-.06.64c-.17,1.63-1.3,3.42-3.39,5.42L6.73,14c-3.21,3.06-3,5.59.6,8a46.77,46.77,0,0,0,4.6,2.41c.28.13,1,.52,1.59.87,3.31,2,4.95,3.92,4.95,5.93a2.49,2.49,0,0,0,.07.77h0c.09.09,0,.1.9-.14a2.61,2.61,0,0,0,.83-.32,3.69,3.69,0,0,0-.55-1.83A11.14,11.14,0,0,0,17,26.81a35.7,35.7,0,0,0-5.1-2.91C9.37,22.64,8.38,22,7.52,21.17a3.53,3.53,0,0,1-1.18-2.48c0-1.38.71-2.58,2.5-4.23,2.84-2.6,3.92-3.91,4.67-5.65a3.64,3.64,0,0,0,.42-2A3.37,3.37,0,0,0,13.61,5l-.32-.74.29-.48c.17-.27.37-.63.46-.8l.15-.3.44.64a5.92,5.92,0,0,1,1,2.81,5.86,5.86,0,0,1-.42,1.94c0,.12-.12.3-.15.4a9.49,9.49,0,0,1-.67,1.1,28,28,0,0,1-4,4.29C8.62,15.49,8.05,16.44,8,17.78a3.28,3.28,0,0,0,1.11,2.76c.95,1,2.07,1.74,5.25,3.32,3.64,1.82,5.22,2.9,6.41,4.38A4.78,4.78,0,0,1,21.94,31a3.21,3.21,0,0,0,.14.92,1.06,1.06,0,0,0,.43-.05l.83-.22.46-.12-.06-.46c-.21-1.53-1.62-3.25-3.94-4.8a37.57,37.57,0,0,0-5.22-2.82A13.36,13.36,0,0,1,11,21.19a3.36,3.36,0,0,1-.8-4.19c.41-.85.83-1.31,3.77-4.15,2.39-2.31,3.43-4.13,3.43-6a5.85,5.85,0,0,0-2.08-4.29c-.23-.21-.44-.43-.65-.65A2.5,2.5,0,0,1,15.27.69a10.6,10.6,0,0,1,2.91,2.78A4.16,4.16,0,0,1,19,6.16a4.91,4.91,0,0,1-.87,3c-.71,1.22-1.26,1.82-4.27,4.67a9.47,9.47,0,0,0-2.07,2.6,2.76,2.76,0,0,0-.33,1.54,2.76,2.76,0,0,0,.29,1.47c.57,1.21,2.23,2.55,4.65,3.73a32.41,32.41,0,0,1,5.82,3.24c2.16,1.6,3.2,3.16,3.2,4.8a1.94,1.94,0,0,0,.09.76,4.54,4.54,0,0,0,1.66-.4C27.29,31.42,27.29,31.37,27.14,30.86ZM6.1,7h0a3.77,3.77,0,0,1-1.46.45L4,7.51l.68-.83a25.09,25.09,0,0,0,3-4.82A12,12,0,0,1,8.28.76c.11-.12.77.32,1.53,1l.63.58-.57.84A10.34,10.34,0,0,1,6.1,7Zm5.71-1.78A9.77,9.77,0,0,1,9.24,7.18h0a5.25,5.25,0,0,1-1.17.28l-.58,0,.65-.78a21.29,21.29,0,0,0,2.1-3.12c.22-.41.42-.76.44-.79s.5.43.9,1.24L12,5ZM13.41,3a2.84,2.84,0,0,1-.45.64,11,11,0,0,1-.9-.91l-.84-.9.19-.45c.34-.79.39-.8,1-.31A9.4,9.4,0,0,1,13.8,2.33q-.18.34-.39.69Z" />
+			</svg>
+			<div class="app-name">
+				<div class="app-name__company">RanchiMall</div>
+				<h4 class="app-name__title">
+					FLO Scout
+				</h4>
+			</div>
+		</a>
+		<div id="search_wrapper">
+			<sm-input id='main_search_field' type="search"
+				placeholder="block, transactions, address, token or contract">
+				<svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+					width="24px" fill="#000000">
+					<path d="M0 0h24v24H0V0z" fill="none" />
+					<path
+						d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+				</svg>
+			</sm-input>
+			<ul id="suggestions"></ul>
+		</div>
+		<theme-toggle></theme-toggle>
+	</header>
+	<div id="page_header" class="flex margin">
+		<button class="icon-only" onclick="history.back()">
+			<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+				fill="#000000">
+				<path d="M0 0h24v24H0V0z" fill="none" />
+				<path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+			</svg>
+		</button>
+		<h4 id="page_title"></h4>
+	</div>
+	<main id="page_container" class="flex flex-direction-column"></main>
+	<sm-popup id="filter_s_c_popup">
+		<header slot="header" class="popup__header">
+			<button class="popup__header__close" onclick="closePopup()">
+				<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+					fill="#000000">
+					<path d="M0 0h24v24H0V0z" fill="none" />
+					<path
+						d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+				</svg>
+			</button>
+			<h3>
+				Filter by
+			</h3>
+		</header>
+		<div id="filter_s_c_popup__content" class="grid gap-1-5"></div>
+		<footer class="flex gap-0-5">
+			<button class="button button--colored margin-left-auto" onclick="clearFilters()">
+				Clear
+			</button>
+			<button class="button button--primary" onclick="router.routeTo(location.hash)">
+				Apply
+			</button>
+		</footer>
+	</sm-popup>
+	<sm-popup id="smart_contract_popup">
+		<header slot="header" class="popup__header">
+			<button class="popup__header__close" onclick="closePopup()">
+				<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+					fill="#000000">
+					<path d="M0 0h24v24H0V0z" fill="none" />
+					<path
+						d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+				</svg>
+			</button>
+			<h3 id="smart_contract_popup__title"></h3>
+		</header>
+		<sm-form id="smart_contract_popup__content" class="grid gap-1-5"></sm-form>
+	</sm-popup>
+	<sm-popup id="smart_contract_creation_popup">
+		<header slot="header" class="popup__header">
+			<button class="popup__header__close" onclick="closePopup()">
+				<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+					fill="#000000">
+					<path d="M0 0h24v24H0V0z" fill="none" />
+					<path
+						d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+				</svg>
+			</button>
+			<h3>Create smart contract</h3>
+		</header>
+		<div id="smart_contract_creation_popup__content" class="grid gap-1-5"></div>
+	</sm-popup>
+	<sm-popup id="transaction_result_popup">
+		<header slot="header" class="popup__header">
+			<button class="popup__header__close justify-self-start" onclick="closePopup()">
+				<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+					fill="#000000">
+					<path d="M0 0h24v24H0V0z" fill="none" />
+					<path
+						d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+				</svg>
+			</button>
+		</header>
+		<div id="transaction_result"></div>
+	</sm-popup>
+	<!-- Set urls for token and flo Apis -->
+	<script>
+		const testMode = false
+		const floGlobals = {
+			blockchain: testMode ? "FLO_TEST" : "FLO",
+			tokenApiUrl: testMode ? 'https://ranchimallflo-testnet.ranchimall.net' : 'https://ranchimallflo.ranchimall.net',
+			floApiUrl: testMode ? 'https://blockbook-testnet.ranchimall.net' : 'https://blockbook.ranchimall.net',
+			expirationDays: 60,
+		}
+	</script>
+	<script>
+		/*jshint esversion: 8 */
+		/**
+		  * @yaireo/relative-time - javascript function to transform timestamp or date to local relative-time
+		  *
+		  * @version v1.0.0
+		  * @homepage https://github.com/yairEO/relative-time
+		  */
+		!function (e, t) { var o = o || {}; "function" == typeof o && o.amd ? o([], t) : "object" == typeof exports && "object" == typeof module ? module.exports = t() : "object" == typeof exports ? exports.RelativeTime = t() : e.RelativeTime = t() }(this, (function () { const e = { year: 31536e6, month: 2628e6, day: 864e5, hour: 36e5, minute: 6e4, second: 1e3 }, t = "en", o = { numeric: "auto" }; function n(e) { e = { locale: (e = e || {}).locale || t, options: { ...o, ...e.options } }, this.rtf = new Intl.RelativeTimeFormat(e.locale, e.options) } return n.prototype = { from(t, o) { const n = t - (o || new Date); for (let t in e) if (Math.abs(n) > e[t] || "second" == t) return this.rtf.format(Math.round(n / e[t]), t) } }, n }));
+		const relativeTime = new RelativeTime({ style: 'narrow' });
+	</script>
+	<script>
+		"use strict";
+		// Global variables
+		const { html, render: renderElem } = uhtml;
+		//Checks for internet connection status
+		if (!navigator.onLine)
+			floGlobals.connectionErrorNotification = notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error')
+		window.addEventListener('offline', () => {
+			floGlobals.connectionErrorNotification = notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error')
+		})
+		window.addEventListener('online', () => {
+			getRef('notification_drawer').remove(floGlobals.connectionErrorNotification)
+			notify('We are back online.', 'success')
+		})
+		//Function for displaying toast notifications. pass in error for mode param if you want to show an error.
+		function notify(message, mode, options = {}) {
+			let icon
+			switch (mode) {
+				case 'success':
+					icon = `<svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"/></svg>`
+					break;
+				case 'error':
+					icon = `<svg class="icon icon--error" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z"/></svg>`
+					options.pinned = true
+					break;
+			}
+			if (mode === 'error') {
+				console.error(message)
+			}
+			return getRef("notification_drawer").push(message, { icon, ...options });
+		}
+		// Use instead of document.getElementById
+		function getRef(elementId) {
+			return document.getElementById(elementId);
+		}
+
+		// Use when a function needs to be executed after user finishes changes
+		const debounce = (callback, wait) => {
+			let timeoutId = null;
+			return (...args) => {
+				window.clearTimeout(timeoutId);
+				timeoutId = window.setTimeout(() => {
+					callback.apply(null, args);
+				}, wait);
+			};
+		}
+
+		function formatAmount(amount = 0) {
+			if (!amount)
+				return '0';
+			return amount.toLocaleString(undefined, { maximumFractionDigits: 8, minimumFractionDigits: 0 })
+		}
+		let zIndex = 10
+		// function required for popups or modals to appear
+		function openPopup(popupId, pinned) {
+			if (popupStack.peek() === undefined) {
+				document.addEventListener('keydown', (e) => {
+					if (e.key === 'Escape') {
+						closePopup()
+					}
+				})
+			}
+			zIndex++
+			getRef(popupId).setAttribute('style', `z-index: ${zIndex}`)
+			getRef(popupId).show({ pinned })
+			return getRef(popupId);
+		}
+
+		// hides the popup or modal
+		function closePopup() {
+			if (popupStack.peek() === undefined)
+				return;
+			popupStack.peek().popup.hide()
+		}
+		document.addEventListener('popupopened', async e => {
+			switch (e.target.id) {
+				case 'filter_s_c_popup':
+					function checkSelected(e) {
+						const filterButton = e.target.closest('label')
+						filterButton.classList.toggle('selected')
+					}
+					const scTypes = [['time-trigger', 'Timed Event'], ['external-trigger', 'External Trigger'], ['tokenswap', 'Token Swap']]
+					const { tokens, types } = floGlobals.appliedFilters
+					renderElem(getRef('filter_s_c_popup__content'), html`
+						<div class="grid gap-1">
+							<h5>Type</h5>
+							<div id="type_filter_list" class="flex flex-wrap gap-0-5">
+								${scTypes.map(([type, title]) => html`
+									<label class=${`sc-filter sc-type-filter interact ${types.has(type) ? 'selected' : ''}`}>
+										<input type="checkbox" name="sc-type-filter" value=${type} onchange=${checkSelected} ?checked=${types.has(type)}/>
+										<span class="sc-filter__name">${title}</span>
+									</label>
+								`)}
+							</div>
+						</div>
+						<div class="grid gap-1">
+							<h5>Involved tokens</h5>
+							<div id="token_filter_list" class="flex flex-wrap gap-0-5">
+								${floGlobals.tokenList.map(token => html`
+									<label class=${`sc-filter token-filter interact ${tokens.has(token) ? 'selected' : ''}`}>
+										<input type="checkbox" name="token-filter" value=${token} onchange=${checkSelected} ?checked=${tokens.has(token)}/>
+										<span class="sc-filter__name">${token}</span>
+									</label>
+								`)}
+							</div>
+						</div>
+					`)
+					break;
+			}
+		})
+		document.addEventListener('popupclosed', e => {
+			zIndex--
+			switch (e.target.id) {
+				case 'filter_s_c_popup':
+					renderElem(getRef('filter_s_c_popup__content'), html``)
+					break;
+			}
+			if (popupStack.peek() === undefined)
+				document.removeEventListener('keydown', (e) => {
+					if (e.key === 'Escape') {
+						closePopup()
+					}
+				})
+		})
+		// displays a popup for asking permission. Use this instead of JS confirm
+		const getConfirmation = (title, options = {}) => {
+			return new Promise(resolve => {
+				const { message = '', cancelText = 'Cancel', confirmText = 'OK', danger = false } = options
+				openPopup('confirmation_popup', true)
+				getRef('confirm_title').innerText = title;
+				getRef('confirm_message').innerText = message;
+				const cancelButton = getRef('confirmation_popup').querySelector('.cancel-button');
+				const confirmButton = getRef('confirmation_popup').querySelector('.confirm-button')
+				confirmButton.textContent = confirmText
+				cancelButton.textContent = cancelText
+				if (danger)
+					confirmButton.classList.add('button--danger')
+				else
+					confirmButton.classList.remove('button--danger')
+				confirmButton.onclick = () => {
+					closePopup()
+					resolve(true);
+				}
+				cancelButton.onclick = () => {
+					closePopup()
+					resolve(false);
+				}
+			})
+		}
+		// fetch data and return json
+		async function fetchJson(url, options = {}) {
+			const response = await fetch(url, options)
+			const json = await response.json()
+			if (response.ok) {
+				return json
+			} else {
+				console.error(json)
+				throw new Error(json.description)
+			}
+		}
+		function getFormattedTime(timestamp, format) {
+			try {
+				timestamp = parseInt(timestamp)
+				if (String(timestamp).length < 13)
+					timestamp *= 1000
+				let [day, month, date, year] = new Date(timestamp).toString().split(' '),
+					minutes = new Date(timestamp).getMinutes(),
+					hours = new Date(timestamp).getHours(),
+					currentTime = new Date().toString().split(' ')
+
+				minutes = minutes < 10 ? `0${minutes}` : minutes
+				let finalHours = ``;
+				if (hours > 12)
+					finalHours = `${hours - 12}:${minutes}`
+				else if (hours === 0)
+					finalHours = `12:${minutes}`
+				else
+					finalHours = `${hours}:${minutes}`
+
+				finalHours = hours >= 12 ? `${finalHours} PM` : `${finalHours} AM`
+				switch (format) {
+					case 'date-only':
+						return `${month} ${date}, ${year}`;
+						break;
+					case 'time-only':
+						return finalHours;
+					case 'relative':
+						return relativeTime.from(timestamp)
+					default:
+						return `${month} ${date}, ${year} at ${finalHours}`;
+				}
+			} catch (e) {
+				console.error(e);
+				return timestamp;
+			}
+		}
+		window.addEventListener("load", () => {
+			document.body.classList.remove('hidden')
+			document.addEventListener("pointerdown", (e) => {
+				if (e.target.closest("button, .interact")) {
+					createRipple(e, e.target.closest("button, .interact"));
+				}
+			});
+			document.addEventListener('copy', () => {
+				notify('copied', 'success', {
+					timeout: 1500
+				})
+			})
+			getAllSuggestions().then(suggestions => {
+				router.routeTo(window.location.hash)
+			}).catch(e => {
+				console.error(e)
+				notify(e, 'error')
+			})
+			getRef("main_search_field").addEventListener("keydown", function (e) {
+				if (e.key === 'Enter') {
+					processNavbarSearch()
+				} else if (e.key === 'ArrowDown') {
+					e.preventDefault();
+					getRef('suggestions').firstElementChild.focus()
+				}
+				if (document.activeElement.classList.contains('suggestion'))
+					getRef("main_search_field").value = document.activeElement.textContent.trim()
+			});
+			getRef('suggestions').addEventListener("keydown", function (e) {
+				if (e.key === 'ArrowDown') {
+					e.preventDefault();
+					if (this.contains(document.activeElement) && document.activeElement.nextElementSibling)
+						document.activeElement.nextElementSibling.focus()
+				} else if (e.key === 'ArrowUp') {
+					e.preventDefault();
+					if (this.contains(document.activeElement)) {
+						if (document.activeElement.previousElementSibling)
+							document.activeElement.previousElementSibling.focus()
+						else
+							getRef("main_search_field").focusIn()
+					}
+				}
+				if (document.activeElement.classList.contains('suggestion'))
+					getRef("main_search_field").value = document.activeElement.textContent.trim()
+			});
+		});
+		function handleSuggestionClick(e) {
+			getRef('main_search_field').value = e.target.textContent.trim();
+			processNavbarSearch()
+		}
+
+		function createRipple(event, target) {
+			const circle = document.createElement("span");
+			const diameter = Math.max(target.clientWidth, target.clientHeight);
+			const radius = diameter / 2;
+			const targetDimensions = target.getBoundingClientRect();
+			circle.style.width = circle.style.height = `${diameter}px`;
+			circle.style.left = `${event.clientX - (targetDimensions.left + radius)}px`;
+			circle.style.top = `${event.clientY - (targetDimensions.top + radius)}px`;
+			circle.classList.add("ripple");
+			const rippleAnimation = circle.animate(
+				[
+					{
+						transform: "scale(3)",
+						opacity: 0,
+					},
+				],
+				{
+					duration: 1000,
+					fill: "forwards",
+					easing: "ease-out",
+				}
+			);
+			target.append(circle);
+			rippleAnimation.onfinish = () => {
+				circle.remove();
+			};
+		}
+
+		class Router {
+			/**
+			 * @constructor {object} options - options for the router
+			 * @param {object} options.routes - routes for the router
+			 * @param {object} options.state - initial state for the router
+			 * @param {function} options.routingStart - function to be called before routing
+			 * @param {function} options.routingEnd - function to be called after routing
+			 */
+			constructor(options = {}) {
+				const { routes = {}, state = {}, routingStart, routingEnd } = options
+				this.routes = routes
+				this.state = state
+				this.routingStart = routingStart
+				this.routingEnd = routingEnd
+				this.lastPage = null
+				window.addEventListener('hashchange', e => this.routeTo(window.location.hash))
+			}
+			/**
+			 * @param {string} route - route to be added
+			 * @param {function} callback - function to be called when route is matched
+			 */
+			addRoute(route, callback) {
+				this.routes[route] = callback
+			}
+			/**
+			 * @param {string} route
+			 */
+			async routeTo(path) {
+				try {
+					let page
+					let wildcards = []
+					let queryString
+					let params
+					[path, queryString] = path.split('?');
+					if (path.includes('#'))
+						path = path.split('#')[1];
+					if (path.includes('/'))
+						[, page, ...wildcards] = path.split('/')
+					else
+						page = path
+					this.state = { page, wildcards, lastPage: this.lastPage }
+					if (queryString) {
+						params = new URLSearchParams(queryString)
+						this.state.params = Object.fromEntries(params)
+					}
+					if (this.routingStart) {
+						this.routingStart(this.state)
+					}
+					if (this.routes[page]) {
+						await this.routes[page](this.state)
+						this.lastPage = page
+					} else {
+						if (this.routes['404']) {
+							this.routes['404'](this.state);
+						} else {
+							console.error(`No route found for '${page}' and no '404' route is defined.`);
+						}
+					}
+					if (this.routingEnd) {
+						this.routingEnd(this.state)
+					}
+				} catch (e) {
+					console.error(e)
+				}
+			}
+		}
+		function buttonLoader(id, show) {
+			const button = typeof id === 'string' ? document.getElementById(id) : id;
+			button.disabled = show;
+			const animOptions = {
+				duration: 200,
+				fill: 'forwards',
+				easing: 'ease'
+			}
+			if (show) {
+				button.parentNode.append(document.createElement('sm-spinner'))
+				button.animate([
+					{
+						clipPath: 'circle(100%)',
+					},
+					{
+						clipPath: 'circle(0)',
+					},
+				], animOptions)
+			} else {
+				button.getAnimations().forEach(anim => anim.cancel())
+				const potentialTarget = button.parentNode.querySelector('sm-spinner')
+				if (potentialTarget) potentialTarget.remove();
+			}
+		}
+		const slideInLeft = [
+			{
+				opacity: 0,
+				transform: 'translateX(1rem)'
+			},
+			{
+				opacity: 1,
+				transform: 'translateX(0)'
+			}
+		]
+		const slideOutLeft = [
+			{
+				opacity: 1,
+				transform: 'translateX(0)'
+			},
+			{
+				opacity: 0,
+				transform: 'translateX(-1rem)'
+			},
+		]
+		const slideInRight = [
+			{
+				opacity: 0,
+				transform: 'translateX(-1rem)'
+			},
+			{
+				opacity: 1,
+				transform: 'translateX(0)'
+			}
+		]
+		const slideOutRight = [
+			{
+				opacity: 1,
+				transform: 'translateX(0)'
+			},
+			{
+				opacity: 0,
+				transform: 'translateX(1rem)'
+			},
+		]
+		const slideInDown = [
+			{
+				opacity: 0,
+				transform: 'translateY(-1rem)'
+			},
+			{
+				opacity: 1,
+				transform: 'translateY(0)'
+			},
+		]
+		const slideOutDown = [
+			{
+				opacity: 1,
+				transform: 'translateY(0)'
+			},
+			{
+				opacity: 0,
+				transform: 'translateY(1rem)'
+			},
+		]
+		const slideInUp = [
+			{
+				opacity: 0,
+				transform: 'translateY(1rem)'
+			},
+			{
+				opacity: 1,
+				transform: 'translateY(0)'
+			},
+		]
+		const slideOutUp = [
+			{
+				opacity: 1,
+				transform: 'translateY(0)'
+			},
+			{
+				opacity: 0,
+				transform: 'translateY(-1rem)'
+			},
+		]
+		function showChildElement(id, index, options = {}) {
+			return new Promise((resolve) => {
+				const { mobileView = false, entry, exit } = options
+				const animOptions = {
+					duration: floGlobals.prefersReducedMotion ? 0 : 150,
+					easing: 'ease',
+					fill: 'forwards'
+				}
+				const parent = typeof id === 'string' ? document.getElementById(id) : id;
+				const visibleElement = [...parent.children].find(elem => !elem.classList.contains(mobileView ? 'hide-on-mobile' : 'hidden'));
+				if (visibleElement === parent.children[index]) return;
+				visibleElement.getAnimations().forEach(anim => anim.cancel())
+				parent.children[index].getAnimations().forEach(anim => anim.cancel())
+				if (visibleElement) {
+					if (exit) {
+						parent.style.overflow = 'hidden'
+						visibleElement.animate(exit, animOptions).onfinish = () => {
+							visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+							parent.style.overflow = ''
+						}
+						parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+						if (entry) {
+							parent.children[index].animate(entry, animOptions).onfinish = () => resolve()
+						}
+					} else {
+						visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+						parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+						resolve()
+					}
+				} else {
+					parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+					parent.children[index].animate(entry, animOptions).onfinish = () => resolve()
+				}
+			})
+		}
+		let currentSubscriber = null;
+		/**
+		 * @param {any} initialValue - initial value for the signal
+		 * @param {function} [Optional] callback - function to be called when the signal changes
+		 * @returns {array} - array containing getter and setter for the signal
+		 * @example
+		 * const [getCount, setCount] = $signal(0);
+		 */
+		function $signal(initialValue, callback) {
+			let value = initialValue;
+			const subscribers = new Set();
+			let hasCustomSubscriber = false;
+			function getter(subscriber) {
+				if (currentSubscriber) {
+					subscribers.add(currentSubscriber);
+				}
+				if (!hasCustomSubscriber && subscriber) {
+					subscribers.add(subscriber)
+					hasCustomSubscriber = true
+				}
+				return value;
+			}
+
+			function setter(newValue) {
+				if (newValue === value) return;
+				value = newValue;
+				for (const subscriber of subscribers) {
+					subscriber();
+				}
+			}
+			return [getter, setter];
+		}
+		/**
+		 * 
+		 * @param {function} fn - function that will run if any of its dependent signals change
+		 * @example
+		 * $effect(() => {
+		 * console.log(count());
+		 * } 
+		 * @returns {void}
+		 */
+		async function $effect(fn) {
+			currentSubscriber = fn;
+			const result = fn();
+			try {
+				if (result instanceof Promise) {
+					await result;
+				}
+			} catch (e) {
+				console.error(e)
+			} finally {
+				currentSubscriber = null;
+			}
+		}
+	</script>
+	<script>
+		window.smCompConfig = {
+			'sm-input': [
+				{
+					selector: '[data-flo-address]',
+					customValidation: (value) => {
+						if (!value) return { isValid: false, errorText: 'Please enter a FLO address' }
+						return {
+							isValid: floCrypto.validateAddr(value),
+							errorText: `Invalid FLO address.<br> It usually starts with "F"`
+						}
+					}
+				},
+				{
+					selector: '[data-private-key]',
+					customValidation: (value) => {
+						if (!value) return { isValid: false, errorText: 'Please enter a private key' }
+						return {
+							isValid: floCrypto.getPubKeyHex(value),
+							errorText: `Invalid private key.<br> It's a long string of random characters usually starting with 'R'.`
+						}
+					}
+				}
+			]
+		}
+		const render = {
+			tokenBalanceCard(token, balance) {
+				return html`
+				  <li class="token-balance">
+					<a href=${`#/token/${token}`} class="label token">${token}</a>
+					<h4>${formatAmount(balance, token.toLowerCase() === 'rupee' ? 'inr' : 'usd')}</h4>
+				  </li>
+				`;
+			},
+			errorPage(reason) {
+				const page = document.createElement('section')
+				page.classList.add('page')
+				page.id = 'error_page'
+				page.innerHTML = `
+					<h1>Not found!</h1>
+					<p>${reason}</p>
+				`
+				return page
+			},
+			addrBalanceCard(address, balance, token) {
+				return html`
+				  <li class="flex align-center space-between flex-wrap gap-0-5 holder-balance">
+					<sm-copy value=${address}>
+						<a href=${`#/address/${address}`} class="address wrap-around">${address}</a>
+					</sm-copy>
+                    <span>${formatAmount(balance, token.toLowerCase() === 'rupee' ? 'inr' : 'usd')} ${token}</span>
+				  </li>
+				`;
+			},
+			participantCard(details) {
+				const { participantFloAddress, tokenIdentification, userChoice, tokenAmount, participationAmount, swapAmount, swapPrice, transactionHash, acceptingToken, sellingToken } = details;
+				console.log(details)
+				if (participationAmount) {
+					return html`
+						<li class="flex participant">
+							<div class="grid gap-0-5 flex-1">
+								<div class="flex align-center gap-0-5">
+									<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/></svg>
+									<h5>Token swap</h5>
+								</div>	
+								<sm-copy value=${participantFloAddress}>
+									<a href=${`#/address/${participantFloAddress}`} class="address wrap-around">${participantFloAddress}</a>
+								</sm-copy> 
+							</div>
+							<div class="grid align-center gap-1 flex-1" style="grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr))">
+								<div>
+									<h5 class="label">Sent</h5>
+									<b>${formatAmount(participationAmount)} ${acceptingToken}</b>
+								</div>
+								<div>
+									<h5 class="label">Received</h5>
+									<b>${formatAmount(swapAmount)} ${sellingToken}</b>
+								</div>
+								<div>
+									<h5 class="label">Exchange rate</h5>
+									<b>${formatAmount(swapPrice)} ${acceptingToken}</b>
+								</div>
+							</div>
+						</li>
+					`;
+				} else if (tokenAmount) {
+					return html`
+						<li class="flex participant">
+							<sm-copy value=${participantFloAddress}>
+								<a href=${`#/address/${participantFloAddress}`} class="address wrap-around">${participantFloAddress}</a> 
+							</sm-copy>
+							<div class="grid align-center gap-1 flex-1" style="grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr))">
+								<div>
+									<h5 class="label">Amount</h5>
+									<b>${formatAmount(tokenAmount)} ${tokenIdentification}</b>
+								</div>
+								${userChoice ? html`
+									<div>
+										<h5 class="label">Choice</h5>
+										<b>${userChoice}</b>
+									</div>
+								`: ''}
+							</div>
+						</li>
+					`;
+				} else {
+					return ''
+					console.warn(`Unknown participant type`)
+				}
+			},
+			depositCard(details) {
+				const { currentBalance, depositorAddress, originalBalance, status, time, transactionHash, acceptingToken, sellingToken } = details
+				return html`
+				<li class="flex deposit-card">
+					<div class="grid gap-0-5 flex-1">
+						<h5>Deposit</h5>
+						<sm-copy value=${depositorAddress}>
+							<a href=${`#/address/${depositorAddress}`} class="address wrap-around">${depositorAddress}</a> 
+						</sm-copy>
+					</div>
+					<div class="grid align-center gap-1 flex-1" style="grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr))">
+						<div>
+							<h5 class="label">Deposited</h5>
+							<b>${formatAmount(originalBalance)} ${sellingToken}</b>
+						</div>
+						<div>
+							<h5 class="label">Current balance</h5>
+							<b>${formatAmount(currentBalance)} ${sellingToken}</b>
+						</div>
+						<div>
+							<h5 class="label">Status</h5>
+							<b>${status}</b>
+						</div>
+					</div>
+				</li>
+				`
+			},
+			contractChoiceCard(details) {
+				const { participantFloAddress, userChoice, tokenAmount, transactionHash, winningAmount, tokenIdentification } = details;
+				let action;
+				if (winningAmount) {
+					action = 'Won'
+					amount = winningAmount
+				} else
+					action = 'Invested'
+				return html`
+					<li class="contract-winner">
+						<sm-copy value=${participantFloAddress}>
+							<a href=${`#/address/${participantFloAddress}`} class="address wrap-around">${participantFloAddress}</a>
+						</sm-copy>
+						<span>${userChoice}</span>
+						<span>${action} ${formatAmount(tokenAmount)} ${tokenIdentification}</span>
+					</li>
+				`;
+			},
+			contractDepositCard(obj) {
+				const { hash, blockHeight, token, sender, receiver, amount, type, time, contractAddress, contractName } = obj;
+				let title = 'Contract deposit';
+				return html`
+					<li id=${hash} class="transaction token-transfer">
+						<svg class="icon" viewBox="0 0 64 64"> <title>transfer</title> <polyline points="17.04 35.97 14.57 33.5 40.15 7.9 32.75 0.5 55.52 0.5 55.52 23.28 48.12 15.87 23.86 40.14 15.88 48.13 8.48 40.72 8.48 63.5 31.25 63.5 23.85 56.1 49.43 30.5 46.96 28.03"/> </svg>
+						<div class="contract-type">
+							<h5 class="label">${title}</h5>
+							<a href=${`#/token/${token}`} class="">${token}</a>
+						</div>
+						<div class="contract-info">						
+							<time>${getFormattedTime(time)}</time>
+							<div class="flex flex-wrap gap-1">	
+								<div class="flex flex-direction-column">
+									<h5 class="label">Sender</h5>
+									<sm-copy value=${sender}>
+										<a href=${`#/address/${sender}`} class="address wrap-around">${sender}</a> 
+									</sm-copy>
+								</div>
+								<div class="flex flex-direction-column">
+									<h5 class="label">Receiver (Smart contract)</h5>
+									<a href=${`#/contract/${contractName}-${receiver}`} class="address wrap-around">${contractName}-${receiver}</a> 
+								</div>
+							</div>
+							<div class="flex flex-direction-column">
+								<h5 class="label">Amount</h5>
+								<h4>${formatAmount(amount, token.toLowerCase() === 'rupee' ? 'inr' : 'usd')} ${token}</h4>
+							</div>
+							<div class="flex align-center space-between flex-wrap gap-1">
+								<div class="flex flex-direction-column">
+									<h5 class="label">Transaction ID</h5>
+									<sm-copy value=${hash} clip-text></sm-copy>
+								</div>
+								<a href=${`#/transaction/${hash}`} class="button button--small button--colored">View details</a>
+							</div>
+						</div>
+					</li>
+				`;
+			},
+			contractTransferCard(obj) {
+				console.log(obj)
+				const { hash, token, sender, receiver, amount, contractName, userChoice, time } = obj;
+				return html`
+					<li id=${hash} class="transaction token-transfer">
+						<svg class="icon" viewBox="0 0 64 64"> <title>contract</title> <path d="M4.75,49.27A8,8,0,0,0,4.2,61.14a7.82,7.82,0,0,0,4.34,2.24,7.42,7.42,0,0,0,1.34.12H47.41a8.06,8.06,0,0,0,8.05-8V7.87"/> <path d="M8.54,56.13V8.54a8.06,8.06,0,0,1,8.05-8H54.12a7.42,7.42,0,0,1,1.34.12A7.82,7.82,0,0,1,59.8,2.86a8,8,0,0,1-.55,11.87"/> <line x1="17.93" y1="22.62" x2="46.07" y2="22.62"/> <line x1="17.93" y1="32" x2="46.07" y2="32"/> <line x1="17.93" y1="41.38" x2="38.03" y2="41.38"/> </svg>
+						<div class="contract-type">
+							<h5 class="label">Smart Contract Transfer</h5>
+							<a href=${`#/token/${token}`} class="">${token}</a>
+						</div>
+						<div class="contract-info">
+							<time>${getFormattedTime(time)}</time>
+							${userChoice ? html`
+								<div class="flex flex-direction-column">
+									<h5 class="label">User choice</h5>
+									<h4>${userChoice}</h4>
+								</div>
+							`: ''}
+							<div class="flex flex-direction-column">
+								<h5 class="label">Amount</h5>
+								<h4>${formatAmount(amount, token.toLowerCase() === 'rupee' ? 'inr' : 'usd')} ${token}</h4>
+							</div>
+							<div class="flex flex-direction-column">
+									<h5 class="label">Sender</h5>
+									<sm-copy value=${sender}>
+										<a href=${`#/address/${sender}`} class="address wrap-around">${sender}</a> 
+									</sm-copy>
+							</div>
+							<div class="flex flex-direction-column">
+								<h5 class="label">Receiver (Smart contract)</h5>
+								<h4><a class="address wrap-around" href=${`#/contract/${contractName}-${receiver}`}>${contractName}-${receiver}</a></h4>
+							</div>
+							<div class="flex align-center space-between flex-wrap gap-1">
+								<div class="flex flex-direction-column">
+									<h5 class="label">Transaction ID</h5>
+									<sm-copy value=${hash} clip-text></sm-copy>
+								</div>
+								<a href=${`#/transaction/${hash}`} class="button button--small button--colored">View details</a>
+							</div>
+						</div>
+					</li>`;
+			},
+			tokenTransferCard(obj) {
+				const { hash, blockHeight, token, sender, receiver, amount, type, time } = obj;
+				let title = 'Token transfer';
+				if (type === 'nfttransfer')
+					title = 'NFT transfer';
+				return html`
+					<li id=${hash} class="transaction token-transfer">
+						<svg class="icon" viewBox="0 0 64 64"> <title>transfer</title> <polyline points="17.04 35.97 14.57 33.5 40.15 7.9 32.75 0.5 55.52 0.5 55.52 23.28 48.12 15.87 23.86 40.14 15.88 48.13 8.48 40.72 8.48 63.5 31.25 63.5 23.85 56.1 49.43 30.5 46.96 28.03"/> </svg>
+						<div class="contract-type">
+							<h5 class="label">${title}</h5>
+							<a href=${`#/token/${token}`} class="">${token}</a>
+						</div>
+						<div class="contract-info">						
+							<time>${getFormattedTime(time)}</time>
+							<div class="flex flex-wrap gap-1">	
+								<div class="flex flex-direction-column">
+									<h5 class="label">Sender</h5>
+									<sm-copy value=${sender}>
+										<a href=${`#/address/${sender}`} class="address wrap-around">${sender}</a> 
+									</sm-copy>
+								</div>
+								<div class="flex flex-direction-column">
+									<h5 class="label">Receiver</h5>
+									<sm-copy value=${receiver}>
+										<a href=${`#/address/${receiver}`} class="address wrap-around">${receiver}</a> 
+									</sm-copy>
+								</div>
+							</div>
+							<div class="flex flex-direction-column">
+								<h5 class="label">Amount</h5>
+								<h4>${formatAmount(amount, token.toLowerCase() === 'rupee' ? 'inr' : 'usd')} ${token}</h4>
+							</div>
+							<div class="flex align-center space-between flex-wrap gap-1">
+								<div class="flex flex-direction-column">
+									<h5 class="label">Transaction ID</h5>
+									<sm-copy value=${hash} clip-text></sm-copy>
+								</div>
+								<a href=${`#/transaction/${hash}`} class="button button--small button--colored">View details</a>
+							</div>
+						</div>
+					</li>
+				`;
+			},
+			tokenCreationCard(obj) {
+				const { hash, blockHeight, token, incAddress, supply, type, nftHash, time } = obj;
+				let title = 'Token creation';
+				if (type === 'nftincorp')
+					title = 'NFT creation';
+				return html`
+					<li id=${hash} class="transaction token-creation">
+						<svg class="icon" viewBox="0 0 64 64"> <title>token</title> <circle cx="32" cy="32" r="31"/> <circle cx="32" cy="32" r="25.19"/> <line x1="37" y1="21.74" x2="43.14" y2="21.74"/> <path d="M20.86,21.74H32V43.23"/> </svg>
+						<div class="contract-type">
+							<h5 class="label">${title}</h5>
+							<a href=${`#/token/${token}`} class="token uppercase">${token}</a>
+						</div>
+						<div class="contract-info">
+							<time>${getFormattedTime(time)}</time>
+							<div class="flex flex-direction-column">
+								<h5 class="label">Incorporation address</h5>
+								<sm-copy value=${incAddress}>
+									<a href=${`#/address/${incAddress}`} class="address wrap-around">${incAddress}</a>
+								</sm-copy>
+							</div>
+							<div class="flex flex-direction-column">
+								<h5 class="label">supply</h5>
+								<h4>${supply ? formatAmount(supply, token.toLowerCase() === 'rupee' ? 'inr' : 'usd') : 'Infinite'} </h4>
+							</div>
+							${type === 'nftincorp' ? html`
+								<div class="flex flex-direction-column">
+									<h5 class="label">NFT hash</h5>
+									<sm-copy value="${nftHash}"></sm-copy>
+								</div>
+							`: ''}
+							<div class="flex align-center space-between flex-wrap gap-1">
+								<div class="flex flex-direction-column">
+									<h5 class="label">Transaction ID</h5>
+									<sm-copy value=${hash} clip-text></sm-copy>
+								</div>
+								<a href=${`#/transaction/${hash}`} class="button button--small button--colored">View details</a>
+							</div>
+						</div>
+					</li>`;
+			},
+			contractTriggerCard(obj) {
+				// TODO: change committee address to actual committee address instead of contract address
+				const { hash, blockHeight, contractName, contractAddress, winningChoice, committeeAddress, time } = obj;
+				return html`
+					<li id=${hash} class="transaction contract-trigger">
+						<svg class="icon" viewBox="0 0 64 64"> <circle cx="32" cy="32" r="31"/> <polyline points="32 13.47 32 32 43.4 43.4"/> </svg>
+						<div class="contract-type">
+							<h5 class="label">smart contract </h5>
+							<h4 class="uppercase">trigger</h4>
+						</div>
+						<div class="contract-info">
+							<time>${getFormattedTime(time)}</time>
+							<div class="flex flex-direction-column">
+								<h5 class="label">contract address</h5>
+								<sm-copy value=${contractAddress}>
+									<a href=${`#/contract/${contractName}-${contractAddress}`} class="address wrap-around">${contractName}-${contractAddress}</a>
+								</sm-copy>
+							</div>
+							<div class="flex flex-direction-column">
+								<h5 class="label">Winning Choice</h5>
+								<h4>${winningChoice}</h4>
+							</div>
+							<div class="flex flex-direction-column">
+								<h5 class="label">committee address</h5>
+								<sm-copy value=${committeeAddress}>
+									<a href=${`#/address/${committeeAddress}`} class="address wrap-around">${committeeAddress}</a>
+								</sm-copy>
+							</div>
+							<div class="flex align-center space-between flex-wrap gap-1">
+								<div class="flex flex-direction-column">
+									<h5 class="label">Transaction ID</h5>
+									<sm-copy value=${hash} clip-text></sm-copy>
+								</div>
+								<a href=${`#/transaction/${hash}`} class="button button--small button--colored">View details</a>
+							</div>
+						</div>
+					</li>
+				`;
+			},
+			contractCreationCard(obj) {
+				const {
+					hash, blockHeight, token, contractName, incAddress, contractType,
+					expiration, participationFees, availableChoices, time, acceptingToken, sellingToken, price,
+					minAmount, maxAmount } = obj;
+				return html`
+					<li id=${hash} class="transaction contract-creation">
+						<svg class="icon" viewBox="0 0 64 64"> <title>contract creation</title> <path d="M47.07,23.85V11"/> <path d="M3,47A7,7,0,0,0,.48,52.39a6.89,6.89,0,0,0,2.05,4.93,6.78,6.78,0,0,0,3.78,2,6.34,6.34,0,0,0,1.16.1H40.09a7,7,0,0,0,7-7V44"/> <path d="M6.31,53V11.61a7,7,0,0,1,7-7H45.91a6.26,6.26,0,0,1,1.16.1,6.74,6.74,0,0,1,3.78,1.95A7,7,0,0,1,50.37,17"/> <line x1="14.46" y1="23.85" x2="38.92" y2="23.85"/> <line x1="14.46" y1="32" x2="38.92" y2="32"/> <line x1="14.46" y1="40.15" x2="31.93" y2="40.15"/> <path d="M57.79,24.44l-2.88-2.9,3.79-3.79a1,1,0,0,1,1.39,0l3.11,3.11a1,1,0,0,1,0,1.39L40.34,45.1a1,1,0,0,1-.52.28L36,46A1,1,0,0,1,34.9,44.9l.67-3.77a1,1,0,0,1,.27-.52L52.65,23.8"/> </svg>
+						<div class="contract-type">
+							<h5 class="label">Smart Contract creation</h5>
+							${token ? html`<a href=${`#/token/${token}`} class="">${token}</a>` : html`
+								<time>${getFormattedTime(time)}</time>
+							`}
+						</div>
+						<div class="contract-info">
+							${token ? html`
+								<time>${getFormattedTime(time)}</time>
+							` : ''}
+							<div class="flex flex-direction-column">
+								<h5 class="label">Contract ID</h5>
+								<a href=${`#/contract/${contractName}-${incAddress}`} class="address wrap-around">${contractName}-${incAddress}</a>
+							</div>
+							<div class="flex flex-direction-column">
+								<h5 class="label">contract type</h5>
+								<h4>
+									${replaceDash(contractType) === 'continuos event' ? 'continuous event' : replaceDash(contractType)}
+								</h4>
+							</div>
+							<div class="flex flex-wrap gap-1-5">
+								${token ? html`
+									<div class="flex flex-direction-column">
+										<h5 class="label">token used</h5>
+										<h4>${token}</h4>
+									</div>
+								`: ''}
+								${acceptingToken ? html`
+									<div class="flex flex-direction-column">
+										<h5 class="label">Participation token</h5>
+										<h4>${acceptingToken}</h4>
+									</div>
+								`: ''}
+								${sellingToken ? html`
+									<div class="flex flex-direction-column">
+										<h5 class="label">Deposit token</h5>
+										<h4>${sellingToken}</h4>
+									</div>
+								`: ''}
+								${expiration ? html`
+									<div class="flex flex-direction-column">
+										<h5 class="label">expiration</h5>
+										<h4 class="capitalise">${getFormattedTime(new Date(expiration).getTime())}</h4>
+									</div>
+								`: ''}
+								${participationFees ? html`
+									<div class="flex flex-direction-column">
+										<h5 class="label">participation amount</h5>
+										<h4>${participationFees} ${token}</h4>
+									</div>
+								`: ''}
+								${price ? html`
+									<div class="flex flex-direction-column">
+										<h5 class="label">price</h5>
+										<h4>1 ${sellingToken} = ${formatAmount(price)} ${acceptingToken}</h4>
+									</div>
+								`: ''}
+								${minAmount ? html`
+									<div class="flex flex-direction-column">
+										<h5 class="label">min amount</h5>
+										<h4>${minAmount} ${token}</h4>
+									</div>	
+								`: ''}
+								${maxAmount ? html`
+									<div class="flex flex-direction-column">
+										<h5 class="label">max amount</h5>
+										<h4>${maxAmount} ${token}</h4>
+									</div>	
+								`: ''}
+							</div>
+							<div class="flex align-center space-between flex-wrap gap-1">
+								<div class="flex flex-direction-column">
+									<h5 class="label">Transaction ID</h5>
+									<sm-copy value=${hash} clip-text></sm-copy>
+								</div>
+								<a href=${`#/transaction/${hash}`} class="button button--small button--colored">View details</a>
+							</div>
+						</div>
+					</li>`;
+			},
+			blockCard(blockDetails) {
+				const { height, tx, txs, time } = blockDetails;
+				const plural = parseInt((tx || txs).length) > 1 ? 's' : '';
+				return html`
+					<div class="block-card grid align-center">
+						<a href=${`#/block/${height}`} class="block-height">${height}</a>
+          				<span>${(tx || txs).length} Transaction${plural}</span>
+						<time>${getFormattedTime(time, 'relative')}</time>
+					</div>
+				`;
+			},
+			offChainTransferCard(transferDetails) {
+				const { tokenAmount, transactionTrigger, tokenIdentification, contractName, senderAddress, receiverAddress, time, type, hideUnnecessary } = transferDetails;
+				return html`
+					<li class="transaction">
+						<svg class="icon" viewBox="0 0 64 64"> <title>transfer</title> <polyline points="17.04 35.97 14.57 33.5 40.15 7.9 32.75 0.5 55.52 0.5 55.52 23.28 48.12 15.87 23.86 40.14 15.88 48.13 8.48 40.72 8.48 63.5 31.25 63.5 23.85 56.1 49.43 30.5 46.96 28.03"/> </svg>
+						<div class="contract-type">
+							<div class="flex align-center gap-1">
+								<h5 class="label">Token transfer</h5>
+								${!hideUnnecessary ? html`<div class="badge">Off-chain</div>` : ''}
+							</div>
+							<a href=${`#/token/${tokenIdentification}`} class=""><b>${tokenIdentification}</b></a>
+						</div>
+						<div class="contract-info">
+							<time>${getFormattedTime(time)}</time>
+							<div class="flex flex-direction-column">
+								<h5 class="label">Sender (Smart contract)</h5>
+								<a href=${`#/contract/${contractName}-${senderAddress}`} class="address wrap-around">${contractName}-${senderAddress}</a>
+							</div>
+							<div class="flex flex-direction-column">
+								<h5 class="label">Receiver address</h5>
+								<sm-copy value=${receiverAddress}>
+									<a href=${`#/address/${receiverAddress}`} class="address wrap-around">${receiverAddress}</a>
+								</sm-copy>
+							</div>
+							<div class="flex flex-direction-column">
+								<h5 class="label">Amount</h5>
+								<h4>${tokenAmount} ${tokenIdentification}</h4>
+							</div>
+							${!hideUnnecessary ? html`
+								<div class="flex align-center space-between flex-wrap gap-1">
+									<div class="flex flex-direction-column">
+										<h5 class="label">Transfer trigger ID</h5>
+										<sm-copy value=${transactionTrigger} clip-text></sm-copy>
+									</div>
+									<a href=${`#/transaction/${transactionTrigger}`} class="button button--small button--colored">View details</a>
+								</div>
+							`: ''}
+						</div>
+					</li>`;
+			},
+			compoundTransactionCard(details) {
+				const { time, hash, sender, receiver, contractName, token, amount, offChainTransactions = [], userChoice, contractAddress } = details
+				const smartContract = `${contractName}-${receiver || contractAddress}`
+				const renderedOffChainTransactions = offChainTransactions.map(tx => {
+					const { receiverAddress, tokenAmount, tokenIdentification } = tx
+					return html`
+						<li class="transfer-step">
+							<div class="flex flex-direction-column gap-0-5">
+								<div class="flex flex-direction-column gap-0-5">
+									<div class="flex align-center gap-0-5">
+										<h5 class="label" style="margin-bottom: 0">Sender (Smart contract)</h5>
+										<div class="badge">Off-chain</div>
+									</div>
+									<a href=${`#/contract/${smartContract}`} class="address wrap-around"><b>${smartContract}</b></a>
+								</div>
+								<p>Sent: <b>${tokenAmount} ${tokenIdentification}</b></p>
+							</div>
+							<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/></svg>
+							<div class="flex flex-direction-column">
+								<h5 class="label">Receiver</h5>
+								<sm-copy value=${receiverAddress}>
+									<a href=${`#/address/${receiverAddress}`} class="address wrap-around">${receiverAddress}</a>
+								</sm-copy>
+							</div>
+						</li>
+					`
+				})
+				return html`
+					<li class="transaction">
+						<svg class="icon" viewBox="0 0 64 64"> <title>transfer</title> <polyline points="17.04 35.97 14.57 33.5 40.15 7.9 32.75 0.5 55.52 0.5 55.52 23.28 48.12 15.87 23.86 40.14 15.88 48.13 8.48 40.72 8.48 63.5 31.25 63.5 23.85 56.1 49.43 30.5 46.96 28.03"/> </svg>
+						<div class="contract-type flex flex-direction-column gap-0-5">
+							<h4>Smart contract transfer</h4>
+							<time>${getFormattedTime(time)}</time>
+						</div>
+						<div class="contract-info">
+							<ul class="transfer-steps">
+								${sender ? html`
+									<li class="transfer-step">
+										<div class="flex flex-direction-column gap-0-5">
+											<div class="flex flex-direction-column">
+												<h5 class="label">Sender</h5>
+												<sm-copy value=${sender}>
+													<a href=${`#/address/${sender}`} class="address wrap-around">${sender}</a>
+												</sm-copy>
+												<p>Sent: <b>${amount} ${token}</b></p>
+											</div>
+										</div>
+										<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/></svg>
+										<div class="flex flex-direction-column">
+											<h5 class="label">Receiver (Smart contract)</h5>
+											<a href=${`#/contract/${smartContract}`} class="address wrap-around">${smartContract}</a>
+										</div>
+									</li>
+								`: ''}
+								${renderedOffChainTransactions}
+							</ul>	
+							${hash ? html`
+								<div class="flex align-center space-between flex-wrap gap-1">
+									<div class="flex flex-direction-column">
+										<h5 class="label">Transaction ID</h5>
+										<sm-copy value=${hash} clip-text></sm-copy>
+									</div>
+									<a href=${`#/transaction/${hash}`} class="button button--small button--colored">View details</a>
+								</div>
+							`: ''}
+						</div>
+					</li>
+				`
+			},
+			availableAssetOptions() {
+				return (floGlobals.tokenList || []).map(token => html` <sm-option value=${token}>${token}</sm-option> `)
+			},
+		};
+		const router = new Router({
+			routingStart(state) {
+				loading()
+				document.body.style.overflow = 'hidden'
+				if (state.page !== 'home')
+					getRef("page_header").classList.remove("hidden");
+			},
+			routingEnd() {
+				loading(false)
+				document.body.style.overflow = 'auto'
+				window.scrollTo(0, 0);
+			}
+		})
+		async function renderHome(state) {
+			getRef("page_header").classList.add("hidden");
+			let [data, latestTxs, latestBlocks] = await Promise.all([getBannerData(), getLatestTxs(), getAllBlocks(6)])
+			const { height, time } = latestBlocks[0]
+			const { topToken, totalTransactions, walletAddresses } = data;
+			renderElem(getRef("page_container"), html`
+				<div id="homepage" class="page">
+					<section id="first_section" class="full-bleed">
+						<div id="highlights">
+							<div class="highlight-item">
+								<h4 class="label">top token</h4>
+								<h2 class="token"><a href=${`#/token/${topToken}`} class="">${topToken}</a> </h2>
+							</div>
+							<div class="highlight-item">
+								<h4 class="label">Total token transactions</h4>
+								<h2>${totalTransactions}</h2>
+							</div>
+							<div class="highlight-item">
+								<h4 class="label">Wallet addresses</h4>
+								<h2>${walletAddresses}</h2>
+							</div>
+							<div class="highlight-item">
+								<h4 class="label">Last token transaction block (${getFormattedTime(time, 'relative')})</h4>
+								<h2><a class="block-height" href=${`#/block/${height}`}>${height}</a></h2>
+							</div>
+						</div>
+					</section>
+					<section id="latest_smart_contracts_section" class="full-bleed flex flex-direction-column gap-1">
+						<header class="flex align-center space-between">
+							<h3>Recent smart contracts</h3>
+							<a href=${`#/smart-contracts`} class="button button--small button--colored">View all</a>
+						</header>
+						<div id="top_smart_contracts_container">
+							${renderSmartContracts()[0].slice(0, 3)}
+						</div>
+					</section>
+					<section id="latest_transaction_section" class="flex flex-direction-column gap-1">
+						<header class="flex align-center space-between">
+							<h3>Recent token transactions</h3>
+							<a id='all_trans_btn' href=${`#/transactions`} class="button button--small button--colored">View all</a>
+						</header>
+						<ul id="top_transaction_container" class="grid gap-0-5">
+							${renderTransactions(latestTxs)}
+						</ul>
+					</section>
+					<section id="latest_blocks_section" class="flex flex-direction-column gap-1">
+						<header class="flex align-center space-between">
+							<h3>Recent token blocks</h3>
+							<a id='all_blocks_btn' href=${`#/blocks`} class="button button--small button--colored">View all</a>
+						</header>
+						<div id="top_blocks_container">
+							${latestBlocks.map(block => render.blockCard(block))}
+						</div>
+					</section>
+				</div>
+			`);
+		}
+		router.addRoute('', async (state) => {
+			history.replaceState({}, '', '#/home')
+			await renderHome(state)
+		})
+		router.addRoute('home', renderHome)
+		floGlobals.appliedFilters = {
+			tokens: new Set(),
+			types: new Set()
+		}
+		function filterSmartContracts() {
+			if (getRef('token_filter_list'))
+				floGlobals.appliedFilters.tokens = new Set([...getRef('token_filter_list').querySelectorAll('input[type="checkbox"]:checked')]
+					.map(elem => elem.value))
+			if (getRef('type_filter_list'))
+				floGlobals.appliedFilters.types = new Set([...getRef('type_filter_list').querySelectorAll('input[type="checkbox"]:checked')]
+					.map(elem => elem.value))
+
+			let filteredContracts = Object.values(floGlobals.smartContractList).sort((a, b) => b.blockNumber - a.blockNumber)
+			// filter by tokens and types
+			const { tokens, types } = floGlobals.appliedFilters
+			if (tokens.size || types.size) {
+				filteredContracts = filteredContracts.filter(sc => {
+					const { acceptingToken, sellingToken, contractSubType, tokenIdentification } = sc
+					if (tokens.size && !tokens.has(acceptingToken) && !tokens.has(sellingToken) && !tokens.has(tokenIdentification))
+						return false
+					if (types.size && !types.has(contractSubType))
+						return false
+					return true
+				})
+			}
+			return filteredContracts
+		}
+		function clearFilters() {
+			floGlobals.appliedFilters = {
+				tokens: new Set(),
+				types: new Set()
+			}
+			if (getRef('token_filter_list'))
+				getRef('token_filter_list').querySelectorAll('input[type="checkbox"]:checked').forEach(elem => elem.checked = false)
+			if (getRef('type_filter_list'))
+				getRef('type_filter_list').querySelectorAll('input[type="checkbox"]:checked').forEach(elem => elem.checked = false)
+			router.routeTo(location.hash)
+			closePopup()
+		}
+		function getSmartContractActions(smartContractAddress, priceType = 'predetermined', showAdminOptions = false) {
+			const { acceptingToken, sellingToken, contractSubType, status } = floGlobals.smartContractList[smartContractAddress];
+			if (!showAdminOptions && status !== 'active') return '';
+			let actions = '';
+			if (contractSubType === 'tokenswap' && status === 'active') {
+				actions = html`
+					<div class="flex align-center gap-0-5 flex-wrap sc-card__actions">
+						<button class="button button--small button--outlined" onclick=${() => handleSmartContractAction(smartContractAddress, 'deposit')}>
+							Swap ${sellingToken}
+						</button>
+						<button class="button button--small button--outlined" onclick=${() => handleSmartContractAction(smartContractAddress, 'participate')}>
+							Swap ${acceptingToken}
+						</button>
+						${showAdminOptions && priceType === 'dynamic' ? html`
+							<button class="button button--small button--outlined" onclick=${() => handleSmartContractAction(smartContractAddress, 'updateprice')}>
+								Update price
+							</button>
+						`: ''}
+					</div>
+				`;
+			} else if (contractSubType === 'time-trigger' && status === 'active') {
+				actions = html`
+					<div class="flex align-center gap-0-5 sc-card__actions">
+						<button class="button button--small button--outlined" onclick=${() => handleSmartContractAction(smartContractAddress, 'participate')}>
+							Participate
+						</button>
+					</div>
+				`;
+			} else if (contractSubType === 'external-trigger' && status === 'active') {
+				actions = html`
+					<div class="flex align-center gap-0-5 sc-card__actions">
+						<button class="button button--small button--outlined" onclick=${() => handleSmartContractAction(smartContractAddress, 'participate')}>
+							Participate
+						</button>
+					</div>
+				`;
+			} else if (contractSubType === 'external-trigger' && showAdminOptions && status === 'expired') {
+				actions = html`
+					<div class="flex align-center gap-0-5 sc-card__actions">
+						<button class="button button--small button--outlined" onclick=${() => handleSmartContractAction(smartContractAddress, 'trigger')}>
+							Trigger
+						</button>
+					</div>
+				`;
+			}
+			return actions;
+		}
+		function renderSmartContracts(smartContracts) {
+			if (!smartContracts)
+				smartContracts = Object.values(floGlobals.smartContractList).sort((a, b) => b.blockNumber - a.blockNumber)
+			let activeContracts = []
+			let inactiveContracts = []
+			filterSmartContracts().forEach(contract => {
+				const { tokenIdentification, acceptingToken, blockNumber, contractAddress, contractName, contractSubType,
+					contractType, incorporationDate, oracle_address, price, sellingToken, status, transactionHash } = contract;
+				const smartContractAddress = `${contractName}-${contractAddress}`;
+				let type = '';
+				let actions = getSmartContractActions(smartContractAddress);
+				if (contractSubType === 'tokenswap') {
+					type = 'Token Swap';
+				} else if (contractSubType === 'time-trigger') {
+					type = 'Timed Event';
+				} else if (contractSubType === 'external-trigger') {
+					type = 'External Trigger';
+				}
+				const rendered = html`
+					<li class=${`sc-card ${status}`} .dataset=${{ address: smartContractAddress }}>
+						${status !== 'active' ? html` <div class="badge">${status}</div> ` : ''}
+						<div class="flex align-center space-between">
+							<p class="sc-card__type">${type}</p>
+							<a href=${`#/contract/${contractName}-${contractAddress}`} class="sc-card__info-link">
+								View details
+								<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10.02 6L8.61 7.41 13.19 12l-4.58 4.59L10.02 18l6-6-6-6z"/></svg>	
+							</a>
+						</div>
+						<h4>${contractName.replace(/-/g, ' ')}</h4>
+						<ul class="flex align-center flex-wrap gap-0-5 involved-tokens">
+							${tokenIdentification ? html`
+								<li>
+									<a href=${`#/token/${tokenIdentification}`} class="token">${tokenIdentification}</a>
+								</li>
+							`: ''}
+							${acceptingToken ? html`
+								<li>
+									<a href=${`#/token/${acceptingToken}`} class="token">${acceptingToken}</a>
+								</li>
+							`: ''}
+							${sellingToken ? html`
+								<li>
+									<a href=${`#/token/${sellingToken}`} class="token">${sellingToken}</a>
+								</li>
+							`: ''}
+						</ul>
+						${actions}
+					</li>	
+				`
+				if (status === 'active')
+					activeContracts.push(rendered)
+				else
+					inactiveContracts.push(rendered)
+			})
+			return [activeContracts, inactiveContracts]
+		}
+		router.addRoute('smart-contracts', async state => {
+			const [activeContracts, inactiveContracts] = renderSmartContracts(filterSmartContracts())
+			const { tokens, types } = floGlobals.appliedFilters
+			const totalFilters = tokens.size + types.size
+			renderElem(getRef("page_container"), html`
+				<div id="smart_contract_page" class="page flex flex-direction-column gap-1-5">
+					<header class='flex space-between flex-wrap gap-1'>
+						<button id="create_smart_contract_button" class="button button--primary gap-0-5" onclick=${initSmartContractCreation}>
+							<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+							Create new
+						</button>
+						<div class="flex align-center gap-0-5 margin-left-auto">
+							${totalFilters ? html`
+								<button id="clear_filter_button" class="button button--small button--colored gap-0-3" onclick=${clearFilters}>
+									<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+									Clear
+								</button>
+							`: ''}
+							<button id="apply_filter_button" class="button button--small button--colored gap-0-3" onclick=${() => openPopup('filter_s_c_popup')}>
+								<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>
+								Filter ${totalFilters ? `(${totalFilters})` : ''}
+							</button>
+						</div>
+					</header>
+					<div id="smart_contract_wrapper" class="flex flex-direction-column gap-3"></div>
+				</div>
+			`)
+			renderElem(getRef('smart_contract_wrapper'), html`
+				<div class="flex flex-direction-column gap-0-5">
+					<div class="flex align-center gap-0-5">
+						<svg class="icon" style="fill: var(--accent-color)" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M11,21h-1l1-7H7.5c-0.88,0-0.33-0.75-0.31-0.78C8.48,10.94,10.42,7.54,13.01,3h1l-1,7h3.51c0.4,0,0.62,0.19,0.4,0.66 C12.97,17.55,11,21,11,21z"/></g></svg>
+						<h4>Active contracts</h4>
+						<div class="badge">${activeContracts.length}</div>
+					</div>
+					${activeContracts.length ? html`
+						<ul id="active_smart_contract_list" class="smart-contract-list">
+							${activeContracts}
+						</ul>
+					`: html`
+						<p>No active contracts found</p>
+					`}
+				</div>
+				${inactiveContracts.length ? html`
+					<div class="flex flex-direction-column gap-0-5">
+						<div class="flex align-center gap-0-5">
+							<svg class='icon' xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M14.59 8L12 10.59 9.41 8 8 9.41 10.59 12 8 14.59 9.41 16 12 13.41 14.59 16 16 14.59 13.41 12 16 9.41 14.59 8zM12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+							<h4>Inactive contracts</h4>
+							<div class="badge">${inactiveContracts.length}</div>
+						</div>
+						<ul id="inactive_smart_contract_list" class="smart-contract-list">
+							${inactiveContracts}
+						</ul>
+					</div>
+				`: ''}
+			`)
+			// close filter popup
+			closePopup()
+			getRef("page_title").textContent = 'Smart Contracts';
+		})
+		router.addRoute('address', async state => {
+			try {
+				const [floAddress] = state.wildcards
+				if (!floAddress) return;
+				let [ownedTokens = {}, floBalance, addressTxs] = await Promise.all([getAddressInfo(floAddress), getAddressBalance(floAddress), getAddressTxs(floAddress)])
+				const ownedTokensCards = []
+				for (const token in ownedTokens) {
+					render.tokenBalanceCard(token, ownedTokens[token].balance || 0)
+				}
+				renderElem(getRef("page_container"), html`
+					<div id="address_page" class="page">
+						<div class="balance-card">
+							<h2 class="wrap-around margin-bottom-2">${floAddress}</h2>
+							<h5 class="label">FLO Balance</h5>
+							<h3 class="margin-bottom-2">${floBalance} FLO</h3>
+							${ownedTokensCards.length ? html`
+								<div class="grid gap-0-5">
+									<h5>Tokens</h5>
+									<ul id="token_balance_list">
+										${ownedTokensCards}
+									</ul>
+								</div>
+							`: ''}
+						</div>
+						<h4>Transactions</h4>
+						<ul id="address_transaction_container" class="transaction-container">
+							${renderTransactions(addressTxs)}
+						</ul>
+					</div>
+				`);
+				getRef("page_title").textContent = 'Address';
+
+			} catch (e) {
+				console.error(e)
+				renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
+			}
+		})
+		router.addRoute('token', async state => {
+			const token = state.wildcards[0].toLowerCase()
+			if (!token) return;
+			try {
+				let [tokenInfo, tokenBalances, tokenTransactions] = await Promise.all([getTokenInfo(token), getTokenBalances(token), getTokenTransactions(token)])
+				let { supply, incAddress } = tokenInfo
+				const tokenHolders = []
+				for (const address in tokenBalances) {
+					tokenHolders.push(render.addrBalanceCard(address, tokenBalances[address], tokenInfo.token))
+				}
+				renderElem(getRef("page_container"), html`
+					<div id="token_page" class="page">
+						<div class="card">
+						<h2 class="uppercase">${token}</h2>
+						<h5 class="label">Supply</h5>
+						<h4>${supply ? formatAmount(supply, token.toLowerCase() === 'rupee' ? 'inr' : 'usd') : 'Infinite'}</h4>
+						<h5 class="label">Incorporation address</h5>
+						<sm-copy value=${incAddress}>
+							<a href=${`#/address/${incAddress}`} class="address wrap-around">${incAddress}</a> 	
+						</sm-copy>
+						</div>
+						<sm-chips data-target="token_views" onchange="changeView(event)">
+							<sm-chip value="0" selected>Transactions</sm-chip>
+							<sm-chip value="1">Token holders</sm-chip>
+						</sm-chips>
+						<div id="token_views" class="view-wrapper">
+							<ul id="token_transaction_container" class="transaction-container">
+								${renderTransactions(tokenTransactions)}
+							</ul>
+							<ul id="token_balance_container" class="hidden">
+								${tokenHolders?.length ? tokenHolders : html`<div>No token holders found</div>`}
+							</ul>
+						</div>
+					</div>
+				`);
+				getRef("page_title").textContent = "Token";
+			} catch (e) {
+				console.trace(e)
+				renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
+			}
+		})
+		router.addRoute('contract', async state => {
+			try {
+				const [contractId] = state.wildcards
+				if (!contractId) return;
+				const contractIdObj = splitContractNameAddress(contractId)
+				let {
+					status, contract, contractType, contractSubtype, contractAddress, expiration, token,
+					participationFees, userChoices, payeeAddress, minAmount, maxAmount, acceptingToken,
+					sellingToken, numberOfDeposits, numberOfParticipants, totalHonorAmount, totalParticipationAmount = 0,
+					priceType, oracle_address, price, currentDepositBalance
+				} = await getContractInfo(contractIdObj)
+				const detailsToFetch = [getContractTransactions(contractIdObj), getContractParticipants(contractIdObj)]
+				if (contractType === 'continuos-event' && contractSubtype === 'tokenswap')
+					detailsToFetch.push(getContractDeposits(contractIdObj))
+				let [contractTransactions = [], contractParticipants = {}, contractDeposits = []] = await Promise.all(detailsToFetch)
+				let participants = [];
+				let winners = []
+				let deposits = contractDeposits.map(deposit => render.depositCard({ ...deposit, acceptingToken, sellingToken }))
+				// Consolidate participants with same address and choice
+				const consolidatedParticipants = {}
+				for (const participant in contractParticipants) {
+					const { participantFloAddress, tokenAmount, userChoice, winningAmount, participationAmount } = contractParticipants[participant]
+					const id = userChoice ? `${participantFloAddress}-${userChoice}` : participantFloAddress
+					if (!consolidatedParticipants[id]) {
+						consolidatedParticipants[id] = contractParticipants[participant]
+					} else {
+						if (tokenAmount) {
+							if (!consolidatedParticipants[id].tokenAmount)
+								consolidatedParticipants[id].tokenAmount = 0
+							consolidatedParticipants[id].tokenAmount += tokenAmount
+						}
+						if (participationAmount) {
+							if (!consolidatedParticipants[id].participationAmount)
+								consolidatedParticipants[id].participationAmount = 0
+							consolidatedParticipants[id].participationAmount += participationAmount
+						}
+						if (winningAmount) {
+							if (!consolidatedParticipants[id].winningAmount)
+								consolidatedParticipants[id].winningAmount = 0
+							consolidatedParticipants[id].winningAmount += winningAmount
+						}
+					}
+				}
+				for (const participant in consolidatedParticipants) {
+					const participantCard = render.participantCard(consolidatedParticipants[participant])
+					if (participantCard)
+						participants.push(participantCard)
+					if (consolidatedParticipants[participant].winningAmount)
+						winners.push(render.contractChoiceCard(consolidatedParticipants[participant]))
+				}
+				const contractActions = getSmartContractActions(contractId, priceType, true)
+				const progress = Math.min((() => {
+					if (!minAmount && !maxAmount) return 0
+					if (minAmount) return totalParticipationAmount / minAmount * 100
+					if (maxAmount) return totalParticipationAmount / maxAmount * 100
+				})(), 100)
+				renderElem(getRef("page_container"), html`
+					<div id="contract_page" class="page">
+						${status ? html` <div class=${`status ${status}`}>${status}</div> ` : ''}
+                    	<h2 class="uppercase">${replaceDash(contract)}</h2>
+						${minAmount || maxAmount ? html`
+							<div class="card grid gap-2">
+								<div class='grid gap-0-5'>
+									<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12.36 6l.4 2H18v6h-3.36l-.4-2H7V6h5.36M14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6L14 4z"/></svg>
+								</div>
+								<div class='grid'>
+									<div id="goal_progress_wrapper">
+										<div id="goal_progress" class="progress-bar" style=${`width: ${progress}%`}></div>
+									</div>
+									<div class="flex align-center space-between gap-1">
+										<div class='grid goal-milestone'>
+											<h5 class="label">Raised (${progress}%)</h5>
+											<h4>${formatAmount(totalParticipationAmount)} ${token}</h4>
+										</div>
+										<div class="grid goal-milestone">
+											<h5 class="label">Goal</h5>
+											<h4>${minAmount ? `${formatAmount(minAmount)} ${token}` : ''} ${maxAmount ? ` - ${formatAmount(maxAmount)} ${token}` : ''}</h4>
+										</div>
+									</div>
+								</div>
+							</div>
+						`: ''}
+						${userChoices ? html`
+							<h3>Available Choices</h3>
+							<ul type="circle" class="card">
+								${Object.keys(userChoices).map(choice => html`
+									<li>${userChoices[choice]}</li>
+								`)}
+							</ul>
+						`: ''}
+						${contractActions ? html`
+							<div class="card grid gap-1">
+								<h4>Participate in this contract</h4>
+								${contractActions}
+							</div>
+						`: ''}
+						<div id="contract_info" class="card">
+							<div class="flex info-row">
+								<h5 class="label">Contract Type</h5>
+								<h4>${replaceDash(contractType) === 'continuos event' ? 'continuous event' : replaceDash(contractType)}</h4>
+							</div>
+							${contractSubtype ? html`
+								<div class="flex info-row">
+									<h5 class="label">Contract Sub-type</h5>
+									<h4>${replaceDash(contractSubtype)}</h4>
+								</div>
+							`: ''}
+							<div class="flex info-row">
+								<h5 class="label">Contract Address</h5>
+								<sm-copy value=${contractAddress}>
+									<a href=${`#/address/${contractAddress}`} class="address wrap-around">${contractAddress}</a>
+								</sm-copy>
+							</div>
+							${expiration ? html`
+								<div class="flex info-row">
+									<h5 class="label">Expiration</h5>
+									<h4>${getFormattedTime(new Date(expiration).getTime())}</h4>
+								</div>
+							`: ''}
+							${payeeAddress ? html`
+								<div class="flex info-row">
+									<h5 class="label">Payee Addresses</h5>
+									<div class="grid gap-0-5">
+										${Object.keys(payeeAddress).map(address => html`
+											<sm-copy value=${address}>
+												<a href=${`#/address/${address}`} class="address wrap-around">${address}</a>
+											</sm-copy>
+										`)}
+									</div>
+								</div>
+							`: ''}
+							${participationFees ? html`
+								<div class="flex info-row">
+									<h5 class="label">Participation Amount</h5>
+									<h4>${formatAmount(participationFees)} ${token}</h4>
+								</div>
+							`: ''}
+							${contractType === 'one-time-event' ? html`
+								<div class="flex info-row">
+									<h5 class="label">Token Used</h5>
+									<h4>${token}</h4>
+								</div>
+							`: ''}
+							${contractType === 'continuos-event' && contractSubtype === 'tokenswap' ? html`
+								<div class="flex info-row">
+									<h5 class="label">deposit token</h5>
+									<h4>${sellingToken}</h4>
+								</div>
+								<div class="flex info-row">
+									<h5 class="label">participation token</h5>
+									<h4>${acceptingToken}</h4>	
+								</div>
+								<div class="flex info-row">
+									<h5 class="label">Exchange rate (${priceType === 'dynamic' ? 'Dynamic' : 'Fixed'})</h5>
+									<h4>1 ${sellingToken} = ${price} ${acceptingToken}</h4>
+								</div>
+							`: ''}
+							${numberOfDeposits ? html`
+								<div class="flex info-row">
+									<h5 class="label">Number of deposits</h5>
+									<h4>${numberOfDeposits}</h4>
+								</div>
+							`: ''}
+							${numberOfParticipants ? html`
+								<div class="flex info-row">
+									<h5 class="label">Number of participants</h5>
+									<h4>${numberOfParticipants}</h4>
+								</div>
+							`: ''}
+							${oracle_address ? html`
+								<div class="flex info-row">
+									<h5 class="label">Oracle address</h5>
+									<sm-copy value=${oracle_address}>
+										<a href=${`#/address/${oracle_address}`} class="address wrap-around">${oracle_address}</a>
+									</sm-copy>
+								</div>
+							`: ''}
+							${totalParticipationAmount ? html`
+								<div class="flex info-row">
+									<h5 class="label">Total participation amount</h5>
+									<h4>${formatAmount(totalParticipationAmount)} ${acceptingToken}</h4>
+								</div>
+							`: ''}
+							${totalHonorAmount ? html`
+								<div class="flex info-row">
+									<h5 class="label">Total output amount</h5>
+									<h4>${formatAmount(totalHonorAmount)} ${sellingToken}</h4>
+								</div>
+							`: ''}
+							${currentDepositBalance ? html`
+								<div class="flex info-row">
+									<h5 class="label">Total deposit balance </h5>
+									<h4>${formatAmount(currentDepositBalance)} ${sellingToken}</h4>
+								</div>
+							`: ''}
+						</div>
+						<sm-chips class="margin-top-1" data-target="contract_views" onchange="changeView(event)">
+							<sm-chip value="0" selected>Transactions</sm-chip>
+							<sm-chip value="1">Participants</sm-chip>
+							${winners?.length ? html`<sm-chip value="2">Winners</sm-chip>` : ''}
+							${deposits?.length ? html`<sm-chip value="2">Deposits</sm-chip>` : ''}
+						</sm-chips>
+						<div id="contract_views" class="view-wrapper">
+							<ul id="contract_transaction_container" class="transaction-container">
+								${renderTransactions(contractTransactions)}	
+							</ul>
+							<ul id="participant_container" class="card hidden">
+								${participants?.length ? participants : html`<div>No participants found</div>`}	
+							</ul>
+							${winners?.length ? html`<ul id="winners_container" class="card hidden">${winners}</ul>` : ''}
+							${deposits?.length ? html`<ul id="deposits_container" class="card hidden">${deposits}</ul>` : ''}
+						</div>
+					</div>
+				`);
+				getRef("page_title").textContent = "Contract";
+			} catch (e) {
+				console.trace(e)
+				renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
+			}
+		})
+
+		router.addRoute('block', async state => {
+			const [blockId] = state.wildcards
+			if (!blockId) return;
+			try {
+				const [blockInfo, blockTxs] = await Promise.all([getBlockInfo(blockId), getBlockTransactions(blockId)])
+				const { blockHeight, size, reward, hash, difficulty, nonce } = blockInfo;
+				console.log(blockInfo, blockTxs)
+				renderElem(getRef("page_container"), html`
+					<div id="block_page" class="page">
+						<h5 class="label">Block Height</h5>
+						<h2 class="block-height">${blockHeight}</h2>
+						<div class="card grid gap-1-5">
+							<div class="flex flex-wrap gap-1-5">
+								<div class="grid">
+									<h5 class="label">Confirmations</h5>
+									<h4>${size}</h4>
+								</div>
+								<div class="grid">
+									<h5 class="label">Reward</h5>
+									<h4>${reward}</h4>
+								</div>
+								<div class="grid">
+									<h5 class="label">Difficulty</h5>
+									<h4>${difficulty}</h4>
+								</div>
+								<div class="grid">
+									<h5 class="label">Nonce</h5>
+									<h4>${nonce}</h4>
+								</div>
+							</div>
+							<div class="grid">
+								<h5 class="label">Block Hash</h5>
+								<sm-copy value=${hash} clip-text></sm-copy>
+							</div>
+						</div>
+						<h3 class="heading">Transactions</h3>
+						<ul id="block_transaction_container" class="grid gap-1 top-bottom-padding">
+							${renderTransactions(blockTxs)}	
+						</ul>
+					</div>
+				`);
+				getRef("page_title").textContent = 'Block'
+			} catch (e) {
+				console.error(e)
+				renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
+			}
+		})
+		router.addRoute('blocks', async state => {
+			let allBlocks = await getAllBlocks(100);
+			getRef("page_title").textContent = "All blocks with token transactions";
+			renderElem(getRef("page_container"), html`
+				<div id="all_blocks_page" class="page">
+					${allBlocks.map(block => render.blockCard(block))}
+				</div>
+			`)
+		})
+		router.addRoute('transactions', async state => {
+			let allTxs = await getAllTxs();
+			getRef("page_title").textContent = "All token transactions";
+			renderElem(getRef("page_container"), html`
+				<div id="all_transactions_page" class="page"> 
+					<ul id="all_transaction_list" class="transaction-container">
+						${renderTransactions(allTxs)}
+					</ul>	
+				</div>
+			`)
+		})
+		router.addRoute('transaction', async state => {
+			try {
+				const [txId] = state.wildcards
+				if (!txId) return
+				const [status, txInfo] = await getTxInfo(txId);
+				if (!status)
+					return renderElem(getRef("page_container"), html`${render.errorPage(txInfo)}`);
+				const { type, name, blockHeight, amount, sender, receiver, floData, hash, confirmations, nftHash, subTransactions, time } = txInfo;
+				switch (type.trim()) {
+					case 'smartContractPays':
+					case 'smartContractPays':
+						name = ''
+						break
+					case 'nftIncorporation':
+						type = 'NFT Incorporation'
+						break
+					case 'nft transfer':
+						type = 'NFT Transfer'
+						break
+				}
+				const renderedSubTransactions = subTransactions?.map(tx => render.offChainTransferCard({ ...tx, hideUnnecessary: true }));
+				renderElem(getRef("page_container"), html`
+					<div id="transaction_page" class="page">
+						<div class='head'>
+							<h5 class="label">${type}</h5>
+							<h2 class="token uppercase">
+								<a href=${`#/token/${name}`} style="text-decoration:none;">${name}</a>
+							</h2>
+							<h5 class="label">Transaction ID</h5>
+							<sm-copy value=${hash} clip-text></sm-copy>
+						</div>
+						<div class="flex flex-wrap gap-1">
+							<div class="card grid gap-1-5">
+								<time class="label">${getFormattedTime(time)}</time>
+								<div class="flex flex-direction-column">
+									<h5 class="label">Sender</h5>
+									<sm-copy value=${sender}>
+										<a href=${`#/address/${sender}`} class="address wrap-around">${sender}</a>
+									</sm-copy>
+								</div>
+								${receiver ? html`
+									<div class="flex flex-direction-column">
+										<h5 class="label">Receiver</h5>
+										<sm-copy value=${receiver}>
+											<a href=${`#/address/${receiver}`} class="address wrap-around">${receiver}</a>
+										</sm-copy>
+									</div>
+								`: ''}
+								${amount ? html`
+									<div class="flex flex-direction-column">
+										<h5 class="label">Amount</h5>
+										<h4>${formatAmount(amount)}</h4>
+									</div>
+								`: ''}
+							</div>
+							<div class="card flex-1">
+								<h5 class="label">FLO Data</h5>
+								<p class="wrap-around">${floData}</p>
+								<h5 class="label">Block</h5>
+								<a href=${`#/block/${blockHeight}`} class="block-height">${blockHeight}</a>
+								<h5 class="label">Block Confirmations</h5>
+								<h4>${confirmations}</h4>
+								${nftHash ? html`
+									<h5 class="label">NFT hash</h5>
+									<sm-copy value=${nftHash} clip-text></sm-copy>
+								`: ''}
+							</div>
+						</div>
+						${subTransactions?.length ? html`
+							<div class="grid gap-1">
+								<div class="grid gap-0-3">
+									<h4>Sub Transactions</h4>
+									<p>These are Off-chain transactions that are triggered by above transaction</p>
+								</div>
+								<ul class="grid gap-1">${renderedSubTransactions}</ul>
+							</div>	
+						`: ''}
+					</div>
+				`);
+				getRef("page_title").textContent = "Transaction";
+			} catch (e) {
+				console.error(e)
+				renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
+			}
+		})
+		router.addRoute('404', state => {
+			renderElem(getRef("page_container"), html`${render.errorPage('404 Not Found')}`);
+		})
+		function loading(show = true) {
+			if (show) {
+				getRef('loading').classList.remove('hidden')
+			} else {
+				getRef('loading').classList.add('hidden')
+			}
+		}
+
+		function replaceDash(string) {
+			return string.replace(/-/g, " ");
+		}
+
+		function replaceSpace(str) {
+			return str.replace(/ /g, "-");
+		}
+
+		function renderTransactions(transactions = []) {
+			let parsedTxs = parseTransactions(transactions);
+			let groupedTxs = new Map();
+
+			parsedTxs.forEach((tx) => {
+				const { hash, transactionTrigger } = tx;
+				const key = hash || transactionTrigger;
+
+				if (!groupedTxs.has(key)) {
+					groupedTxs.set(key, {
+						sourceTransaction: {},
+						offChainTransactions: [],
+						type: transactionTrigger ? 'compoundTransaction' : undefined,
+					});
+				}
+
+				if (hash) {
+					groupedTxs.get(key).sourceTransaction = tx;
+				} else {
+					const { tokenIdentification, senderAddress, receiverAddress, onChain, tokenAmount, time, contractName } = tx;
+					groupedTxs.get(key).offChainTransactions.push({
+						tokenIdentification,
+						receiverAddress,
+						tokenAmount,
+					});
+					if (time)
+						groupedTxs.get(key).sourceTransaction.time = time
+					if (contractName)
+						groupedTxs.get(key).sourceTransaction.contractName = contractName
+					if (senderAddress)
+						groupedTxs.get(key).sourceTransaction.contractAddress = senderAddress
+				}
+			});
+
+			// Convert the Map to an array of values for sorting
+			const sortedTxs = [...groupedTxs.values()].sort((a, b) => b.sourceTransaction.time - a.sourceTransaction.time);
+
+			// Replace parsedTxs with sortedTxs
+			parsedTxs = sortedTxs.map((tx) => {
+				if (tx.type === 'compoundTransaction') {
+					return {
+						...tx.sourceTransaction,
+						offChainTransactions: tx.offChainTransactions,
+						type: tx.type,
+					};
+				}
+				return tx.sourceTransaction;
+			});
+			const renderedTransactions = parsedTxs.map(tx => {
+				switch (tx.type) {
+					case 'tokentransfer':
+					case 'nfttransfer':
+						return render.tokenTransferCard(tx)
+					case 'contractdeposit':
+						return render.contractDepositCard(tx)
+					case 'contracttransfer':
+						return render.contractTransferCard(tx);
+					case 'tokenincorp':
+					case 'nftincorp':
+						return render.tokenCreationCard(tx);
+					case 'contractincorp':
+						return render.contractCreationCard(tx);
+					case 'contracttrigger':
+						return render.contractTriggerCard(tx);
+					case 'offChainTransfer':
+						return render.offChainTransferCard(tx);
+					case 'compoundTransaction':
+						return render.compoundTransactionCard(tx)
+				}
+			})
+			return html`${renderedTransactions.length ? renderedTransactions : html`<div class="no-results">No transactions found</div>`}`
+		}
+
+		getRef('suggestions').addEventListener('keyup', e => {
+			if (e.target.closest('.suggestion') && e.key === 'Enter') {
+				processNavbarSearch()
+			} else if (e.target.closest('.suggestion') && e.key === 'Tab') {
+				getRef('main_search_field').value = e.target.textContent;
+			}
+		})
+		getRef('main_search_field').addEventListener('input', debounce(e => {
+			let results = flexSearchIndex.search(e.target.value, 10)
+			const renderedSuggestions = results.map(suggestionIndex => {
+				return html`
+					<li class="suggestion wrap-around" tabindex="0" onclick=${handleSuggestionClick}>
+						${allSuggestions[suggestionIndex]}
+					</li>
+				`
+			})
+			renderElem(getRef('suggestions'), html`${renderedSuggestions}`)
+		}, 100))
+		async function getBannerData() {
+			const { systemTransactionCount, systemAddressCount } = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/info`)
+			return {
+				topToken: "RUPEE",
+				totalTransactions: systemTransactionCount,
+				walletAddresses: systemAddressCount,
+			}
+		}
+		let currentViewIndex = 0;
+		function changeView(e) {
+			const targetWrapper = e.target.dataset.target;
+			const viewIndex = parseInt(e.target.value);
+			showChildElement(targetWrapper, viewIndex, { entry: viewIndex > currentViewIndex ? slideInLeft : slideInRight, exit: viewIndex > currentViewIndex ? slideOutLeft : slideOutRight });
+			currentViewIndex = viewIndex;
+		}
+
+		function getLatestTxs() {
+			return new Promise((resolve, reject) => {
+				fetchJson(`${floGlobals.tokenApiUrl}/api/v2/latestTransactionDetails?limit=4`)
+					.then(function (latestTxs) {
+						resolve(latestTxs.latestTransactions)
+					}).catch((err) => {
+						reject(err)
+					});
+			})
+		}
+
+		function getTokenInfo(thisToken) {
+			return new Promise((resolve, reject) => {
+				fetchJson(
+					`${floGlobals.tokenApiUrl}/api/v2/tokenInfo/${thisToken.toLowerCase()}`
+				).then(function (tokenInfo) {
+					if (tokenInfo.result === "error")
+						reject(tokenInfo.description);
+					let associatedSC = {};
+					tokenInfo.associatedSmartContracts.forEach((sc) => {
+						associatedSC[`${sc.contractName}-${sc.contractAddress}`] = sc;
+					});
+					resolve({
+						token: tokenInfo["token"],
+						supply: tokenInfo["tokenSupply"],
+						incAddress: tokenInfo["incorporationAddress"],
+						associatedContracts: associatedSC,
+						blockchainReference: tokenInfo["blockchainReference"],
+					});
+				}).catch((err) => {
+					reject(err);
+				});
+			})
+		}
+
+		async function getTokenBalances(tokenName) {
+			const tokenDetails = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/tokenBalances/` + tokenName)
+			return tokenDetails.balances
+		}
+
+		async function getTokenTransactions(tokenName) {
+			const transactions = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/tokenTransactions/` + tokenName)
+			return transactions.transactions
+		}
+
+		async function getBlockInfo(thisBlock) {
+			const info = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/blockDetails/${thisBlock}`);
+			const { height, size, reward, hash, difficulty, nonce, tx } = info.blockDetails
+			return {
+				blockHeight: height,
+				size: size,
+				transactions: tx,
+				reward: reward,
+				hash: hash,
+				difficulty: difficulty,
+				nonce: nonce,
+			}
+		}
+
+		async function getBlockTransactions(thisBlock) {
+			const blockTransactions = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/blockTransactions/${thisBlock}`)
+			return blockTransactions.transactions
+		}
+
+		async function getContractInfo(contract) {
+			const info = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/smartContractInfo?contractName=${contract.name}&contractAddress=${contract.address}`);
+			const {
+				contractInfo: {
+					contractType,
+					numberOfDeposits,
+					numberOfParticipants,
+					priceType,
+					oracle_address,
+					contractSubtype,
+					status,
+					expiryTime,
+					payeeAddress,
+					userChoices,
+					tokenIdentification,
+					acceptingToken,
+					sellingToken,
+					contractAmount,
+					minimumsubscriptionamount,
+					maximumsubscriptionamount,
+					totalHonorAmount,
+					totalParticipationAmount,
+					price,
+					currentDepositBalance
+				}, contractAddress,
+				contractName
+			} = info
+			const details = {
+				contract: contractName,
+				contractAddress,
+				contractType,
+				contractSubtype,
+				status,
+				expiration: expiryTime,
+				payeeAddress,
+				userChoices,
+				token: tokenIdentification,
+				acceptingToken,
+				sellingToken,
+				participationFees: contractAmount,
+				minAmount: minimumsubscriptionamount,
+				maxAmount: maximumsubscriptionamount,
+				numberOfDeposits,
+				numberOfParticipants,
+				priceType,
+				oracle_address,
+				totalHonorAmount,
+				totalParticipationAmount,
+				price,
+				currentDepositBalance
+			}
+			floGlobals.smartContractList[`${contractName}-${contractAddress}`] = {
+				...details,
+				...floGlobals.smartContractList[`${contractName}-${contractAddress}`]
+			}
+			return details
+		}
+
+		async function getContractParticipants(contract) {
+			const participants = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/smartContractParticipants?contractName=${contract.name}&contractAddress=${contract.address}`)
+			return participants.participantInfo
+		}
+
+		async function getContractTransactions(contract) {
+			const transactions = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/smartContractTransactions?contractName=${contract.name}&contractAddress=${contract.address}`)
+			return transactions.contractTransactions
+		}
+
+		async function getContractDeposits(contract) {
+			const deposits = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/smartContractDeposits?contractName=${contract.name}&contractAddress=${contract.address}`)
+			return deposits.depositInfo
+		}
+		function getReceiver(vin, vout) {
+			return vout.find(output => output.scriptPubKey.addresses.find(address => address !== vin[0].addr))?.scriptPubKey.addresses[0] || vin[0].addr
+		}
+
+		function parseTransactions(txList) {
+			if (!Array.isArray(txList))
+				txList = [txList]
+			let latestTxArray = [];
+			txList.forEach(tx => {
+				const {
+					txid, blockHeight, vin, vout, time, receiverAddress, senderAddress, contractAddress, contractType,
+					contractConditions: {
+						expiryTime, accepting_token, selling_token, subtype, price,
+						participationAmount, minimumsubscriptionamount, maximumsubscriptionamount
+					} = {},
+					contractAmount, type, tokenAmount, transferType, triggerCondition, userChoice, nftHash, depositAmount,
+					contractName, tokenIdentification, transactionTrigger, onChain
+				} = tx;
+				let obj = {
+					time
+				};
+				if (txid)
+					obj["hash"] = txid;
+				if (blockHeight)
+					obj["blockHeight"] = blockHeight;
+				if (onChain) {
+					if (type === "smartContractPays") {
+						// transaction is a FLO Smart Contract Committee trigger
+						obj = Object.assign({}, obj, {
+							hash: txid,
+							blockHeight,
+							contractName,
+							contractAddress: receiverAddress,
+							winningChoice: triggerCondition,
+							committeeAddress: senderAddress,
+							type: 'contracttrigger'
+						});
+						latestTxArray.push(obj);
+					}
+					else if (type === 'transfer') {
+						if (transferType == "token" || transferType == 'nft') {
+							obj = Object.assign({}, obj, {
+								sender: senderAddress,
+								receiver: receiverAddress,
+								amount: tokenAmount,
+								type: transferType == "token" ? "tokentransfer" : "nfttransfer",
+								token: tokenIdentification,
+							});
+							latestTxArray.push(obj);
+						} else if (transferType == 'smartContract') {
+							// smart contract transfer
+							obj = Object.assign({}, obj, {
+								sender: senderAddress,
+								receiver: receiverAddress,
+								amount: tokenAmount,
+								contractName,
+								userChoice,
+								type: "contracttransfer",
+								token: tokenIdentification,
+							});
+							latestTxArray.push(obj);
+						}
+					} else if (type === 'tokenIncorporation') {
+						// token incorporation
+						// smart contract incorporation
+						obj = Object.assign({}, obj, {
+							incAddress: senderAddress,
+							supply: tokenAmount,
+							type: "tokenincorp",
+							token: tokenIdentification,
+						});
+						latestTxArray.push(obj);
+					} else if (type === 'smartContractIncorporation') {
+						// smart contract incorporation
+						// todo : add checks to determine obj for different types of smart contract incorporation
+						if (subtype == 'tokenswap') {
+							obj = Object.assign({}, obj, {
+								contractName,
+								incAddress: contractAddress,
+								contractType,
+								type: "contractincorp",
+								sellingToken: selling_token,
+								acceptingToken: accepting_token,
+								price,
+							});
+						} else {
+							obj = Object.assign({}, obj, {
+								contractName,
+								incAddress: contractAddress,
+								contractType,
+								expiration: expiryTime,
+								participationFees: contractAmount,
+								availableChoices: "",
+								type: "contractincorp",
+								minAmount: minimumsubscriptionamount,
+								maxAmount: maximumsubscriptionamount,
+								token: tokenIdentification,
+							});
+						}
+						latestTxArray.push(obj);
+					} else if (type === 'nftIncorporation') {
+						// nft incorporation
+						obj = Object.assign({}, obj, {
+							incAddress: senderAddress,
+							supply: tokenAmount,
+							type: "nftincorp",
+							nftHash,
+							token: tokenIdentification,
+						});
+						latestTxArray.push(obj);
+					} else if (type === 'smartContractDeposit') {
+						// smart contract deposit
+						obj = Object.assign({}, obj, {
+							contractName,
+							contractAddress,
+							contractType,
+							amount: depositAmount,
+							type: "contractdeposit",
+							sender: senderAddress,
+							receiver: receiverAddress,
+							token: tokenIdentification,
+						});
+						latestTxArray.push(obj);
+					}
+				} else {
+					obj = Object.assign({}, obj, {
+						transactionTrigger,
+						contractName,
+						contractAddress,
+						onChain: false,
+						type: 'offChainTransfer',
+						senderAddress,
+						receiverAddress,
+						tokenAmount,
+						tokenIdentification,
+						time
+					});
+					latestTxArray.push(obj);
+				}
+			})
+
+			return latestTxArray;
+		}
+
+		async function getAllBlocks(number) {
+			const allBlocks = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/latestBlockDetails${number ? `?limit=${number}` : ''}`)
+			return Object.values(allBlocks.latestBlocks).sort((a, b) => b.height - a.height)
+		}
+
+		async function getAllTxs() {
+			const allTxs = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/latestTransactionDetails?limit=200`)
+			return allTxs.latestTransactions
+		}
+
+		async function getAddressInfo(floAddress) {
+			const addressInfo = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/floAddressInfo/${floAddress}`)
+			return addressInfo.floAddressBalances
+		}
+
+		async function getAddressBalance(floAddress) {
+			return await fetchJson(`${floGlobals.floApiUrl}/api/addr/${floAddress}/balance`)
+		}
+
+		async function getAddressTxs(floAddress) {
+			const transactions = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/floAddressTransactions/${floAddress}`)
+			return transactions.transactions
+		}
+
+		async function getTxInfo(thisTx) {
+			try {
+				const transaction = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/transactionDetails/${thisTx}`)
+				console.log(transaction)
+				if (transaction.result === 'error')
+					return [false, transaction.description]
+				let {
+					floData,
+					tokenAmount,
+					tokenIdentification,
+					type,
+					nftHash,
+					blockheight,
+					vin,
+					vout,
+					confirmations,
+					transferType,
+					senderAddress,
+					receiverAddress,
+					txid,
+					onChain,
+					subTransactions,
+					time
+				} = transaction;
+				if (type == 'smartContractPays') {
+					tokenAmount = '-'
+				}
+				return [
+					true, {
+						type: `${transferType || ''} ${type}`,
+						name: tokenIdentification,
+						blockHeight: blockheight,
+						amount: tokenAmount,
+						sender: senderAddress,
+						receiver: receiverAddress,
+						floData,
+						hash: txid,
+						confirmations,
+						nftHash,
+						onChain,
+						subTransactions,
+						time
+					}
+				]
+			}
+			catch (err) {
+				console.error(err)
+			}
+		}
+
+
+		function returnHexNumber(s) {
+			var regExp = /^[-+]?[0-9A-Fa-f]+\.?[0-9A-Fa-f]*?$/;
+			return (typeof s === 'string' && regExp.test(s));
+		}
+
+		function isInt(n) {
+			return Number(n) === n && n % 1 === 0;
+		}
+
+		function isFloat(n) {
+			return Number(n) === n && n % 1 !== 0;
+		}
+
+		function splitContractNameAddress(text) {
+			const index = text.lastIndexOf('-');
+			return {
+				name: text.substring(0, index),
+				address: text.substring(index + 1)
+			};
+		}
+
+		function categorizeText(text) {
+			return new Promise((resolve, reject) => {
+				// check if text have only numbers
+				if (/^\d+$/.test(text)) {
+					//console.log('this is a block number');
+					location.href = `#/block/${text}`
+					resolve('block')
+				} else if (text.length == 34 && floCrypto.validateFloID(text)) {
+					//console.log('data entered is a FLO address');
+					location.href = `#/address/${text}`
+					resolve('address')
+				} else if (floGlobals.tokenList.includes(text.toLowerCase())) {
+					//console.log('data entered is a token name');
+					location.href = `#/token/${text}`
+					resolve('token')
+				} else if (floGlobals.smartContractList[text]) {
+					location.href = `#/contract/${text}`
+					resolve('contract')
+				} else if (text.length == 64 && returnHexNumber(text)) {
+					fetchJson(`${floGlobals.tokenApiUrl}/api/v2/categoriseString/` + text)
+						.then(function (myJson) {
+							console.log(`${floGlobals.tokenApiUrl}/api/v2/categoriseString/` + text)
+							if (myJson['type'] == 'transaction') {
+								//console.log('data entered is a transaction hash');
+								location.href = `#/transaction/${text}`
+							} else if (myJson['type'] == 'block') {
+								// console.log('data entered is a block hash');
+								location.href = `#/block/${text}`
+							} else {
+								renderElem(getRef("page_container"), html`${render.errorPage('The entered text is not a part of the token system')}`);
+							}
+							resolve()
+						}).catch(err => {
+							console.error(err)
+							resolve()
+						})
+
+				} else {
+					renderElem(getRef("page_container"), html`${render.errorPage('Invalid search query')}`);
+				}
+			})
+		}
+
+		async function processNavbarSearch() {
+			const query = getRef('main_search_field').value.trim();
+			try {
+				if (query === '') return
+				loading()
+				await getAllSuggestions();
+				await categorizeText(query)
+				getRef('main_search_field').value = ''
+				renderElem(getRef('suggestions'), html``)
+			} catch (err) {
+				console.error(err)
+			}
+		}
+
+		async function getAllSuggestions() {
+			window.allSuggestions = [];
+			let { tokens, smartContracts } = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/tokenSmartContractList`);
+			floGlobals.tokenList = tokens;
+			floGlobals.smartContractList = {}
+			smartContracts.forEach(contract => {
+				floGlobals.smartContractList[`${contract.contractName}-${contract.contractAddress}`] = contract;
+				allSuggestions.push(`${contract.contractName}-${contract.contractAddress}`);
+			})
+			allSuggestions = allSuggestions.concat(tokens);
+			window.flexSearchIndex = new FlexSearch.Index({
+				tokenize: "reverse",
+				suggest: true
+			});
+
+			allSuggestions.forEach((suggestion, index) => {
+				flexSearchIndex.add(index, suggestion);
+			})
+		}
+
+		function initSmartContractCreation() {
+			const [selectedSCTemplate, setSelectedSCTemplate] = $signal(null);
+			const [priceType, setPriceType] = $signal('predetermined');
+			$effect(async () => {
+				if (document.startViewTransition) {
+					await document.startViewTransition(() => {
+						update()
+					}).finished
+				} else {
+					update()
+				}
+			});
+			const update = () => {
+				let content = '';
+				if (selectedSCTemplate()) {
+					const { type, subtype } = selectedSCTemplate();
+					document.documentElement.classList.remove('back-transition')
+					content = html`
+						<sm-form>
+							<button id="go_to_templates_button" class="margin-right-auto button button--small button--colored" onclick=${() => setSelectedSCTemplate(null)}>
+								Back
+							</button>
+							<div class="grid gap-0-5">
+								<span class="label">Contract name</span>
+								<sm-input id="contract_name" pattern="^[a-zA-Z0-9 ]+$" error-text="Only alphabet and numbers are allowed" required> </sm-input>
+							</div>
+							${type === 'one-time-event' ? html`
+								<div class="grid gap-0-5">
+									<span class="label">Asset</span>
+									<sm-select id="contract_asset">
+										${render.availableAssetOptions()}
+									</sm-select>
+								</div>
+								${subtype === 'time-trigger' ? html`
+									<div class="grid gap-0-5">
+										<span class="label">Payee FLO addresses</span>
+										<ul id="payee_container" class="grid gap-1">
+											<li class="payee-address-wrapper">
+												<sm-input class="flex w-100 payee-address" placeholder="FLO address" animate data-flo-address required> </sm-input>
+												<sm-input class="payee-share" placeholder="Share (%)" value="100" type="number" min="0" max="100" step="0.01" error-text="Share should be between 0-100" animate required> </sm-input>
+											</li>
+										</ul>
+										<button onclick=${addPayeeAddress} class="button button--small margin-right-auto button--colored gap-0-5">
+											<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>    
+											Add Address
+										</button>
+									</div>
+								` : html`
+									<div class="grid gap-0-5">
+										<span class="label">Participant choices</span>
+										<div id="choices_container" class="grid gap-0-3">
+											<sm-input class="user-choice" pattern="^[a-zA-Z0-9 ]+$" placeholder="Choice 1" error-text="Only alphabet and numbers are allowed" required> </sm-input>    
+											<sm-input class="user-choice" pattern="^[a-zA-Z0-9 ]+$" placeholder="Choice 2" error-text="Only alphabet and numbers are allowed" required> </sm-input>    
+										</div>
+										<button onclick=${addChoice} class="margin-right-auto gap-0-5">
+											<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>    
+											Add choice
+										</button>
+									</div>
+								`}
+								<div class="grid gap-0-5">
+									<span class="label">Expiration</span>
+									<input id="contract_expiration" type="datetime-local" min=${new Date(new Date().getTime() + (5 * 60 * 1000)).toISOString().slice(0, -8)} required>
+								</div>
+								<div class="grid gap-0-5">
+									<span class="label">Participation amount (optional)</span>
+									<sm-input id="contract_participation_amount" type="number" step="0.00000001" min="0.00000001"> </sm-input>
+								</div>
+								<div class="grid gap-0-5">
+									<span class="label">Min. subscription amount (optional)</span>
+									<sm-input id="contract_min_sub_amount" type="number" step="0.00000001" min="0.00000001"> </sm-input>
+								</div>
+								<div class="grid gap-0-5">
+									<span class="label">Max. subscription amount (optional)</span>
+									<sm-input id="contract_max_sub_amount" type="number" step="0.00000001" min="0.00000001"> </sm-input>
+								</div>
+							` : html`
+								<fieldset class="grid gap-0-5" onchange=${(e) => setPriceType(e.target.value)}>
+									<legend>Price type</legend>
+									<label class="flex align-center">
+										<input type="radio" name="price-type" value="predetermined" ?checked=${priceType() === 'predetermined'}>
+										<span>Static</span>
+									</label>
+									<label class="flex align-center">
+										<input type="radio" name="price-type" value="dynamic" ?checked=${priceType() === 'dynamic'}>
+										<span>Dynamic</span>
+									</label>
+								</fieldset>
+								${priceType(update) === 'dynamic' ? html`
+									<div class="grid gap-0-5 oracle-address-wrapper">
+										<span class="label">Oracle FLO address</span>
+										<sm-input id="contract_oracle_address" data-flo-address required> </sm-input>
+									</div>
+								`: ''}
+								<div class="grid gap-0-5">
+									<span class="label">Deposit token</span>
+									<sm-select id="contract_output_token">
+										${render.availableAssetOptions()}
+									</sm-select>
+								</div>
+								<div class="grid gap-0-5">
+									<span class="label">Participation token</span>
+									<sm-select id="contract_input_token">
+										${render.availableAssetOptions()}
+									</sm-select>
+								</div>
+								<div class="grid gap-0-5">
+									<span class="label">Price (1 deposit token = ? participation token)</span>
+									<sm-input id="contract_initial_price" type="number" step="0.00000001" min="0.00000001" error-text="The price should be above 0.00000001" required> </sm-input>
+								</div>
+							`}  
+							<div class="grid gap-0-5">
+								<span class="label">Creator's FLO private key</span>
+								<sm-input id="contract_creator_private_key" class="password-field" type="password" data-private-key required>
+									<label slot="right" class="interact">
+										<input type="checkbox" class="hidden" readonly onchange="togglePrivateKeyVisibility(this)">
+										<svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" /> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" /> </svg>
+										<svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" /> </svg>
+									</label>
+								</sm-input>
+							</div>
+							<div class="multi-state-button">
+								<button id="create_contract_button" class="button button--primary" onclick=${() => createSmartContract(type, subtype)} type="submit" disabled>Create</button>
+							</div>        
+						</sm-form>
+					`
+				} else {
+					document.documentElement.classList.add('back-transition')
+					content = html`
+						<h4>Creation templates</h4>
+						<ul id="smart_contract_creation_templates" class="flex flex-direction-column gap-0-5">
+							<li>
+								<button class="button smart-contract-template" onclick=${() => setSelectedSCTemplate({ type: 'one-time-event', subtype: 'time-trigger' })}>
+									<h4> Time trigger (One time event) </h4>
+									<p>
+										Suitable for time-specific events like crowdfunding.
+									</p>
+									<svg class="icon margin-left-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" /> </svg>
+								</button>
+							</li>
+							<li>
+								<button class="button smart-contract-template" onclick=${() => setSelectedSCTemplate({ type: 'one-time-event', subtype: 'external-trigger' })}>
+									<h4> External trigger (One time event) </h4>
+									<p>
+										Suitable for externally triggered events like voting.
+									</p>
+									<svg class="icon margin-left-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" /> </svg>
+								</button>
+							</li>
+							<li>
+								<button class="button smart-contract-template" onclick=${() => setSelectedSCTemplate({ type: 'continuous-event', subtype: 'tokenswap' })}>
+									<h4> Continuous event </h4>
+									<p>
+										Suitable for ongoing processes involving multiple participants, such as
+										token swaps.
+									</p>
+									<svg class="icon margin-left-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" /> </svg>
+								</button>
+							</li>
+						</ul>
+					`
+				}
+				renderElem(getRef('smart_contract_creation_popup__content'), content)
+			}
+			openPopup('smart_contract_creation_popup', true)
+		}
+
+
+		function togglePrivateKeyVisibility(input) {
+			const target = input.closest('sm-input')
+			target.type = target.type === 'password' ? 'text' : 'password';
+			target.focusIn()
+		}
+		async function handleSmartContractAction(smartContractAddress, action) {
+			openPopup('smart_contract_popup')
+			switch (action) {
+				// TODO: check minimum amount
+				case 'deposit': {
+					const { price, contractName, contractAddress, acceptingToken, sellingToken, tokenIdentification, contractSubType } = floGlobals.smartContractList[smartContractAddress]
+					const defaultExpiration = new Date(new Date().getTime() + (floGlobals.expirationDays * 24 * 60 * 60 * 1000)).toISOString().slice(0, -8);
+					getRef('smart_contract_popup__title').textContent = `Swap ${sellingToken} with ${acceptingToken}`
+					renderElem(getRef('smart_contract_popup__content'), html`
+						<strong>Exchange rate: 1 ${sellingToken} = ${price} ${acceptingToken}</strong>
+						<div class="grid gap-0-5">
+							<span class="label">Amount (${sellingToken})</span>
+							<sm-input id="deposit_amount" type="number" step="0.00000001" min="0.00000001" error-text="The amount should be above 0.00000001" required></sm-input>
+						</div>
+						<div class="grid gap-0-5">
+							<span class="label">Expiration (Time after which unsold amount will be returned)</span>
+							<input id="deposit_expiration" value=${defaultExpiration} type="datetime-local" required>
+						</div>
+						<div class="grid gap-0-5">
+							<span class="label">FLO private key</span>
+							<sm-input id="depositor_private_key" class="password-field" type="password" data-private-key required>
+								<label slot="right" class="interact">
+									<input type="checkbox" class="hidden" readonly onchange="togglePrivateKeyVisibility(this)">
+									<svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"></path> </svg>
+									<svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path> </svg>
+								</label>
+							</sm-input>
+						</div>
+						<div class="multi-state-button">
+							<button id="deposit_button" class="button button--primary" onclick=${() => deposit(smartContractAddress)} type="submit" disabled>Swap</button>
+						</div>
+					`)
+					break;
+				}
+				case 'participate': {
+					let { price, contractName, contractAddress, acceptingToken, sellingToken, tokenIdentification, userChoices, contractSubType, participationFees } = floGlobals.smartContractList[smartContractAddress]
+					if (userChoices) {
+						getRef('smart_contract_popup__title').textContent = `Participate`
+						renderElem(getRef('smart_contract_popup__content'), html`<sm-spinner class="justify-self-center"></sm-spinner>`)
+						if (typeof participationFees === 'undefined') {
+							try {
+								// TODO: remove this when smart contract list api is updated
+								const details = await getContractInfo({
+									name: contractName,
+									address: contractAddress
+								})
+								participationFees = details.participationFees
+							} catch (err) {
+								console.error(err)
+								renderElem(getRef('smart_contract_popup__content'), html`<p class="error">Failed to fetch contract info</p>`)
+								return
+							}
+						}
+					}
+					if (contractSubType === 'tokenswap') {
+						getRef('smart_contract_popup__title').textContent = `Swap ${acceptingToken} with ${sellingToken}`
+					}
+					renderElem(getRef('smart_contract_popup__content'), html`
+						<h4 class="wrap-around">${contractName.replace(/-/g, ' ')}-${contractAddress}</h4>
+						${userChoices ? html`
+							<fieldset>
+								<legend>Choices</legend>
+								<div class="grid gap-0-5">
+									${userChoices.map(choice => html`
+										<label class="flex align-center">
+											<input type="radio" name="choice" value="${choice}" required>
+											<span class="capitalize">${choice}</span>
+										</label>
+									`)}
+								</div>
+						`: ''}
+						${contractSubType === 'tokenswap' ? html`
+							<strong>Exchange rate: 1 ${sellingToken} = ${price} ${acceptingToken}</strong>
+						`: ''}
+						<div class="grid gap-0-5">
+							${typeof participationFees !== 'undefined' ? html`
+								<span id="participation_amount_label" class="label">Pre-defined participation amount (${acceptingToken || tokenIdentification})</span>
+								<sm-input id="participation_amount" type="number" step="0.00000001" value=${participationFees} readonly required></sm-input>
+							`: html`
+								<span id="participation_amount_label" class="label">Participation amount (${acceptingToken || tokenIdentification})</span>
+								<sm-input id="participation_amount" type="number" step="0.00000001" min="0.00000001" error-text="The amount should be above 0.00000001" required></sm-input>
+							`}
+						</div>
+						<div class="grid gap-0-5">
+							<span class="label">FLO private key</span>
+							<sm-input id="participant_private_key" class="password-field" type="password" data-private-key required>
+								<label slot="right" class="interact">
+									<input type="checkbox" class="hidden" readonly onchange="togglePrivateKeyVisibility(this)">
+									<svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"></path> </svg>
+									<svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path> </svg>
+								</label>
+							</sm-input>
+						</div>
+						<div class="multi-state-button">
+							<button id="participate_button" class="button button--primary" onclick=${() => participate(smartContractAddress)} type="submit" disabled>${userChoices ? 'Vote' : contractSubType === 'tokenswap' ? 'Swap' : 'Participate'}</button>
+						</div>
+					`)
+					break;
+				}
+				case 'updateprice': {
+					const { contractName, contractAddress, oracle_address, price, acceptingToken } = floGlobals.smartContractList[smartContractAddress]
+					getRef('smart_contract_popup__title').textContent = `Update price`
+					renderElem(getRef('smart_contract_popup__content'), html`
+						<div class="grid gap-0-5">
+							<span class="label">Oracle FLO Address</span>
+							<sm-copy id="oracle_address" value=${oracle_address}></sm-copy>
+						</div>
+						<div class="grid gap-0-5">
+							<span class="label">Oracle FLO private key</span>
+							<sm-input id="oracle_private_key" class="password-field" type="password" data-private-key="" required="">
+								<label slot="right" class="interact">
+									<input type="checkbox" class="hidden" readonly="" onchange="togglePrivateKeyVisibility(this)">
+									<svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"></path> </svg>
+									<svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path> </svg>
+								</label>
+							</sm-input>
+						</div>
+						<p>
+							<span class="label">Current price: </span>
+							<span id="current_price" class="label">${price} ${acceptingToken}</span>
+						</p>
+						<div class="grid gap-0-5">
+							<span id="updated_price_label" class="label">Updated price (${acceptingToken})</span>
+							<sm-input id="updated_price" type="number" step="0.00000001" min="0.00000001" error-text="Minimum 0.00000001 required" required></sm-input>
+						</div>
+						<div class="multi-state-button">
+							<button id="update_price_button" class="button button--primary" type="submit" onclick=${() => updatePrice(smartContractAddress)} disabled>Update</button>
+						</div>
+					`)
+					break;
+				}
+				case 'trigger': {
+					const { contractName, contractAddress, price, tokenIdentification, userChoices } = floGlobals.smartContractList[smartContractAddress]
+					getRef('smart_contract_popup__title').textContent = `Trigger`
+					renderElem(getRef('smart_contract_popup__content'), html`
+						<sm-form>
+							<fieldset>
+								<legend>Select outcome</legend>
+								<div class="grid gap-0-5">
+									${userChoices.map(choice => html`
+										<label class="flex align-center">
+											<input type="radio" name="outcome" value=${choice} required>
+											<span class="capitalize">${choice}</span>
+										</label>
+									`)}
+								</div>
+							</fieldset>
+							<div class="grid gap-0-5">
+								<span class="label">Committee address FLO private key</span>
+								<sm-input id="trigger_private_key" class="password-field" type="password" data-private-key="" required="">
+									<label slot="right" class="interact">
+										<input type="checkbox" class="hidden" readonly="" onchange="togglePrivateKeyVisibility(this)">
+										<svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"></path> </svg>
+										<svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path> </svg>
+									</label>
+								</sm-input>
+							</div>
+							<div class="multi-state-button">
+								<button id="trigger_contract_button" class="button button--primary" onclick=${() => triggerContract(smartContractAddress)} type="submit" disabled>Trigger</button>
+							</div>
+						</sm-form>
+					`)
+					break;
+				}
+			}
+		}
+
+
+		function deposit(smartContractAddress) {
+			const { sellingToken, contractName, contractAddress } = floGlobals.smartContractList[smartContractAddress]
+			const depositAmount = parseFloat(getRef('deposit_amount').value.trim())
+			const depositExpiration = getRef('deposit_expiration').value
+			const depositorPrivateKey = getRef('depositor_private_key').value.trim()
+			const depositorAddress = floCrypto.getFloID(depositorPrivateKey)
+			const floData = `Deposit ${depositAmount} ${sellingToken}# to ${contractName}@ its FLO address being ${contractAddress}$ with deposit-conditions: (1) expiryTime= ${new Date(depositExpiration).toString()}`
+			console.log(floData)
+			buttonLoader('deposit_button', true)
+			floTokenAPI.getBalance(depositorAddress, sellingToken).then(balance => {
+				if (balance < depositAmount) {
+					buttonLoader('deposit_button', false)
+					return notify(`Insufficient balance.\n You have ${balance} ${sellingToken}`, 'error')
+				}
+				getConfirmation('Deposit for swap', {
+					message: `Are you sure you want to send ${depositAmount} ${sellingToken} to ${contractName} (${contractAddress})?`,
+					confirmText: 'Deposit',
+				}).then(res => {
+					if (!res) return
+					floBlockchainAPI.sendTx(depositorAddress, contractAddress, floGlobals.sendAmt, depositorPrivateKey, floData).then(txid => {
+						closePopup()
+						showTransactionResult(true, txid, {
+							title: `${sellingToken} tokens sent`,
+							description: `If your tokens are not swapped before the expiry time, you will get them back.`
+						})
+					}).catch(error => {
+						closePopup()
+						showTransactionResult(false, error)
+						console.error(error)
+					})
+				})
+			}).catch(error => {
+				notify(`Error getting balance.`, 'error')
+				buttonLoader('deposit_button', false)
+				console.error(error)
+			})
+		}
+
+		function participate(smartContractAddress) {
+			const { acceptingToken, tokenIdentification, contractName, contractAddress, contractType, contractSubType } = floGlobals.smartContractList[smartContractAddress]
+			const participationAmount = parseFloat(getRef('participation_amount').value.trim())
+			const participantPrivateKey = getRef('participant_private_key').value.trim()
+			const participantAddress = floCrypto.getFloID(participantPrivateKey)
+			let floData
+			let title = 'Participation successful'
+			switch (contractType) {
+				case 'one-time-event': {
+					// check min,max subscription and participation amount
+					switch (contractSubType) {
+						case 'time-trigger':
+							floData = `send ${participationAmount} ${tokenIdentification}# to ${contractName}@`
+							description = html`
+								<div class="grid gap-0-5">
+									<p>You have participated in ${contractName} with ${participationAmount} ${tokenIdentification}</p>
+									<a href=${`#/contract/${contractName}-${contractAddress}`} class="button button--small button--primary">Check your participation</a>
+								</div>
+							`
+							break
+						case 'external-trigger':
+							const userChoice = getRef('smart_contract_participate_form').querySelector('input[name="choice"]:checked').value
+							if (!userChoice)
+								return notify('Please select a choice', 'error')
+							floData = `send ${participationAmount} ${tokenIdentification}# to ${contractName}@ to FLO address ${contractAddress} with the userchoice: ${userChoice}`
+							description = html`
+								<div class="grid gap-0-5">
+									<p>You have casted your vote for ${userChoice} in ${contractName} with ${participationAmount} ${tokenIdentification}</p>
+									<a href=${`#/contract/${contractName}-${contractAddress}`} class="button button--small button--primary">Check your vote</a>
+								</div>
+							`
+							break
+					}
+				}
+					break;
+				case 'continuos-event': {
+					switch (contractSubType) {
+						case 'tokenswap':
+							floData = `send ${participationAmount} ${acceptingToken}# to ${contractName}@`
+							title = 'Token swap initiated'
+							description = html`
+								<div class="grid gap-0-5">
+									<p>You have initiated a token swap in ${contractName} with ${participationAmount} ${acceptingToken}</p>
+									<a href=${`#/contract/${contractName}-${contractAddress}`} class="button button--small button--primary">Check swap status</a>
+								</div>
+							`
+							break;
+					}
+				}
+					break
+			}
+			console.log(floData)
+			buttonLoader('participate_button', true)
+			floTokenAPI.getBalance(participantAddress, acceptingToken || tokenIdentification).then(balance => {
+				if (balance < participationAmount) {
+					buttonLoader('participate_button', false)
+					return notify(`Insufficient balance. You have ${balance} ${acceptingToken || tokenIdentification}`, 'error')
+				}
+				getConfirmation('Participate', {
+					message: `Are you sure you want to participate in ${contractName} with ${participationAmount} ${acceptingToken || tokenIdentification}?`,
+					confirmText: 'Participate',
+				}).then(res => {
+					if (!res) return
+					floBlockchainAPI.sendTx(participantAddress, contractAddress, floGlobals.sendAmt, participantPrivateKey, floData).then(txid => {
+						closePopup()
+						showTransactionResult(true, txid, {
+							title,
+							description
+						})
+					}).catch(error => {
+						closePopup()
+						showTransactionResult(false, error)
+						console.error(error)
+					})
+				})
+			}).catch(error => {
+				notify(`Error getting balance.`, 'error')
+				buttonLoader('participate_button', false)
+				console.error(error)
+			})
+		}
+
+		function updatePrice(smartContractAddress) {
+			const { contractName, contractAddress, acceptingToken } = floGlobals.smartContractList[smartContractAddress]
+			const oraclePrivateKey = getRef('oracle_private_key').value.trim()
+			const oracleAddress = getRef('oracle_address').value
+			if (!floCrypto.verifyPrivKey(oraclePrivateKey, oracleAddress)) {
+				return notify(`Private key doesn't match with Oracle address`, 'error')
+			}
+			const updatedPrice = parseFloat(getRef('updated_price').value.trim())
+			const floData = ` {"price-update":{"contract-name": "${contractName}", "contract-address": "${contractAddress}", "price": ${updatedPrice}}} `
+			console.log(floData)
+			getConfirmation('Update price', {
+				message: `Are you sure you want to update the price of ${contractName} to ${updatedPrice} ${acceptingToken}?`,
+				confirmText: 'Update',
+				cancelText: 'Cancel'
+			}).then((res) => {
+				if (!res) return
+				buttonLoader(e.target.closest('button'), true)
+				floBlockchainAPI.writeData(oracleAddress, floData, oraclePrivateKey, contractAddress).then((txid) => {
+					closePopup()
+					showTransactionResult(true, txid, {
+						title: 'Price update initiated',
+					})
+				}).catch((error) => {
+					closePopup()
+					showTransactionResult(false, error)
+					console.error(error)
+				})
+			})
+		}
+
+		function triggerContract(smartContractAddress) {
+			const { contractName, contractAddress } = floGlobals.smartContractList[smartContractAddress]
+			const triggerPrivateKey = getRef('trigger_private_key').value.trim()
+			const triggerAddress = floCrypto.getFloID(triggerPrivateKey)
+			const triggerOutcome = getRef('smart_contract_popup__content').querySelector('input[name="outcome"]:checked').value
+			const floData = `${contractName}@ triggerCondition:"${triggerOutcome}"`
+			console.log(floData)
+			// if (contractAddress !== triggerAddress) {
+			//     return notify(`Private key doesn't match with contract trigger address`, 'error')
+			// }
+			getConfirmation('Trigger contract', {
+				message: `Triggering ${contractName} with outcome: ${triggerOutcome}`,
+				confirmText: 'Trigger',
+				cancelText: 'Cancel'
+			}).then((res) => {
+				if (!res) return
+				buttonLoader('trigger_contract_button', true)
+				floBlockchainAPI.writeData(triggerAddress, floData, triggerPrivateKey, contractAddress).then((txid) => {
+					closePopup()
+					showTransactionResult(true, txid, {
+						title: 'Contract trigger initiated',
+					})
+				}).catch((error) => {
+					closePopup()
+					showTransactionResult(false, error)
+					console.error(error)
+				})
+			})
+		}
+		async function createSmartContract(type, subtype) {
+			const contractName = getRef('contract_name').value.trim().replace(/\s+/g, '-')
+			const creatorPrivateKey = getRef('contract_creator_private_key').value.trim()
+			const creatorAddress = floCrypto.getFloID(creatorPrivateKey)
+			if (Object.values(floGlobals.smartContractList).some(sc => sc.contractAddress === creatorAddress))
+				return notify(`You already have a smart contract with this address. Only one smart contract is allowed per address.`, 'error')
+			let floData
+			let confirmationMessage = ''
+			if (floGlobals.smartContractList.hasOwnProperty(`${contractName}-${creatorAddress}`))
+				return notify(`Contract with name: ${contractName} and address: ${creatorAddress} already exists`, 'error')
+			switch (type) {
+				case 'one-time-event':
+					const contractAsset = getRef('contract_asset').value;
+					const contractExpiration = getRef('contract_expiration').value;
+					if (new Date(contractExpiration) < new Date()) {
+						return notify(`Contract expiration datetime cannot be in the past`, 'error')
+					}
+					const contractParticipationAmount = parseFloat(getRef('contract_participation_amount').value.trim()) || 0;
+					const contractMinSubAmount = parseFloat(getRef('contract_min_sub_amount').value.trim());
+					const contractMaxSubAmount = parseFloat(getRef('contract_max_sub_amount').value.trim());
+					if (contractMinSubAmount && contractMaxSubAmount && contractMinSubAmount > contractMaxSubAmount) {
+						return notify(`Contract minimum subscription amount cannot be greater than maximum subscription amount`, 'error')
+					}
+					const contractConditions = {}
+					if (contractExpiration)
+						contractConditions.expiryTime = new Date(contractExpiration).toString()
+					if (contractParticipationAmount)
+						contractConditions.contractamount = contractParticipationAmount
+					if (contractMinSubAmount)
+						contractConditions.minimumsubscriptionamount = contractMinSubAmount
+					if (contractMaxSubAmount)
+						contractConditions.maximumsubscriptionamount = contractMaxSubAmount
+					switch (subtype) {
+						case 'time-trigger': {
+							const payeeAddressesShare = {}
+							document.querySelectorAll('.payee-address-wrapper').forEach((payeeAddressWrapper) => {
+								const payeeAddress = payeeAddressWrapper.querySelector('.payee-address').value.trim()
+								const payeeShare = parseFloat(payeeAddressWrapper.querySelector('.payee-share').value.trim())
+								if (payeeAddressesShare[payeeAddress])
+									payeeAddressesShare[payeeAddress] += payeeShare
+								else
+									payeeAddressesShare[payeeAddress] = payeeShare
+							})
+							if (payeeAddressesShare[creatorAddress])
+								return notify(`Creator address cannot be a payee address`, 'error')
+							// check if payeeAddresses total share is equal to 100 else add remainder
+							const payeeAddressesArray = Object.keys(payeeAddressesShare)
+							const totalShare = payeeAddressesArray.reduce((acc, payeeAddress) => acc + payeeAddressesShare[payeeAddress], 0)
+							if (totalShare < 100) {
+								console.log('total share is not equal to 100')
+								const res = await getConfirmation('Total share is not equal to 100', {
+									message: `Total share is not equal to 100. Do you want to add remainder to the last payee address?`,
+									confirmText: 'Add remainder',
+									cancelText: 'Cancel'
+								})
+								if (!res) return
+								const remainder = 100 - totalShare
+								const lastPayeeAddress = payeeAddressesArray[payeeAddressesArray.length - 1]
+								payeeAddressesShare[lastPayeeAddress] += remainder
+								const lastPayeeInput = getRef('payee_container').lastElementChild.querySelector('.payee-share')
+								if (lastPayeeInput) {
+									lastPayeeInput.value = payeeAddressesShare[lastPayeeAddress]
+									lastPayeeInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
+								}
+								return
+							} else if (totalShare > 100) {
+								return notify(`Total share cannot be greater than 100`, 'error')
+							}
+							const payeeAddressesShareString = Object.entries(payeeAddressesShare).map(([payeeAddress, payeeShare]) => `${payeeAddress}:${payeeShare}`).join(':')
+
+							if (payeeAddressesShareString)
+								contractConditions.payeeAddress = payeeAddressesShareString
+							const contractConditionsString = Object.entries(contractConditions).map(([key, value], index) => `(${index + 1}) ${key}= ${value}`).join(' ')
+							floData = `Create a smart contract of the name ${contractName}@ of the type one-time-event* using asset ${contractAsset}# at the FLO address ${creatorAddress}$ with contract-conditions: ${contractConditionsString} end-contract-conditions`
+							if (floData.length > 1040) return notify(`Too many payee addresses! remove some and try again`, 'error')
+							// add confirmation message with contract details only if they are defined
+							confirmationMessage = `Name: ${contractName} \nType: One time event \nSubtype: Time trigger \nAsset: ${contractAsset} \nExpiration: ${new Date(contractExpiration).toString()} \nPayee addresses: ${payeeAddressesShareString} ${contractParticipationAmount ? `\nParticipation amount: ${contractParticipationAmount} ${contractAsset}` : ''} ${contractMinSubAmount ? `\nMinimum subscription amount: ${contractMinSubAmount} ${contractAsset}` : ''} ${contractMaxSubAmount ? `\nMaximum subscription amount: ${contractMaxSubAmount} ${contractAsset}` : ''}`
+						} break;
+						case 'external-trigger': {
+							const userChoices = new Set()
+							document.querySelectorAll('.user-choice').forEach((userChoice) => {
+								const userChoiceValue = userChoice.value.trim()
+								if (userChoiceValue !== '')
+									userChoices.add(userChoiceValue)
+							})
+							if (userChoices.size)
+								contractConditions.userchoices = [...userChoices].join(' | ')
+							const contractConditionsString = Object.entries(contractConditions).map(([key, value], index) => `(${index + 1}) ${key}= ${value}`).join(' ')
+							floData = `Create a smart contract of the name ${contractName}@ of the type one-time-event* using asset ${contractAsset}# at the FLO address ${creatorAddress}$ with contract-conditions:${contractConditionsString} end-contract-conditions`
+							if (floData.length > 1040) return notify(`Too many participant choices! remove some and try again`, 'error')
+							// add confirmation message with contract details only if they are defined
+							confirmationMessage = `Name: ${contractName} \nType: One time event \nSubtype: External trigger \nAsset: ${contractAsset} \nExpiration: ${new Date(contractExpiration).toString()} \nUser choices: ${[...userChoices].join(' | ')} ${contractParticipationAmount ? `\nParticipation amount: ${contractParticipationAmount} ${contractAsset}` : ''} ${contractMinSubAmount ? `\nMinimum subscription amount: ${contractMinSubAmount} ${contractAsset}` : ''} ${contractMaxSubAmount ? `\nMaximum subscription amount: ${contractMaxSubAmount} ${contractAsset}` : ''}`
+						} break;
+					}
+					break;
+				case 'continuous-event':
+					switch (subtype) {
+						case 'tokenswap': {
+							const priceType = document.querySelector('input[name="price-type"]:checked').value
+							const participationToken = getRef('contract_input_token').value
+							const depositToken = getRef('contract_output_token').value
+							if (participationToken === depositToken) return notify(`Participation and deposit token cannot be same`, 'error')
+							const initialPrice = parseFloat(getRef('contract_initial_price').value.trim()) || 0;
+							let oracleAddress
+							if (priceType === 'dynamic')
+								oracleAddress = getRef('contract_oracle_address').value.trim()
+							floData = `Create Smart Contract with the name ${contractName}@ of the type continuous-event* at the address ${creatorAddress}$ with contract-conditions : (1) subtype = tokenswap (2) accepting_token = ${participationToken}# (3) selling_token = ${depositToken}# (4) price = '${initialPrice}' (5) priceType = ${priceType} ${oracleAddress ? `(6) oracle_address = ${oracleAddress}` : ''} end-contract-conditions`
+							confirmationMessage = `Name: ${contractName} \nType: Continuous event \nSubtype: Token swap \nDeposit token: ${depositToken} \nParticipation token: ${participationToken}  \nInitial price: ${initialPrice} ${participationToken} per ${depositToken} \nPrice type: ${priceType} ${oracleAddress ? `\nOracle address: ${oracleAddress}` : ''}`
+						} break;
+					}
+					break;
+			}
+			console.log(floData)
+			getConfirmation('Create smart contract', {
+				message: `Are you sure you want to create a smart contract with the following details? \n\n${confirmationMessage}`,
+				confirmText: 'Create',
+				cancelText: 'Cancel'
+			}).then((res) => {
+				if (!res) return
+				buttonLoader('create_contract_button', true)
+				floBlockchainAPI.writeData(creatorAddress, floData, creatorPrivateKey, creatorAddress).then((txid) => {
+					closePopup()
+					showTransactionResult(true, txid, {
+						title: 'Smart contract creation initiated',
+						description: html`
+						<div class="grid gap-0-5 justify-items-center">
+							<strong>It may take some time for the smart contract to be created.</strong>
+							<a href="#/smart-contracts" class="button button--small button--primary" onclick=${() => closePopup()}>Open smart contracts page</a>	
+						</div>
+						`
+					})
+				}).catch((error) => {
+					closePopup()
+					showTransactionResult(false, error)
+					console.error(error)
+				})
+			})
+		}
+
+		function addPayeeAddress() {
+			getRef('payee_container').append(html.node`
+				<li class="payee-address-wrapper">
+					<sm-input class="flex w-100 payee-address" placeholder="FLO address" animate data-flo-address required> </sm-input>
+					<sm-input class="payee-share" placeholder="Share (%)" value="100" type="number" min="0" max="100" step="0.01" error-text="Share should be between 0-100" animate required> </sm-input>
+					<button class="button icon-only" onclick=${removePayee}>
+						<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+					</button>        
+				</li>
+			`)
+			getRef('payee_container').querySelectorAll('.payee-share').forEach((input) => {
+				input.value = parseFloat((100 / getRef('payee_container').querySelectorAll('.payee-share').length).toFixed(2))
+			})
+		}
+		function removePayee(e) {
+			e.target.closest('li').remove()
+			getRef('payee_container').querySelectorAll('.payee-share').forEach((input) => {
+				input.value = parseFloat((100 / getRef('payee_container').querySelectorAll('.payee-share').length).toFixed(2))
+			})
+		}
+
+		function addChoice(e) {
+			const choiceNo = getRef('choices_container').children.length + 1
+			getRef('choices_container').append(html.node`
+				<div class="choice-wrapper">
+					<sm-input class="user-choice" pattern="^[a-zA-Z0-9 ]+$" placeholder=${`Choice ${choiceNo}`} error-text="Only alphabet and numbers are allowed" required> </sm-input>  
+					<button class="button icon-only" onclick=${removeChoice}>
+						<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+					</button>        
+				</dic>
+			`)
+		}
+		function removeChoice(e) {
+			e.target.closest('.choice-wrapper').remove()
+			getRef('choices_container').querySelectorAll('.user-choice').forEach((input, index) => {
+				input.placeholder = `Choice ${index + 1}`
+			})
+		}
+		function showTransactionResult(success, result, options = {}) {
+			let { title, description } = options
+			if (!title)
+				title = success ? 'Transaction request sent' : 'Transaction failed'
+			if (!description)
+				description = success ? 'This might take upto 30 mins to complete and reflect on blockchain.' : result
+
+			renderElem(getRef('transaction_result'), html`
+                ${success ? html`
+                    <svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /> </svg>
+                ` : ''}
+                ${!success ? html`
+                    <svg class="icon icon--failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /> </svg>
+                ` : ''}
+                <h3 id="transaction_result__title">${title}</h3>
+                <div id="transaction_result__description"> ${description} </div>
+                ${success && result ? html`
+                    <div class="grid gap-1">
+						<a id="transaction_link" class="flex align-center button--colored" href=${`${floBlockchainAPI.current_server}tx/${result}`} style="margin-top: 1.5rem;" target="_blank">
+                            See transaction on blockchain
+                            <svg class="icon margin-left-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"></path> </svg>
+                        </a>
+                        <div class="grid">
+                            <span class="label">Transaction ID</span>
+                            <sm-copy class="justify-self-center" value=${result}></sm-copy>
+                        </div>
+                    </div>
+                ` : ''}
+            `)
+			openPopup('transaction_result_popup')
+		}
+	</script>
+</body>
+
+</html>
