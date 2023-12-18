@@ -1,0 +1,2623 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RanchiMall Taproot wallet</title>
+    <link rel="stylesheet" href="css/main.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="hidden">
+    <sm-notifications id="notification_drawer"></sm-notifications>
+    <sm-popup id="confirmation_popup">
+        <h4 id="confirm_title"></h4>
+        <p id="confirm_message" class="wrap-around"></p>
+        <div class="flex align-center gap-0-5 margin-left-auto">
+            <button class="button cancel-button">Cancel</button>
+            <button class="button button--primary confirm-button">OK</button>
+        </div>
+    </sm-popup>
+    <div id="loading_page">
+        <sm-spinner></sm-spinner>
+        <strong>Getting Taproot Wallet ready</strong>
+    </div>
+    <main id="main_card">
+        <header id="main_header">
+            <a href="#/search" id="logo" class="app-brand">
+                <svg id="main_logo" class="icon" viewBox="0 0 27.25 32">
+                    <title>RanchiMall</title>
+                    <path
+                        d="M27.14,30.86c-.74-2.48-3-4.36-8.25-6.94a20,20,0,0,1-4.2-2.49,6,6,0,0,1-1.25-1.67,4,4,0,0,1,0-2.26c.37-1.08.79-1.57,3.89-4.55a11.66,11.66,0,0,0,3.34-4.67,6.54,6.54,0,0,0,.05-2.82C20,3.6,18.58,2,16.16.49c-.89-.56-1.29-.64-1.3-.24a3,3,0,0,1-.3.72l-.3.55L13.42.94C13,.62,12.4.26,12.19.15c-.4-.2-.73-.18-.72.05a9.39,9.39,0,0,1-.61,1.33s-.14,0-.27-.13C8.76.09,8-.27,8,.23A11.73,11.73,0,0,1,6.76,2.6C4.81,5.87,2.83,7.49.77,7.49c-.89,0-.88,0-.61,1,.22.85.33.92,1.09.69A5.29,5.29,0,0,0,3,8.33c.23-.17.45-.29.49-.26a2,2,0,0,1,.22.63A1.31,1.31,0,0,0,4,9.34a5.62,5.62,0,0,0,2.27-.87L7,8l.13.55c.19.74.32.82,1,.65a7.06,7.06,0,0,0,3.46-2.47l.6-.71-.06.64c-.17,1.63-1.3,3.42-3.39,5.42L6.73,14c-3.21,3.06-3,5.59.6,8a46.77,46.77,0,0,0,4.6,2.41c.28.13,1,.52,1.59.87,3.31,2,4.95,3.92,4.95,5.93a2.49,2.49,0,0,0,.07.77h0c.09.09,0,.1.9-.14a2.61,2.61,0,0,0,.83-.32,3.69,3.69,0,0,0-.55-1.83A11.14,11.14,0,0,0,17,26.81a35.7,35.7,0,0,0-5.1-2.91C9.37,22.64,8.38,22,7.52,21.17a3.53,3.53,0,0,1-1.18-2.48c0-1.38.71-2.58,2.5-4.23,2.84-2.6,3.92-3.91,4.67-5.65a3.64,3.64,0,0,0,.42-2A3.37,3.37,0,0,0,13.61,5l-.32-.74.29-.48c.17-.27.37-.63.46-.8l.15-.3.44.64a5.92,5.92,0,0,1,1,2.81,5.86,5.86,0,0,1-.42,1.94c0,.12-.12.3-.15.4a9.49,9.49,0,0,1-.67,1.1,28,28,0,0,1-4,4.29C8.62,15.49,8.05,16.44,8,17.78a3.28,3.28,0,0,0,1.11,2.76c.95,1,2.07,1.74,5.25,3.32,3.64,1.82,5.22,2.9,6.41,4.38A4.78,4.78,0,0,1,21.94,31a3.21,3.21,0,0,0,.14.92,1.06,1.06,0,0,0,.43-.05l.83-.22.46-.12-.06-.46c-.21-1.53-1.62-3.25-3.94-4.8a37.57,37.57,0,0,0-5.22-2.82A13.36,13.36,0,0,1,11,21.19a3.36,3.36,0,0,1-.8-4.19c.41-.85.83-1.31,3.77-4.15,2.39-2.31,3.43-4.13,3.43-6a5.85,5.85,0,0,0-2.08-4.29c-.23-.21-.44-.43-.65-.65A2.5,2.5,0,0,1,15.27.69a10.6,10.6,0,0,1,2.91,2.78A4.16,4.16,0,0,1,19,6.16a4.91,4.91,0,0,1-.87,3c-.71,1.22-1.26,1.82-4.27,4.67a9.47,9.47,0,0,0-2.07,2.6,2.76,2.76,0,0,0-.33,1.54,2.76,2.76,0,0,0,.29,1.47c.57,1.21,2.23,2.55,4.65,3.73a32.41,32.41,0,0,1,5.82,3.24c2.16,1.6,3.2,3.16,3.2,4.8a1.94,1.94,0,0,0,.09.76,4.54,4.54,0,0,0,1.66-.4C27.29,31.42,27.29,31.37,27.14,30.86ZM6.1,7h0a3.77,3.77,0,0,1-1.46.45L4,7.51l.68-.83a25.09,25.09,0,0,0,3-4.82A12,12,0,0,1,8.28.76c.11-.12.77.32,1.53,1l.63.58-.57.84A10.34,10.34,0,0,1,6.1,7Zm5.71-1.78A9.77,9.77,0,0,1,9.24,7.18h0a5.25,5.25,0,0,1-1.17.28l-.58,0,.65-.78a21.29,21.29,0,0,0,2.1-3.12c.22-.41.42-.76.44-.79s.5.43.9,1.24L12,5ZM13.41,3a2.84,2.84,0,0,1-.45.64,11,11,0,0,1-.9-.91l-.84-.9.19-.45c.34-.79.39-.8,1-.31A9.4,9.4,0,0,1,13.8,2.33q-.18.34-.39.69Z" />
+                </svg>
+                <div class="app-name">
+                    <div class="app-name__company">RanchiMall</div>
+                    <h4 class="app-name__title">
+                        Taproot Wallet
+                    </h4>
+                </div>
+            </a>
+            <div class="flex align-center gap-0-3">
+                <sm-select id="currency_selector" class="margin-right-0-5">
+                    <sm-option value="btc">BTC</sm-option>
+                    <sm-option value="inr">INR</sm-option>
+                    <sm-option value="usd">USD</sm-option>
+                </sm-select>
+                <theme-toggle></theme-toggle>
+            </div>
+        </header>
+        <div id="page_container"></div>
+        <nav id="main_navbar">
+            <ul id="menu">
+                <li>
+                    <a href="#/search" class="nav-item nav-item--active interactive">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path
+                                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        </svg>
+                        <span class="nav-item__title">
+                            Search
+                        </span>
+                        <div class="nav-item__indicator"></div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#/send" class="nav-item interactive">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none"></path>
+                            <path
+                                d="M4.01 6.03l7.51 3.22-7.52-1 .01-2.22m7.5 8.72L4 17.97v-2.22l7.51-1M2.01 3L2 10l15 2-15 2 .01 7L23 12 2.01 3z">
+                            </path>
+                        </svg>
+                        <span class="nav-item__title">
+                            Send
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#/convert" class="nav-item interactive">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"></path>
+                        </svg>
+                        <span class="nav-item__title">
+                            Convert
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#/create" class="nav-item interactive">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path
+                                d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+                        </svg>
+                        <span class="nav-item__title">
+                            Create
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </main>
+    <sm-popup id="generate_key_path_address_popup">
+        <header slot="header" class="popup__header">
+            <div class="flex align-center">
+                <button class="popup__header__close" onclick="closePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+        <div class="grid gap-2">
+            <div id="flo_id_warning" class="grid justify-center gap-0-5">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                </svg>
+                <h3>Keep your keys safe!</h3>
+                <strong>Don't share with anyone. The private key cannot be recovered if lost.</strong>
+            </div>
+            <div id="generated_btc_addr" class="generated-id-card"></div>
+        </div>
+    </sm-popup>
+    <sm-popup id="generate_script_path_address_popup">
+        <header slot="header" class="popup__header">
+            <div class="flex align-center">
+                <button class="popup__header__close" onclick="closePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+        <div id="generate_script_path_address_popup__content" class="grid gap-2"></div>
+    </sm-popup>
+    <sm-popup id="convert_to_taproot_popup">
+        <header slot="header" class="popup__header">
+            <div class="flex align-center">
+                <button class="popup__header__close" onclick="closePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+        <section class="grid gap-1-5">
+            <div class="grid gap-0-5">
+                <h4>Retrieve Taproot address</h4>
+                <p>Get Taproot address from your bitcoin private key</p>
+            </div>
+            <sm-form id="convert_to_taproot_form">
+                <div class="grid gap-0-5">
+                    <sm-input id="convert_to_taproot_input" type="password" placeholder="Private key"
+                        class="password-field" data-private-key required autofocus>
+                        <label slot="right" class="interact">
+                            <input type="checkbox" class="hidden" autocomplete="off" readonly
+                                onchange="togglePrivateKeyVisibility(this)">
+                            <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <title>Hide password</title>
+                                <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
+                            </svg>
+                            <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <title>Show password</title>
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                            </svg>
+                        </label>
+                    </sm-input>
+                    <button class="button button--primary cta" type="submit"
+                        onclick="retrieveTaproot()">Convert</button>
+                </div>
+            </sm-form>
+            <div id="converted_address_wrapper" class="hidden grid gap-0-5">
+                <h5>Converted Taproot address</h5>
+                <sm-copy id="converted_address"></sm-copy>
+            </div>
+        </section>
+    </sm-popup>
+    <sm-popup id="increase_fee_popup">
+        <header slot="header" class="popup__header">
+            <div class="flex align-center">
+                <button class="popup__header__close" onclick="closePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+                <h3>Increase fee</h3>
+            </div>
+        </header>
+        <div id="increase_fee_popup_content"></div>
+    </sm-popup>
+    <sm-popup id="transaction_result_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close justify-self-start" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+        </header>
+        <div id="transaction_result"></div>
+    </sm-popup>
+    <script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
+    <script src="scripts/components.min.js" type="text/javascript"></script>
+    <script src="scripts/btcwallet_scripts_lib.js" type="text/javascript"></script>
+    <script src="scripts/btcOperator.js" type="text/javascript"></script>
+    <script src="scripts/floCrypto.js" type="text/javascript"></script>
+    <script src="scripts/tap_combined.js" type="text/javascript"></script>
+    <script src="scripts/keccak.js" type="text/javascript"></script>
+    <script src="scripts/floEthereum.js" type="text/javascript"></script>
+    <script id="ui_utils">
+        const uiGlobals = {}
+        const { html, svg, render: renderElem } = uhtml;
+        uiGlobals.connectionErrorNotification = []
+        //Checks for internet connection status
+        if (!navigator.onLine)
+            uiGlobals.connectionErrorNotification.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
+        window.addEventListener('offline', () => {
+            uiGlobals.connectionErrorNotification.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
+        })
+        window.addEventListener('online', () => {
+            uiGlobals.connectionErrorNotification.forEach(notification => {
+                getRef('notification_drawer').remove(notification)
+            })
+            notify('We are back online.', 'success')
+        })
+
+        // Use instead of document.getElementById
+        function getRef(elementId) {
+            return document.getElementById(elementId)
+        }
+
+        let zIndex = 50
+        // function required for popups or modals to appear
+        function openPopup(popupId, pinned) {
+            zIndex++
+            getRef(popupId).setAttribute('style', `z-index: ${zIndex}`)
+            getRef(popupId).show({ pinned })
+            return getRef(popupId);
+        }
+
+        // hides the popup or modal
+        function closePopup() {
+            if (popupStack.peek() === undefined)
+                return;
+            popupStack.peek().popup.hide()
+        }
+
+        function copyToClipboard(data) {
+            navigator.clipboard.writeText(data).then(() => {
+                notify('Copied to clipboard', 'success')
+            }).catch(() => {
+                notify('Failed to copy to clipboard', 'error')
+            })
+        }
+
+        document.addEventListener('popupopened', e => {
+            switch (e.target.id) {
+                case 'generate_key_path_address_popup': {
+                    const { wif, tr: { address } } = getTaprootAddress()
+                    renderElem(getRef('generated_btc_addr'), html`
+                        <div>
+                            <h5>BTC Address</h5>
+                            <sm-copy value="${address}"></sm-copy>
+                        </div>
+                        <div>
+                            <h5>Private Key</h5>
+                            <sm-copy value="${wif}"></sm-copy>
+                        </div>
+                    `);
+                    break;
+                }
+                case 'generate_script_path_address_popup': {
+                    const { wif, tr: { address } } = getTaprootAddress()
+                    const privateKey = coinjs.wif2privkey(wif).privkey
+                    const scriptInputs = [1];
+                    const renderScriptInput = (index) => html`
+                        <div class="flex gap-0-5">
+                            <sm-input class="member-script-input flex-1" placeholder=${`Member script #${index + 1} (Hex)`} pattern="^[0-9A-Fa-f]+$" error-text="Only hexadecimal values are allowed" animate required></sm-input>
+                            ${index ? html`
+                                <button class="button button--danger" onclick=${() => removeScriptInput(index)} title="Remove">
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z"/></svg>
+                                </button>
+                            `: ''}
+                        </div>
+                    `
+                    function addMemberScriptInput() {
+                        scriptInputs.push(scriptInputs.length + 1)
+                        renderScriptInputList()
+                    }
+                    function removeScriptInput(index) {
+                        scriptInputs.splice(index, 1)
+                        renderScriptInputList()
+                    }
+                    function generateScriptPathAddress() {
+                        const schnorrPublicKey = secp256k1_schnorr.getPublicKey(hex.decode(privateKey));
+                        let memberScripts = [...document.querySelectorAll('.member-script-input')].map(input => input.value.trim());
+                        memberScripts = [...new Set(memberScripts)] // remove duplicates
+                        const taprootTree = memberScripts.map(script => {
+                            return {
+                                script,
+                                leafVersion: 0xc0,
+                            }
+                        })
+                        const { address, leaves } = taproot.p2tr(
+                            schnorrPublicKey,
+                            taprootTree,
+                            undefined,
+                            true
+                        );
+
+                        renderElem(getRef('generate_script_path_address_popup__content'), html`
+                            <fieldset class="grid gap-0-5">
+                                <legend>Taproot script-path address</legend>
+                                <b class="wrap-around fw-500" style="font-size:0.9rem">${address}</b>
+                            </fieldset>
+                            <fieldset class="grid gap-0-5">
+                                <legend>Members</legend>
+                                <ul class="grid gap-0-5">
+                                    ${leaves.map((leaf, index) => html`
+                                        <li class="grid gap-1 taproot-member">
+                                            <div class="flex align-center space-between">
+                                                <h5>Member #${index + 1}</h5>
+                                                <button class="copy-button" onclick=${() => copyToClipboard(`Member #${index + 1}\n\nScript: ${hex.encode(leaf.script)}\n\nControl block: ${hex.encode(leaf.controlBlock)}`)}>
+                                                    COPY
+                                                </button>
+                                            </div>
+                                            <div class="grid">
+                                                <p class="label">Script</p>
+                                                <b class="wrap-around" style="font-size:0.9rem">${hex.encode(leaf.script)}</b>
+                                            </div>
+                                            <div class="grid">
+                                                <p class="label">Control block</p>
+                                                <b class="wrap-around" style="font-size:0.9rem">${hex.encode(leaf.controlBlock)}</b>
+                                            </div>
+                                        </li>
+                                    `)}
+                                </ul>
+                            </fieldset>
+                        `);
+                    }
+                    function renderScriptInputList() {
+                        renderElem(getRef('generate_script_path_address_popup__content'), html`
+                            <sm-form>
+                                <div class="grid gap-1">
+                                    <h4>Add member scripts</h4>
+                                    <div id="member_input_container" class="grid gap-0-5">
+                                        ${scriptInputs.map((no, index) => renderScriptInput(index))}
+                                    </div>
+                                </div>
+                                <div class="flex gap-0-5">
+                                    <button class="button button--colored margin-right-auto" onclick=${addMemberScriptInput}>
+                                        Add member
+                                    </button>
+                                    <button id="create_script_path_address_button" class="button button--primary flex-1" onclick=${generateScriptPathAddress} type="submit" disabled>Create</button>
+                                </div>
+                            </sm-form>
+                        `);
+                        getRef('create_script_path_address_button').scrollIntoView({ behavior: 'smooth' })
+                    }
+                    renderScriptInputList()
+                    break;
+                }
+            }
+        })
+        document.addEventListener('popupclosed', e => {
+            zIndex--
+            switch (e.target.id) {
+                case 'convert_to_taproot_popup':
+                    getRef('converted_address_wrapper').classList.add('hidden')
+                    break;
+            }
+        })
+
+        //Function for displaying toast notifications. pass in error for mode param if you want to show an error.
+        function notify(message, mode, options = {}) {
+            let icon
+            switch (mode) {
+                case 'success':
+                    icon = `<svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"/></svg>`
+                    break;
+                case 'error':
+                    icon = `<svg class="icon icon--error" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z"/></svg>`
+                    options.pinned = true
+                    break;
+            }
+            if (mode === 'error') {
+                console.error(message)
+            }
+            return getRef("notification_drawer").push(message, { icon, ...options });
+        }
+
+        function getFormattedTime(timestamp, format) {
+            try {
+                if (String(timestamp).length < 13)
+                    timestamp *= 1000
+                let [day, month, date, year] = new Date(timestamp).toString().split(' '),
+                    minutes = new Date(timestamp).getMinutes(),
+                    hours = new Date(timestamp).getHours(),
+                    currentTime = new Date().toString().split(' ')
+
+                minutes = minutes < 10 ? `0${minutes}` : minutes
+                let finalHours = ``;
+                if (hours > 12)
+                    finalHours = `${hours - 12}:${minutes}`
+                else if (hours === 0)
+                    finalHours = `12:${minutes}`
+                else
+                    finalHours = `${hours}:${minutes}`
+
+                finalHours = hours >= 12 ? `${finalHours} PM` : `${finalHours} AM`
+                switch (format) {
+                    case 'date-only':
+                        return `${month} ${date}, ${year}`;
+                        break;
+                    case 'time-only':
+                        return finalHours;
+                    case 'relative':
+                        // check if timestamp is older than a day
+                        if (Date.now() - new Date(timestamp) < 60 * 60 * 24 * 1000)
+                            return `${finalHours}`;
+                        else
+                            return relativeTime.from(timestamp)
+                    default:
+                        return `${month} ${date}, ${year} at ${finalHours}`;
+                }
+            } catch (e) {
+                console.error(e);
+                return timestamp;
+            }
+        }
+        // displays a popup for asking permission. Use this instead of JS confirm
+        const getConfirmation = (title, options = {}) => {
+            return new Promise(resolve => {
+                const { message = '', cancelText = 'Cancel', confirmText = 'OK', danger = false } = options
+                openPopup('confirmation_popup', true)
+                getRef('confirm_title').innerText = title;
+                renderElem(getRef('confirm_message'), message);
+                const cancelButton = getRef('confirmation_popup').querySelector('.cancel-button');
+                const confirmButton = getRef('confirmation_popup').querySelector('.confirm-button')
+                confirmButton.textContent = confirmText
+                cancelButton.textContent = cancelText
+                if (danger)
+                    confirmButton.classList.add('button--danger')
+                else
+                    confirmButton.classList.remove('button--danger')
+                confirmButton.onclick = () => {
+                    closePopup()
+                    resolve(true);
+                }
+                cancelButton.onclick = () => {
+                    closePopup()
+                    resolve(false);
+                }
+            })
+        }
+        // detect browser version
+        function detectBrowser() {
+            let ua = navigator.userAgent,
+                tem,
+                M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+            if (/trident/i.test(M[1])) {
+                tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+                return 'IE ' + (tem[1] || '');
+            }
+            if (M[1] === 'Chrome') {
+                tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
+                if (tem != null) return tem.slice(1).join(' ').replace('OPR', 'Opera');
+            }
+            M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, '-?'];
+            if ((tem = ua.match(/version\/(\d+)/i)) != null) M.splice(1, 1, tem[1]);
+            return M.join(' ');
+        }
+        window.addEventListener("load", () => {
+            const [browserName, browserVersion] = detectBrowser().split(' ');
+            const supportedVersions = {
+                Chrome: 85,
+                Firefox: 75,
+                Safari: 13,
+            }
+            if (browserName in supportedVersions) {
+                if (parseInt(browserVersion) < supportedVersions[browserName]) {
+                    notify(`${browserName} ${browserVersion} is not fully supported, some features may not work properly. Please update to ${supportedVersions[browserName]} or higher.`, 'error')
+                }
+            } else {
+                notify('Browser is not fully compatible, some features may not work. for best experience please use Chrome, Edge, Firefox or Safari', 'error')
+            }
+            document.body.classList.remove('hidden')
+            document.addEventListener('keyup', (e) => {
+                if (e.key === 'Escape') {
+                    closePopup()
+                }
+            })
+            document.addEventListener('copy', () => {
+                notify('copied', 'success')
+            })
+            document.addEventListener("pointerdown", (e) => {
+                if (e.target.closest("button:not(:disabled), .interactive:not(:disabled)")) {
+                    createRipple(e, e.target.closest("button, .interactive"));
+                }
+            });
+            getExchangeRate()
+                .then(() => {
+                    selectedCurrency = localStorage.getItem('taproot-wallet-currency') || 'btc'
+                    setTimeout(() => {
+                        getRef('currency_selector').value = selectedCurrency
+                    }, 100)
+                })
+                .catch(e => {
+                    selectedCurrency = 'btc'
+                    // console.error(e)
+                    getRef('currency_selector').classList.add('hidden')
+                }).finally(() => {
+                    router.routeTo(location.hash)
+                    setTimeout(() => {
+                        getRef('loading_page').animate([
+                            { transform: 'translateY(0)', },
+                            { transform: 'translateY(-100%)', }
+                        ], {
+                            duration: 300,
+                            fill: 'forwards',
+                            easing: 'ease'
+                        }).onfinish = () => {
+                            getRef('loading_page').remove()
+                            document.body.classList.add('loaded')
+                        }
+                    }, 500);
+                    document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency])
+                })
+        });
+        function createRipple(event, target) {
+            const circle = document.createElement("span");
+            const diameter = Math.max(target.clientWidth, target.clientHeight);
+            const radius = diameter / 2;
+            const targetDimensions = target.getBoundingClientRect();
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - (targetDimensions.left + radius)}px`;
+            circle.style.top = `${event.clientY - (targetDimensions.top + radius)}px`;
+            circle.classList.add("ripple");
+            const rippleAnimation = circle.animate(
+                [
+                    {
+                        opacity: 1,
+                        transform: `scale(0)`
+                    },
+                    {
+                        transform: "scale(4)",
+                        opacity: 0,
+                    },
+                ],
+                {
+                    duration: 600,
+                    fill: "forwards",
+                    easing: "ease-out",
+                }
+            );
+            target.append(circle);
+            rippleAnimation.onfinish = () => {
+                circle.remove();
+            };
+        }
+        function buttonLoader(id, show) {
+            const button = typeof id === 'string' ? document.getElementById(id) : id;
+            button.disabled = show;
+            const animOptions = {
+                duration: 200,
+                fill: 'forwards',
+                easing: 'ease'
+            }
+            if (show) {
+                button.parentNode.append(document.createElement('sm-spinner'))
+                button.animate([
+                    {
+                        clipPath: 'circle(100%)',
+                    },
+                    {
+                        clipPath: 'circle(0)',
+                    },
+                ], animOptions)
+            } else {
+                button.getAnimations().forEach(anim => anim.cancel())
+                const potentialTarget = button.parentNode.querySelector('sm-spinner')
+                if (potentialTarget) potentialTarget.remove();
+            }
+        }
+        let isMobileView = false
+        const mobileQuery = window.matchMedia('(max-width: 40rem)')
+        function handleMobileChange(e) {
+            isMobileView = e.matches
+        }
+        mobileQuery.addEventListener('change', handleMobileChange)
+
+        handleMobileChange(mobileQuery)
+        const slideInLeft = [
+            {
+                opacity: 0,
+                transform: 'translateX(1.5rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            }
+        ]
+        const slideOutLeft = [
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateX(-1.5rem)'
+            },
+        ]
+        const slideInRight = [
+            {
+                opacity: 0,
+                transform: 'translateX(-1.5rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            }
+        ]
+        const slideOutRight = [
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateX(1.5rem)'
+            },
+        ]
+        const slideInDown = [
+            {
+                opacity: 0,
+                transform: 'translateY(-1.5rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateY(0)'
+            },
+        ]
+        const slideOutUp = [
+            {
+                opacity: 1,
+                transform: 'translateY(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateY(-1.5rem)'
+            },
+        ]
+        class Router {
+            /**
+             * @constructor {object} options - options for the router
+             * @param {object} options.routes - routes for the router
+             * @param {object} options.state - initial state for the router
+             * @param {function} options.routingStart - function to be called before routing
+             * @param {function} options.routingEnd - function to be called after routing
+             */
+            constructor(options = {}) {
+                const { routes = {}, state = {}, routingStart, routingEnd } = options
+                this.routes = routes
+                this.state = state
+                this.routingStart = routingStart
+                this.routingEnd = routingEnd
+                this.lastPage = null
+                window.addEventListener('hashchange', e => this.routeTo(window.location.hash))
+            }
+            /**
+             * @param {string} route - route to be added
+             * @param {function} callback - function to be called when route is matched
+             */
+            addRoute(route, callback) {
+                this.routes[route] = callback
+            }
+            /**
+             * @param {string} route
+             */
+            handleRouting = async (page) => {
+                if (this.routingStart) {
+                    this.routingStart(this.state)
+                }
+                if (this.routes[page]) {
+                    await this.routes[page](this.state)
+                    this.lastPage = page
+                } else {
+                    if (this.routes['404']) {
+                        this.routes['404'](this.state);
+                    } else {
+                        console.error(`No route found for '${page}' and no '404' route is defined.`);
+                    }
+                }
+                if (this.routingEnd) {
+                    this.routingEnd(this.state)
+                }
+            }
+            async routeTo(destination) {
+                try {
+                    let page
+                    let wildcards = []
+                    let params = {}
+                    let [path, queryString] = destination.split('?');
+                    if (path.includes('#'))
+                        path = path.split('#')[1];
+                    if (path.includes('/'))
+                        [, page, ...wildcards] = path.split('/')
+                    else
+                        page = path
+                    this.state = { page, wildcards, lastPage: this.lastPage, params }
+                    if (queryString) {
+                        params = new URLSearchParams(queryString)
+                        this.state.params = Object.fromEntries(params)
+                    }
+                    if (document.startViewTransition) {
+                        document.startViewTransition(async () => {
+                            await this.handleRouting(page)
+                        })
+                    } else {
+                        // Fallback for browsers that don't support View transition API:
+                        await this.handleRouting(page)
+                    }
+                } catch (e) {
+                    console.error(e)
+                }
+            }
+        }
+        let currentSubscriber = null;
+        /**
+         * @param {any} initialValue - initial value for the signal
+         * @param {function} [Optional] callback - function to be called when the signal changes
+         * @returns {array} - array containing getter and setter for the signal
+         * @example
+         * const [getCount, setCount] = $signal(0);
+         */
+        function $signal(initialValue, callback) {
+            let value = initialValue;
+            const subscribers = new Map();
+            let hasCustomSubscriber = false;
+            function getter(subscriber) {
+                if (!hasCustomSubscriber && subscriber) {
+                    currentSubscriber = subscriber;
+                    hasCustomSubscriber = true
+                }
+                if (currentSubscriber) {
+                    let hash = currentSubscriber.toString();
+                    if (Crypto)
+                        hash = Crypto.SHA1(currentSubscriber.toString())
+                    subscribers.set(hash, currentSubscriber);
+                }
+                return value;
+            }
+
+            function setter(newValue) {
+                if (newValue === value) return;
+                value = newValue;
+                subscribers.forEach((subscriber) => subscriber());
+            }
+            return [getter, setter];
+        }
+        /**
+         * 
+         * @param {function} fn - function that will run if any of its dependent signals change
+         * @example
+         * $effect(() => {
+         * console.log(count());
+         * } 
+         * @returns {void}
+         */
+        async function $effect(fn) {
+            currentSubscriber = fn;
+            const result = fn();
+            try {
+                if (result instanceof Promise) {
+                    await result;
+                }
+            } catch (e) {
+                console.error(e)
+            } finally {
+                currentSubscriber = null;
+            }
+        }
+        // class based lazy loading
+        class LazyLoader {
+            constructor(container, elementsToRender, renderFn, options = {}) {
+                const { batchSize = 10, freshRender, bottomFirst = false, domUpdated } = options
+
+                this.elementsToRender = elementsToRender
+                this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
+                this.renderFn = renderFn
+                this.intersectionObserver
+
+                this.batchSize = batchSize
+                this.freshRender = freshRender
+                this.domUpdated = domUpdated
+                this.bottomFirst = bottomFirst
+
+                this.shouldLazyLoad = false
+                this.lastScrollTop = 0
+                this.lastScrollHeight = 0
+
+                this.lazyContainer = document.querySelector(container)
+
+                this.update = this.update.bind(this)
+                this.render = this.render.bind(this)
+                this.init = this.init.bind(this)
+                this.clear = this.clear.bind(this)
+            }
+            get elements() {
+                return this.arrayOfElements
+            }
+            init() {
+                this.intersectionObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            observer.disconnect()
+                            this.render({ lazyLoad: true })
+                        }
+                    })
+                })
+                this.mutationObserver = new MutationObserver(mutationList => {
+                    mutationList.forEach(mutation => {
+                        if (mutation.type === 'childList') {
+                            if (mutation.addedNodes.length) {
+                                if (this.bottomFirst) {
+                                    if (this.lazyContainer.firstElementChild)
+                                        this.intersectionObserver.observe(this.lazyContainer.firstElementChild)
+                                } else {
+                                    if (this.lazyContainer.lastElementChild)
+                                        this.intersectionObserver.observe(this.lazyContainer.lastElementChild)
+                                }
+                            }
+                        }
+                    })
+                })
+                this.mutationObserver.observe(this.lazyContainer, {
+                    childList: true,
+                })
+                this.render()
+            }
+            update(elementsToRender) {
+                this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
+            }
+            render(options = {}) {
+                let { lazyLoad = false } = options
+                this.shouldLazyLoad = lazyLoad
+                const frag = document.createDocumentFragment();
+                if (lazyLoad) {
+                    if (this.bottomFirst) {
+                        this.updateEndIndex = this.updateStartIndex
+                        this.updateStartIndex = this.updateEndIndex - this.batchSize
+                    } else {
+                        this.updateStartIndex = this.updateEndIndex
+                        this.updateEndIndex = this.updateEndIndex + this.batchSize
+                    }
+                } else {
+                    this.intersectionObserver.disconnect()
+                    if (this.bottomFirst) {
+                        this.updateEndIndex = this.arrayOfElements.length
+                        this.updateStartIndex = this.updateEndIndex - this.batchSize - 1
+                    } else {
+                        this.updateStartIndex = 0
+                        this.updateEndIndex = this.batchSize
+                    }
+                    this.lazyContainer.innerHTML = ``;
+                }
+                this.lastScrollHeight = this.lazyContainer.scrollHeight
+                this.lastScrollTop = this.lazyContainer.scrollTop
+                this.arrayOfElements.slice(this.updateStartIndex, this.updateEndIndex).forEach((element, index) => {
+                    frag.append(this.renderFn(element))
+                })
+                if (this.bottomFirst) {
+                    this.lazyContainer.prepend(frag)
+                    // scroll anchoring for reverse scrolling
+                    this.lastScrollTop += this.lazyContainer.scrollHeight - this.lastScrollHeight
+                    this.lazyContainer.scrollTo({ top: this.lastScrollTop })
+                    this.lastScrollHeight = this.lazyContainer.scrollHeight
+                } else {
+                    this.lazyContainer.append(frag)
+                }
+                if (!lazyLoad && this.bottomFirst) {
+                    this.lazyContainer.scrollTop = this.lazyContainer.scrollHeight
+                }
+                // Callback to be called if elements are updated or rendered for first time
+                if (!lazyLoad && this.freshRender)
+                    this.freshRender()
+            }
+            clear() {
+                this.intersectionObserver.disconnect()
+                this.mutationObserver.disconnect()
+                this.lazyContainer.innerHTML = ``;
+            }
+            reset() {
+                this.arrayOfElements = (typeof this.elementsToRender === 'function') ? this.elementsToRender() : this.elementsToRender || []
+                this.render()
+            }
+        }
+    </script>
+    <script type="text/javascript">
+        window.smCompConfig = {
+            'sm-input': [
+                {
+                    selector: '[data-btc-address]',
+                    customValidation: (value) => {
+                        if (!value) return { isValid: false, errorText: 'Please enter a BTC address' }
+                        return {
+                            isValid: btcOperator.validateAddress(value),
+                            errorText: `Invalid address.<br> It usually starts with "1", "3" or "bc1."`
+                        }
+                    }
+                },
+                {
+                    selector: '[data-taproot-address]',
+                    customValidation: (value) => {
+                        if (!value) return { isValid: false, errorText: 'Please enter a Taproot address' }
+                        return {
+                            isValid: btcOperator.validateAddress(value) === 'bech32m',
+                            errorText: `Invalid Taproot address.<br> It starts with "bc1p."`
+                        }
+                    }
+                },
+                {
+                    selector: '[data-private-key]',
+                    customValidation: (value) => {
+                        if (!value) return { isValid: false, errorText: 'Please enter a private key' }
+                        return {
+                            isValid: floCrypto.getPubKeyHex(value),
+                            errorText: `Invalid private key.<br> It usually starts with "L".`
+                        }
+                    }
+                }
+            ]
+        }
+        const currencyIcons = {
+            btc: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M17.06 11.57c.59-.69.94-1.59.94-2.57 0-1.86-1.27-3.43-3-3.87V3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2c2.21 0 4-1.79 4-4 0-1.45-.78-2.73-1.94-3.43zM10 7h4c1.1 0 2 .9 2 2s-.9 2-2 2h-4V7zm5 10h-5v-4h5c1.1 0 2 .9 2 2s-.9 2-2 2z"/></svg>`,
+            usd: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>`,
+            inr: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z"/></g></g></svg>`
+        }
+        function formatAmount(amount = 0) {
+            // check if amount is a string and convert it to a number
+            if (typeof amount === 'string') {
+                amount = parseFloat(amount)
+            }
+            if (!amount)
+                return '0';
+            return amount.toLocaleString(undefined, { style: 'currency', currency: selectedCurrency, minimumFractionDigits: 0, maximumFractionDigits: selectedCurrency === 'btc' ? 8 : 2 })
+        }
+        let globalExchangeRate = {}
+        async function getExchangeRate() {
+            return new Promise((resolve, reject) => {
+                Promise.all(['usd', 'inr'].map(cur => fetch(`https://bitpay.com/api/rates/btc/${cur}`))).then(responses => {
+                    Promise.all(responses.map(res => res.json())).then(rates => {
+                        rates.forEach(rate => {
+                            globalExchangeRate[rate.code.toLowerCase()] = rate.rate
+                        })
+                        globalExchangeRate.btc = 1
+                        resolve(globalExchangeRate)
+                    }).catch(err => reject(err))
+                }).catch(err => reject(err))
+            })
+        }
+        function getConvertedAmount(amount, shouldFormat = false) {
+            // check if amount is a string and convert it to a number
+            if (typeof amount === 'string') {
+                amount = parseFloat(amount)
+            }
+            let convertedAmount = amount;
+            if (globalExchangeRate[selectedCurrency])
+                convertedAmount = parseFloat((amount * globalExchangeRate[selectedCurrency]).toFixed(8))
+            if (shouldFormat)
+                convertedAmount = formatAmount(convertedAmount)
+            return convertedAmount
+        }
+        function roundUp(amount, precision = 2) {
+            return parseFloat((Math.ceil(amount * Math.pow(10, precision)) / Math.pow(10, precision)).toFixed(precision))
+        }
+        let previouslySelectedCurrency = localStorage.getItem('taproot-wallet-currency') || 'btc';
+        getRef('currency_selector').addEventListener('change', e => {
+            selectedCurrency = e.target.value;
+            localStorage.setItem('taproot-wallet-currency', selectedCurrency);
+            document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency])
+            document.querySelectorAll('.amount-shown').forEach(el => {
+                if (el.tagName.includes('SM-')) {
+                    const originalAmount = parseFloat(el.value.trim());
+                    let convertedAmount
+                    const rupeeRate = (globalExchangeRate.inr / globalExchangeRate.usd);
+                    switch (previouslySelectedCurrency) {
+                        case 'usd':
+                            if (selectedCurrency === 'inr')
+                                convertedAmount = roundUp(originalAmount * rupeeRate)
+                            else
+                                convertedAmount = roundUp((originalAmount / globalExchangeRate.usd), 8)
+                            break;
+                        case 'inr':
+                            if (selectedCurrency === 'usd')
+                                convertedAmount = roundUp((originalAmount / rupeeRate))
+                            else
+                                convertedAmount = roundUp((originalAmount / globalExchangeRate.inr), 8)
+                            break;
+                        case 'btc':
+                            convertedAmount = roundUp(originalAmount * globalExchangeRate[selectedCurrency])
+                            break;
+                    }
+                    el.value = convertedAmount
+                    el.isValid // trigger validation
+                } else {
+                    if (el.dataset.btcAmount === undefined) return
+                    el.textContent = getConvertedAmount(el.dataset.btcAmount, true)
+                }
+            })
+            previouslySelectedCurrency = selectedCurrency
+        })
+        function togglePrivateKeyVisibility(input) {
+            const target = input.closest('sm-input')
+            target.type = target.type === 'password' ? 'text' : 'password';
+            target.focusIn()
+        }
+        let transactionsLazyLoader
+        let txDetailsAbortController
+        const render = {
+            transactionCard(transactionDetails) {
+                let { address, amount, time, txid, sender, receiver, type, block } = transactionDetails;
+                let transactionReceiver
+                let icon
+                const transactingAddresses = (receiver || sender || [])
+                const transactingAddressesLinks = transactingAddresses
+                    .slice(0, 2).map(address => {
+                        if (address !== 'undefined')
+                            return html`<a href="${`#/search?query=${address}`}" class="tx-participant wrap-around">${address}</a>`
+                        else
+                            return html`<span class="tx-participant wrap-around">Unknown</span>`
+                    })
+                // block = null
+                if (type === 'out') {
+                    transactionReceiver = html`Sent to ${transactingAddressesLinks}`;
+                    icon = svg`<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
+                } else if (type === 'in') {
+                    transactionReceiver = html`Received from ${transactingAddressesLinks}`;
+                    icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
+                } else if (type === 'self') {
+                    transactionReceiver = `Sent to self`;
+                    icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="m19 8-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/></svg>`;
+                }
+                if (!block) {
+                    icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M6,2l0.01,6L10,12l-3.99,4.01L6,22h12v-6l-4-4l4-3.99V2H6z M16,16.5V20H8v-3.5l4-4L16,16.5z"/></g></svg>`;
+                }
+                const queriedAddress = router.state.params?.query || getRef('search_query_input').value.trim()
+                const isSender = type === 'out' || type === 'self';
+                const isTaprootAddress = btcOperator.validateAddress(queriedAddress) === 'bech32m'
+                const className = `transaction grid ${type} ${block === null ? 'unconfirmed-tx' : ''}`
+                return html.node/*html*/`
+                    <li class="${className}" data-txid="${txid}" data-transacting-addresses=${transactingAddresses.slice(2)}>
+                        <div class="transaction__icon">${icon}</div>
+                        <div class="grid gap-0-5">
+                            <div class="flex gap-0-5 space-between align-center flex-wrap">
+                                <time class="transaction__time">${getFormattedTime(time)}</time>
+                                <div class="transaction__amount amount-shown" data-btc-amount="${amount}">${getConvertedAmount(amount, true)}</div>
+                            </div>
+                            <div class="transaction__receiver">
+                                ${transactionReceiver}
+                                ${transactingAddresses.length > 2 ? html`<button onclick=${showAllAddresses} class="button button--small show-more" title="See all addresses">... +${transactingAddresses.length - 2} more</button>` : ''}
+                            </div>
+                            <div class="flex gap-0-5 flex-wrap align-center">
+                                <a class="button button--small gap-0-3 align-center button--colored transaction__id" href="${`#/search?query=${txid}`}">
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                                    View details
+                                </a>
+                                ${isSender && isTaprootAddress && !block ? html`
+                                    <div class="multi-state-button">
+                                        <button class="button button--small gap-0-3 button--colored" onclick=${initFeeChange} title="Resend transaction with greater fees to reduce confirmation time">
+                                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
+                                            Increase fee
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            ${!block ? html`
+                                <p class="pending-badge">
+                                    Confirmation pending: amount will be deducted after transaction is confirmed.
+                                    ${isSender && !block ? ' Try increasing fee to speed up confirmation' : ''}
+                                </p>
+                            ` : ''}
+                        </div>
+                    </li>
+                    `;
+            },
+            async transactions(address) {
+                try {
+                    getRef('address_details').classList.remove('hidden')
+                    getRef('transactions_list').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
+                    getRef('address_balance').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
+                    btcOperator.getAddressData(address).then(result => {
+                        getRef('address_balance').value = getConvertedAmount(result.balance, true);
+                        getRef('address_balance').dataset.btcAmount = result.balance;
+                        getRef('address_balance').parentElement.classList.remove('hidden')
+                        getRef('filter_selector').classList.remove('hidden')
+                        // render transactions
+                        if (result.txs.length) {
+                            let allTransactions = result.txs;
+                            const filter = getRef('filter_selector').value;
+                            if (filter !== 'all') {
+                                allTransactions = allTransactions.filter(t => filter === 'sent' ? t.type === 'out' : t.type === 'in')
+                            }
+                            if (transactionsLazyLoader) {
+                                transactionsLazyLoader.update(allTransactions)
+                            } else {
+                                transactionsLazyLoader = new LazyLoader('#transactions_list', allTransactions, render.transactionCard)
+                            }
+                            transactionsLazyLoader.init()
+                            getRef('transactions_list').previousElementSibling.classList.remove('hidden');
+                        } else {
+                            getRef('transactions_list').textContent = 'No transactions found';
+                        }
+                    }).catch(error => {
+                        console.error(error)
+                        getRef('filter_selector').classList.add('hidden')
+                        getRef('transactions_list').textContent = `The data service is temporarily unavailable due to over-usage. Please try again in an hour.`;
+                    }).finally(_ => getRef('check_address_button').disabled = false)
+                } catch (err) {
+                    notify(err, 'error');
+                }
+            },
+            addressDetails(address) {
+                getRef('check_address_button').disabled = true;
+                render.transactions(address)
+            },
+            async txDetails(txid) {
+                getRef('tx_details').classList.remove('hidden')
+                renderElem(getRef('tx_details'), html`<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>`);
+                if (txDetailsAbortController) {
+                    txDetailsAbortController.abort()
+                }
+                txDetailsAbortController = new AbortController();
+                btcOperator.getTx(txid).then(result => {
+                    const { block, time, size, fee, inputs, outputs, confirmations, total_input_value, total_output_value } = result;
+                    console.debug('tx', result);
+                    renderElem(getRef('tx_details'), html`
+                        ${!block ? html`<h4>Transaction details</h4>` : ''}
+                        <div class=${`flex gap-0-5 space-between flex-wrap ${block ? 'flex-direction-column' : 'align-center'}`}>
+                            ${block ? html`<h4>Transaction details</h4>` : ''}
+                            <p>${getFormattedTime(time)}</p>
+                            ${!block ? html` <h4 id="tx_status">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                                Unconfirmed
+                            </h4> ` : ''}
+                        </div>
+                        <div id="tx_technicals" class="justify-self-center details-wrapper">
+                            <div class="tx-detail">
+                                <div class="flex align-center gap-0-3">
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                                    <div>Confirmations</div>
+                                </div>
+                                <div style="font-size: 1.5rem">${confirmations}</div>
+                            </div>
+                            ${block ? html`
+                                <div class="tx-detail">
+                                    <div class="flex align-center gap-0-3">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><g><path d="M3,3v8h8V3H3z M9,9H5V5h4V9z M3,13v8h8v-8H3z M9,19H5v-4h4V19z M13,3v8h8V3H13z M19,9h-4V5h4V9z M13,13v8h8v-8H13z M19,19h-4v-4h4V19z"/></g></g></g></svg>
+                                        <div>Block</div>
+                                    </div>
+                                    <div>${block}</div>
+                                </div>
+                            ` : ''}
+                            <div class="tx-detail">
+                                <div class="flex align-center gap-0-3">
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15 4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zM3 12c0-2.61 1.67-4.83 4-5.65V4.26C3.55 5.15 1 8.27 1 12s2.55 6.85 6 7.74v-2.09c-2.33-.82-4-3.04-4-5.65z"/></svg>
+                                    <div>Fee</div>
+                                </div>
+                                <div class="amount-shown" data-btc-amount="${fee}">${getConvertedAmount(fee, true)}</div>
+                            </div>
+                        </div>
+                        <details class="margin-bottom-1-5 justify-self-center w-100" style="margin-top: -1rem">
+                            <summary>
+                                More details
+                                <svg class="icon down-arrow" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M24 24H0V0h24v24z" fill="none" opacity=".87"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6-1.41-1.41z"/></svg>    
+                            </summary>
+                            <div class="details-wrapper">
+                                <div class="tx-detail">
+                                    <div class="flex align-center gap-0-3">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>
+                                        <div>Total Inputs</div>
+                                    </div>
+                                    <div class="amount-shown" data-btc-amount="${total_input_value}">${getConvertedAmount(total_input_value, true)}</div>
+                                </div>
+                                <div class="tx-detail">
+                                    <div class="flex align-center gap-0-3">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
+                                        <div>Total Outputs</div>
+                                    </div>
+                                    <div class="amount-shown" data-btc-amount="${total_output_value}">${getConvertedAmount(total_output_value, true)}</div>
+                                </div>
+                                <div class="tx-detail">
+                                    <div class="flex align-center gap-0-3">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z"/></svg>
+                                        <div>Size</div>
+                                    </div>
+                                    <div>${size} bytes</div>
+                                </div>
+                            </div>
+                        </details>
+                        <div id="in_out_wrapper" class="flex flex-wrap">
+                            <div>
+                                <div class="flex align-center space-between margin-bottom-1" style="padding: 0.5rem 1rem;">
+                                    <b>Senders</b>
+                                </div>
+                                <ul>
+                                    ${inputs.map(input => html`
+                                        <li class="in-out-card">
+                                            <sm-copy value=${input.address}>
+                                                <a href="${`#/search?query=${input.address}`}" class="input-address wrap-around">${input.address}</a>
+                                            </sm-copy>
+                                            <div class="input-value amount-shown" data-btc-amount="${input.value}">${getConvertedAmount(input.value, true)}</div>
+                                        </li>
+                                    `)}
+                                </ul>
+                            </div>
+                            <div>
+                                <div class="flex align-center space-between margin-bottom-1" style="padding: 0.5rem 1rem;">
+                                    <b>Receivers</b>
+                                </div>
+                                <ul>
+                                    ${outputs.map(output => html`
+                                        <li class="in-out-card">
+                                            ${output.address ? html`
+                                                <sm-copy value=${output.address}>
+                                                    <a href="${`#/search?query=${output.address}`}" class="output-address wrap-around">${output.address}</a>
+                                                </sm-copy>
+                                            `: html`
+                                                <div class="output-address">Unknown</div>
+                                            `}
+                                            <div class="output-value amount-shown" data-btc-amount="${output.value}">${getConvertedAmount(output.value, true)}</div>
+                                        </li>
+                                    `)}
+                                </ul>
+                            </div>
+                        </div>
+                    `)
+                }).catch(err => {
+                    notify('Invalid transaction ID', 'error')
+                    renderElem(getRef('tx_details'), html``)
+                })
+            },
+            queryResult(query) {
+                const type = checkQueryStringType(query);
+                if (type === 'address') {
+                    getRef('tx_details').classList.add('hidden')
+                    render.addressDetails(query)
+                } else if (type === 'txid') {
+                    getRef('address_details').classList.add('hidden')
+                    render.txDetails(query)
+                    if (transactionsLazyLoader) {
+                        transactionsLazyLoader.clear()
+                        transactionsLazyLoader = null
+                    }
+                } else {
+                    if (transactionsLazyLoader) {
+                        transactionsLazyLoader.clear()
+                        transactionsLazyLoader = null
+                    }
+                    getRef('address_details').classList.add('hidden')
+                    getRef('tx_details').classList.add('hidden')
+                    notify('Invalid address or transaction id', 'error');
+                }
+            }
+        }
+
+        const router = new Router({
+            routingStart(state) {
+            },
+            routingEnd(state) {
+                const { page } = state
+                if (!page)
+                    page = 'search'
+                if (page !== 'send') {
+                    taprootScriptTxDetails = {}
+                }
+                const previousTarget = getRef('main_navbar').querySelector('.nav-item--active')
+                if (previousTarget) {
+                    previousTarget.classList.remove('nav-item--active')
+                    previousTarget.querySelector('.nav-item__indicator')?.remove()
+                }
+                const target = getRef('main_navbar').querySelector(`.nav-item[href="#/${page}"]`)
+                if (target) {
+                    target.classList.add('nav-item--active')
+                    target.append(html.node`<div class="nav-item__indicator"></div>`)
+                }
+            }
+        })
+        router.addRoute('', (state) => {
+            history.replaceState({}, '', '#/search')
+            renderSearch(state)
+        })
+        router.addRoute('search', renderSearch)
+        function renderSearch(state) {
+            const { params: { query } } = state
+            renderElem(getRef('page_container'), html`
+                <div id="search" class="flex flex-direction-column gap-1">
+                    <h2>Search</h2>
+                    <section class="flex flex-direction-column gap-1">
+                        <sm-form id="search_wrapper" class="flex">
+                            <sm-input type="search" id="search_query_input" placeholder="Search BTC address or transaction ID" required="" aria-label="Search BTC address or transaction ID" aria-required="true" role="textbox" invalid="">
+                                <svg slot="icon" class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none"></path> <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path> </svg>
+                            </sm-input>
+                            <button id="check_address_button" onclick=${handleSearch} class="button button--primary cta" type="submit" aria-label="search" disabled>
+                                <svg slot="icon" class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none"></path> <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path> </svg>
+                            </button>
+                        </sm-form>
+                        <div id="address_details" class="hidden flex flex-direction-column gap-1">
+                            <div id="address_balance_card" class="grid gap-1 hidden">
+                                <div class="flex">
+                                    <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none"></path> <path d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z"></path> <circle cx="16" cy="12" r="1.5"></circle> </svg>
+                                    Balance
+                                </div>
+                                <output id="address_balance" class="amount-shown"></output>
+                            </div>
+                            <div class="flex align-center space-between sticky top-0" style="background-color: rgba(var(--foreground-color), 1); z-index: 2">
+                                <h4>Transactions</h4>
+                                <sm-chips id="filter_selector" onchange=${handleFiltering} role="listbox">
+                                    <sm-chip value="all" selected="" role="option" tabindex="0">All</sm-chip>
+                                    <sm-chip value="sent" role="option" tabindex="0">Sent</sm-chip>
+                                    <sm-chip value="received" role="option" tabindex="0">Received</sm-chip>
+                                </sm-chips>
+                            </div>
+                            <ul id="transactions_list" class="observe-empty-state"></ul>
+                            <div class="empty-state align-self-center text-center">Balance and transactions will appear here
+                            </div>
+                        </div>
+                        <div id="tx_details" class="grid gap-2"></div>
+                    </section>
+                </div>
+            `)
+            if (query) {
+                if (query !== getRef('search_query_input').value.trim())
+                    getRef('search_query_input').value = query;
+                render.queryResult(query)
+            }
+        }
+        const [suggestedFee, setSuggestedFee] = $signal(0);
+        const [suggestedFeeStatus, setSuggestedFeeStatus] = $signal(['idle'])
+        const [feeType, setFeeType] = $signal('suggested')
+        const [atTaprootStep, setAtTaprootStep] = $signal(1);
+        router.addRoute('send', (state) => {
+            let { params: { type = 'key-path' } } = state
+            const [isSignRequired, setIsSignRequired] = $signal(false)
+            const renderSendPage = () => {
+                let feeSection = ''
+                if (feeType() === 'suggested') {
+                    const [status, message] = suggestedFeeStatus()
+                    if (status === 'idle') {
+                        feeSection = html` <p>*Fee will be calculated after you enter all the details</p> `
+                    } else if (status === 'calculating') {
+                        feeSection = html`<div class="flex align-center"> Calculating fee...<sm-spinner></sm-spinner> </div>`
+                    } else if (status === 'error') {
+                        feeSection = html`<p class="error">${message}</p>`
+                    } else if (status === 'success') {
+                        feeSection = html`
+                            <sm-input id="fee_input" class="amount-shown" placeholder="Suggested fee" type="number" value=${suggestedFee()} step="0.00000001" min="0.0000001" readonly animate required></sm-input>
+                        `
+                    }
+                } else {
+                    feeSection = html`
+                        <sm-input id="fee_input" class="amount-shown" placeholder="Custom fee" type="number" step="0.00000001" min="0.0000001" error-text="Minimum fee is 0.0000001BTC" animate required>
+                        </sm-input>
+                    `
+                }
+                let form = '';
+                if (type === 'script-path') {
+                    switch (atTaprootStep()) {
+                        case 1:
+                            form = html`
+                                <sm-form id="script_tx_step_1_form">
+                                    <fieldset class="flex flex-direction-column gap-1">
+                                        <div class="flex flex-direction-column gap-0-5">
+                                            <div class="flex space-between align-center">
+                                                <h4>Sender</h4>
+                                                <button id="check_balance_button" class="button button--small button--colored" disabled onclick="checkBalance()">
+                                                    Check balance
+                                                </button>
+                                            </div>
+                                            <sm-input id="taproot_sender_input" placeholder="Sender's Taproot address" oninput=${handleSenderInput} data-taproot-address animate required> </sm-input>
+                                            <div id="sender_balance_container" class="flex align-center gap-0-3 hidden"></div>
+                                        </div>
+                                        <div class="flex flex-direction-column gap-0-5">
+                                            <h4>Receiver</h4>
+                                            <ul id="receivers_container" class="grid gap-1">
+                                                <li class="grid gap-0-5 receiver-wrapper">
+                                                    <sm-input class="receiver-address" placeholder="Receiver's address" data-btc-address animate required></sm-input>
+                                                    <sm-input class="receiver-amount amount-shown" placeholder="Amount" type="number" step="0.00000001" min="0.0000001" error-text="Amount should be grater than 0.0000001 BTC" animate required>
+                                                        <div class="currency-symbol flex" slot="icon">
+                                                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z"> </path> </g> </svg>
+                                                        </div>
+                                                    </sm-input>
+                                                </li>
+                                            </ul>
+                                            <button class="button button--colored button--small margin-right-auto" onclick="addReceiver()">
+                                                Add receiver
+                                            </button>
+                                        </div>
+                                    </fieldset>
+                                    <fieldset class="flex flex-direction-column gap-1">
+                                        <sm-input id="script_input" placeholder="Script (hex)" pattern="^[0-9A-Fa-f]+$" error-text="Only hexadecimal values are allowed" animate required></sm-input>
+                                        <sm-input id="control_block_input" placeholder="Control block (hex)" pattern="^[0-9A-Fa-f]+$" error-text="Only hexadecimal values are allowed" animate required></sm-input>
+                                        <sm-input id="solutions_input" placeholder="Number of solutions" type="number" min="1" animate required></sm-input>
+                                        <sm-checkbox id="sign_transaction_checkbox" onchange=${e => setIsSignRequired(e.target.checked)} ?checked=${isSignRequired()}>
+                                            <p style="margin-left: 0.5rem;">Signature is one of the solutions</p>
+                                        </sm-checkbox>
+                                        ${isSignRequired(renderSendPage) ? html`
+                                            <sm-input id="signer_input" placeholder="Signer's private key" data-private-key class="password-field" type="password" animate required>
+                                                <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
+                                                <label slot="right" class="interact">
+                                                    <input type="checkbox" class="hidden" autocomplete="off" readonly="" onchange="togglePrivateKeyVisibility(this)">
+                                                    <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"> </path> </svg>
+                                                    <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"> </path> </svg>
+                                                </label>
+                                            </sm-input>
+                                            <div class="grid gap-0-5">
+                                                <sm-input id="signature_place_input" placeholder="Position of signature. (1, 2, ...)" type="number" min="1" animate required></sm-input>
+                                                <p>*The generated signature will be used as one of the solutions.</p>
+                                            </div>
+                                        `: ''}
+                                        <button class="button button--primary" type="submit" disabled onclick=${() => proceedTo(2)}>Proceed</button>
+                                    </fieldset>
+                                </sm-form>
+                            `;
+                            break;
+                        case 2:
+                            form = html`
+                                <sm-form id="script_tx_step_2_form" style="max-width: 36rem">
+                                    <div class="flex flex-direction-column gap-1">
+                                        ${[...Array(taprootScriptTxDetails.noOfSolutions || 0).keys()].map(index => html`
+                                            <sm-input class="solution-input" placeholder=${`Solution ${index + 1} (hex)`} pattern="^[0-9A-Fa-f]+$" error-text="Only hexadecimal values are allowed" animate required></sm-input>
+                                        `)} 
+                                    </div>
+                                    <div class="grid gap-0-5">
+                                        <div class="flex align-center space-between gap-1">
+                                            <h4>Fee</h4>
+                                            <sm-chips onchange=${e => { setFeeType(e.target.value); calculateSuggestedFee('script-path'); }}>
+                                                <sm-chip value="suggested" selected>Suggested</sm-chip>
+                                                <sm-chip value="custom">Custom</sm-chip>
+                                            </sm-chips>
+                                        </div>
+                                        ${feeSection}
+                                    </div>
+                                    <div class="flex gap-0-5">
+                                        <button class="button button--colored" onclick="proceedTo(1)">Back</button>
+                                        <div class="multi-state-button flex-1">
+                                            <button id="taproot_script_path_send_button" class="button button--primary" type="submit" disabled onclick=${sendScriptPathTx}>Send</button>
+                                        </div>
+                                    </div>
+                                </sm-form>
+                            `
+                            break;
+                    }
+                } else {
+                    taprootScriptTxDetails = {}
+                    form = html`
+                        <sm-form id="send_tx_form" onvalid=${() => calculateSuggestedFee('key-path')} oninvalid=${handleInvalidForm} ?skip-submit=${feeType() === 'suggested'}>
+                            <fieldset class="flex flex-direction-column gap-0-5">
+                                <div class="flex space-between align-center">
+                                    <h4>Sender</h4>
+                                    <button id="check_balance_button" class="button button--small button--colored" disabled onclick=${checkBalance}>
+                                        Check balance
+                                    </button>
+                                </div>
+                                <sm-input id="private_key_input" placeholder="Sender's private key" data-private-key class="password-field" type="password" oninput=${handleSenderInput} animate required>
+                                    <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
+                                    <label slot="right" class="interact">
+                                        <input type="checkbox" class="hidden" autocomplete="off" readonly="" onchange="togglePrivateKeyVisibility(this)">
+                                        <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"> </path> </svg>
+                                        <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"> </path> </svg>
+                                    </label>
+                                </sm-input>
+                                <div id="sender_balance_container" class="flex align-center gap-0-3 hidden"></div>
+                            </fieldset>
+                            <fieldset class="flex flex-direction-column gap-1">
+                                <div class="flex flex-direction-column gap-0-5">
+                                    <h4>Receiver</h4>
+                                    <ul id="receivers_container" class="grid gap-1">
+                                        <li class="grid gap-0-5 receiver-wrapper">
+                                            <sm-input class="receiver-address" placeholder="Receiver's address" data-btc-address animate required></sm-input>
+                                            <sm-input class="receiver-amount amount-shown" placeholder="Amount" type="number" step="0.00000001" min="0.0000001" error-text="Amount should be grater than 0.0000001 BTC" animate required>
+                                                <div class="currency-symbol flex" slot="icon">
+                                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z"> </path> </g> </svg>
+                                                </div>
+                                            </sm-input>
+                                        </li>
+                                    </ul>
+                                    <button class="button button--colored button--small margin-right-auto" onclick="addReceiver()">
+                                        Add receiver
+                                    </button>
+                                </div>
+                                <div class="grid gap-0-5">
+                                    <div class="flex align-center space-between gap-1">
+                                        <h4>Fee</h4>
+                                        <sm-chips onchange=${e => { setFeeType(e.target.value); calculateSuggestedFee('key-path'); }}>
+                                            <sm-chip value="suggested" selected>Suggested</sm-chip>
+                                            <sm-chip value="custom">Custom</sm-chip>
+                                        </sm-chips>
+                                    </div>
+                                    ${feeSection}
+                                </div>
+                                <div class="multi-state-button">
+                                    <button id="send_tx_button" class="button button--primary" type="submit" disabled onclick="sendTx()">Send</button>
+                                </div>
+                            </fieldset>
+                        </sm-form>
+                    `;
+                }
+                renderElem(getRef('page_container'), html`
+                    <div class="flex flex-direction-column gap-1-5">
+                        <div class="flex flex-direction-column gap-0-5">
+                            <h3>
+                                Perform Transaction
+                            </h3>
+                            <sm-chips onchange=${e => location.hash = `/send?type=${e.target.value}`}>
+                                <sm-chip value="key-path" ?selected=${type === 'key-path'}>Key-path</sm-chip>
+                                <sm-chip value="script-path" ?selected=${type === 'script-path'}>Script-path</sm-chip>
+                            </sm-chips>
+                        </div>
+                        ${type === 'script-path' ? html`
+                            <ul id="taproot_steps" class="steps">
+                                ${[1, 2].map(step => html`
+                                    <li class=${`step ${atTaprootStep() === step ? 'active' : ''} ${atTaprootStep() > step ? 'done' : ''}`}></li>
+                                `)}
+                            </ul>    
+                        `: ''}
+                        ${form}
+                    </div>
+                `)
+            }
+            $effect(renderSendPage)
+        })
+        async function calculateSuggestedFee(type = 'key-path') {
+            try {
+                if (type === 'key-path') {
+                } else {
+                }
+                const submitButton = getRef('send_tx_button') || getRef('taproot_script_path_send_button')
+                submitButton.disabled = true
+                if (feeType() === 'custom') {
+
+                } else {
+                    setSuggestedFeeStatus(['calculating'])
+                    if (type === 'key-path') {
+                        const { senderPrivateKey, receiverAddresses, receiverAmounts } = getTransactionDetails();
+                        const { fee } = await createTx({ senderPrivateKey, receivers: receiverAddresses, amounts: receiverAmounts })
+                        setSuggestedFee(fee)
+                    } else if (type === 'script-path') {
+                        const { senderAddress, receiverAddresses, receiverAmounts } = taprootScriptTxDetails;
+                        const { fee } = await createTx({ isTaprootScriptPath: true, senderAddress, receivers: receiverAddresses, amounts: receiverAmounts })
+                        setSuggestedFee(fee)
+                    }
+                    setSuggestedFeeStatus(['success'])
+                    submitButton.disabled = false
+                }
+            } catch (e) {
+                console.error(e)
+                setSuggestedFeeStatus(['error', e])
+            }
+        }
+        function handleInvalidForm() {
+            setSuggestedFee(0);
+            setSuggestedFeeStatus(['idle']);
+            (getRef('send_tx_button') || getRef('taproot_script_path_send_button')).disabled = true
+        }
+        let taprootScriptTxDetails = {};
+        function proceedTo(step) {
+            if (!step) return
+            switch (atTaprootStep()) {
+                case 1:
+                    if (!getRef('script_tx_step_1_form').isFormValid) {
+                        notify('Please fill all the details', 'error')
+                        return
+                    }
+                    const { receiverAddresses, receiverAmounts } = getTransactionReceivers()
+                    const senderAddress = getRef('taproot_sender_input').value.trim()
+                    taprootScriptTxDetails = {
+                        senderAddress, receiverAddresses, receiverAmounts,
+                        script: getRef('script_input').value.trim(),
+                        controlBlockHex: getRef('control_block_input').value.trim(),
+                        noOfSolutions: parseInt(getRef('solutions_input').value.trim())
+                    }
+                    if (getRef('sign_transaction_checkbox').checked) {
+                        const signaturePlace = parseInt(getRef('signature_place_input').value.trim())
+                        if (signaturePlace > taprootScriptTxDetails.noOfSolutions) {
+                            notify('Signature place should be less than or equal to number of solutions', 'error')
+                            return
+                        }
+                        taprootScriptTxDetails.signaturePlace = signaturePlace
+                        taprootScriptTxDetails.signerSecretKey = hex.decode(coinjs.wif2privkey(getRef('signer_input').value.trim()).privkey)
+                        taprootScriptTxDetails.noOfSolutions--;
+                    }
+                    break;
+                case 2:
+                    break;
+            }
+            setAtTaprootStep(step)
+            switch (step) {
+                case 2:
+                    calculateSuggestedFee('script-path')
+                    break;
+            }
+        }
+        async function sendScriptPathTx() {
+            try {
+                const providedSolutions = [...document.querySelectorAll('.solution-input')]
+                    .forEach(input => hex.decode(input.value.trim()))
+                const { senderAddress, receiverAddresses, receiverAmounts, script, controlBlockHex, signerSecretKey, signaturePlace } = taprootScriptTxDetails
+                const confirmation = await getConfirmation('Confirm transaction', {
+                    message: html`
+                        <div class="grid gap-1-5">
+                            <div class="grid"> 
+                                <span class="label">Sender address</span>
+                                <sm-copy value=${senderAddress}></sm-copy>
+                            </div>
+                            <div class="grid">
+                                <span class="label">Receivers</span>
+                                <div class="grid gap-0-3">
+                                    ${receiverAddresses.map((address, index) => html.node/*html*/`
+                                        <div class="grid gap-0-5" style="padding:0.5rem;border:solid thin rgba(var(--text-color),0.3);border-radius: 0.3rem;">
+                                            <b>${address}</b>
+                                            <b class="amount-shown" data-btc-amount=${receiverAmounts[index]}>${getConvertedAmount(receiverAmounts[index], true)}</b>
+                                        </div>
+                                    `)}
+                                </div>
+                            </div>
+                            <div class="grid">
+                                <span class="label">Fee</span>
+                                <b class="amount-shown" data-btc-amount=${fee}>${getConvertedAmount(fee, true)}</b>
+                            </div>
+                        </div>
+                    `,
+                    confirmText: 'Send',
+                })
+                if (!confirmation)
+                    return;
+                buttonLoader('taproot_script_path_send_button', true)
+                const { txHex } = await createTx({
+                    senderAddress,
+                    receivers: receiverAddresses,
+                    amounts: receiverAmounts,
+                    signerSecretKey,
+                    providedSolutions,
+                    userScript: hex.decode(script),
+                    userControlBlock: hex.decode(controlBlockHex),
+                    controlBlockVersion: taproot.TaprootControlBlock.decode(hex.decode(controlBlockHex)).version,
+                    signaturePlace
+                })
+                console.log(txHex)
+                btcOperator.broadcastTx(txHex).then(txid => {
+                    showTransactionResult(true, txid)
+                }).catch(err => {
+                    showTransactionResult(false, err)
+                }).finally(() => {
+                    buttonLoader('taproot_script_path_send_button', false)
+                })
+            } catch (e) {
+                notify(e, 'error')
+                buttonLoader('taproot_script_path_send_button', false)
+            }
+        }
+        router.addRoute('convert', (state) => {
+            const convertingFrom = state.params.from || 'flo';
+            let privateKeyConversionDescription = '';
+            let addressConversionDescription = null;
+            let addressForConversion = ''
+            switch (convertingFrom) {
+                case 'flo':
+                    privateKeyConversionDescription = 'Convert FLO private key to corresponding BTC | ETH address & private key';
+                    addressConversionDescription = 'Convert FLO address to BTC address';
+                    addressForConversion = html`<sm-input id="address_for_conversion" placeholder="FLO Address" data-flo-address animate required></sm-input>`
+                    break;
+                case 'btc':
+                    privateKeyConversionDescription = 'Convert BTC private key to corresponding FLO | ETH address & private key';
+                    addressConversionDescription = 'Convert BTC address to FLO address';
+                    addressForConversion = html`<sm-input id="address_for_conversion" placeholder="BTC Address" data-btc-address animate required></sm-input>`
+                    break;
+                case 'eth':
+                    privateKeyConversionDescription = 'Convert ETH private key to corresponding FLO | BTC address & private key';
+                    break;
+            }
+            renderElem(getRef('page_container'), html`
+                <div id="convert" class="flex flex-direction-column gap-1-5" data-sm-containment>
+                    <sm-chips id="conversion_view_selector" onchange="handleConversionRouteChange(event)">
+                        <sm-chip value="flo" ?selected=${convertingFrom === 'flo'}>FLO</sm-chip>
+                        <sm-chip value="btc" ?selected=${convertingFrom === 'btc'}>BTC</sm-chip>
+                        <sm-chip value="eth" ?selected=${convertingFrom === 'eth'}>ETH</sm-chip>
+                    </sm-chips>
+                    <div id="key_conversion_content" class="grid gap-1-5">
+                        <div class="grid gap-1-5">
+                            <div class="grid gap-0-3">
+                                <h3>Private key converter</h3>
+                                <p>${privateKeyConversionDescription}</p>
+                            </div>
+                            <sm-form oninvalid=${() => renderElem(getRef('private_key_conversion_result'), html``)}>
+                                <div class="input-action-wrapper">
+                                    <sm-input type="password" id="private_key_for_conversion" class="password-field" placeholder=${`${convertingFrom.toUpperCase()} private key`} data-private-key required animate>
+                                        <label slot="right" class="interact">
+                                            <input type="checkbox" class="hidden" autocomplete="off" readonly onchange="togglePrivateKeyVisibility(this)">
+                                            <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" /> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" /> </svg>
+                                            <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" /> </svg>
+                                        </label>
+                                    </sm-input>
+                                    <button type="submit" onclick=${() => convertPrivateKey(convertingFrom)} class="button button--primary cta" disabled>Convert</button>
+                                </div>
+                            </sm-form>
+                            <ul id="private_key_conversion_result" class="grid gap-0-5"></ul>
+                        </div>
+                        ${addressConversionDescription ? html`
+                            <div class="grid gap-1-5">
+                                <div class="grid gap-0-3">
+                                    <h3>Address converter</h3>
+                                    <p class="panel-footer">${addressConversionDescription}</p>
+                                </div>  
+                                <sm-form class="flex" oninvalid=${() => renderElem(getRef('address_conversion_result'), html``)}>
+                                    <div class="input-action-wrapper">
+                                        ${addressForConversion}
+                                        <button class="button--primary justify-self-center cta" onclick=${() => convertAddress(convertingFrom)} type="submit" disabled>
+                                            Convert
+                                        </button>
+                                    </div>
+                                </sm-form>
+                                <div id="address_conversion_result" class="converted-card"></div>
+                            </div>
+                        `: ''}    
+                    </div>
+                </div>
+            `)
+        })
+        function handleConversionRouteChange(e) {
+            location.hash = `#/convert?from=${e.target.value}`
+        }
+        function convertPrivateKey(convertFrom) {
+            let keyToConvert = getRef('private_key_for_conversion').value.trim();
+            if (/^[0-9a-fA-F]{64}$/.test(keyToConvert)) {
+                keyToConvert = coinjs.privkey2wif(keyToConvert)
+            }
+            let convertedToFloPrivateKey
+            let convertedToFloAddress
+            let convertedToBtcPrivateKey
+            let convertedToBtcAddress
+            let convertedToEthPrivateKey
+            let convertedToEthAddress
+            try {
+                switch (convertFrom) {
+                    case 'flo':
+                        convertedToBtcPrivateKey = btcOperator.convert.wif(keyToConvert)
+                        convertedToBtcAddress = getTaprootAddress(convertedToBtcPrivateKey).tr.address
+                        convertedToEthPrivateKey = coinjs.wif2privkey(keyToConvert).privkey;
+                        convertedToEthAddress = floEthereum.ethAddressFromPrivateKey(convertedToEthPrivateKey)
+                        break;
+                    case 'btc':
+                        convertedToFloPrivateKey = btcOperator.convert.wif(keyToConvert, bitjs.priv)
+                        convertedToFloAddress = floCrypto.getFloID(convertedToFloPrivateKey);
+                        convertedToEthPrivateKey = coinjs.wif2privkey(keyToConvert).privkey;
+                        convertedToEthAddress = floEthereum.ethAddressFromPrivateKey(convertedToEthPrivateKey)
+                        break;
+                    case 'eth':
+                        convertedToBtcPrivateKey = btcOperator.convert.wif(keyToConvert)
+                        convertedToBtcAddress = getTaprootAddress(convertedToBtcPrivateKey).tr.address
+                        convertedToFloPrivateKey = keyToConvert
+                        convertedToFloAddress = floCrypto.getFloID(convertedToFloPrivateKey);
+                        break;
+                }
+                renderElem(getRef('private_key_conversion_result'), html`
+                    ${convertedToFloPrivateKey ? html`
+                        <li class="grid gap-1 converted-card">
+                            <div class="grid">
+                                <span class="label">FLO Address</span>
+                                <sm-copy value="${convertedToFloAddress}"></sm-copy>
+                            </div>
+                            <div class="grid">
+                                <span class="label">FLO Private Key</span>
+                                <sm-copy value="${convertedToFloPrivateKey}"></sm-copy>
+                            </div>
+                        </li>
+                    `: ''}
+                    ${convertedToBtcPrivateKey ? html`
+                        <li class="grid gap-1 converted-card">
+                            <div class="grid">
+                                <span class="label">BTC Address (Taproot)</span>
+                                <sm-copy value="${convertedToBtcAddress}"></sm-copy>
+                            </div>
+                            <div class="grid">
+                                <span class="label">BTC Private Key</span>
+                                <sm-copy value="${convertedToBtcPrivateKey}"></sm-copy>
+                            </div>
+                        </li>
+                    `: ''}
+                    ${convertedToEthPrivateKey ? html`
+                        <li class="grid gap-1 converted-card">
+                            <div class="grid">
+                                <span class="label">ETH Address</span>
+                                <sm-copy value="${convertedToEthAddress}"></sm-copy>
+                            </div>
+                            <div class="grid">
+                                <span class="label">ETH Private Key</span>
+                                <sm-copy value="${convertedToEthPrivateKey}"></sm-copy>
+                            </div>
+                        </li>
+                    `: ''}
+                `)
+            } catch (err) {
+                notify('Invalid private key', 'error')
+                renderElem(getRef('private_key_conversion_result'), html``)
+            }
+        }
+        function convertAddress(convertFrom) {
+            const addressToConvert = getRef('address_for_conversion').value.trim();
+            let convertedAddress
+            let convertedTo
+            try {
+                switch (convertFrom) {
+                    case 'flo':
+                        convertedAddress = btcOperator.convert.legacy2bech(addressToConvert);
+                        convertedTo = 'BTC'
+                        break;
+                    case 'btc':
+                        convertedAddress = floCrypto.toFloID(addressToConvert);
+                        convertedTo = 'FLO'
+                        break;
+                }
+                if (convertedAddress === addressToConvert) {
+                    notify('Address is already converted', 'error')
+                    return;
+                }
+                renderElem(getRef('address_conversion_result'), html`
+                    <span class="label">${convertedTo} Address</span>
+                    <sm-copy value="${convertedAddress}"></sm-copy>
+                `)
+            } catch (err) {
+                notify('Invalid address', 'error')
+                renderElem(getRef('address_conversion_result'), html``)
+            }
+        }
+
+        router.addRoute('404', () => {
+            renderElem(getRef('page_container'), html`
+                <h1>Page not found</h1>
+            `)
+        })
+
+        function checkBalance() {
+            let address;
+            const hasProvidedPrivateKey = !!getRef('private_key_input')
+            if (hasProvidedPrivateKey) {
+                const wif = getRef('private_key_input').value.trim()
+                if (!wif)
+                    return notify(`Please enter sender's private key to check balance`)
+                address = getTaprootAddress(wif).tr.address
+            } else {
+                address = getRef('taproot_sender_input').value.trim()
+            }
+            getRef('sender_balance_container').classList.remove('hidden')
+            renderElem(getRef('sender_balance_container'), html`
+                Loading balance...<sm-spinner></sm-spinner>
+            `)
+            btcOperator.getBalance(address).then(balance => {
+                renderElem(getRef('sender_balance_container'), html`
+                    <div class="grid gap-1" style="padding: 1rem; border-radius: 0.5rem; border: solid thin rgba(var(--text-color),0.3)">
+                        ${hasProvidedPrivateKey ? html`
+                            <div class="grid">
+                                <p class="label">Sender address</p>
+                                <sm-copy value=${address}><p>${address}<p></sm-copy>
+                            </div>
+                        `: ''}
+                        <p>
+                            Balance: <b class="amount-shown" data-btc-amount=${balance}>${getConvertedAmount(balance, true)}</b>
+                        </p>
+                    </div>
+                `)
+            }).catch(err => {
+                notify(e, 'error')
+            })
+        }
+        function handleSenderInput(e) {
+            getRef('check_balance_button').disabled = !e.target.isValid
+            if (!e.target.isValid) {
+                getRef('sender_balance_container').classList.add('hidden')
+            }
+        }
+        getRef('convert_to_taproot_form').addEventListener('invalid', () => {
+            if (!document.startViewTransition) {
+                getRef('converted_address_wrapper').classList.add('hidden')
+                return
+            }
+            document.startViewTransition(() => {
+                getRef('converted_address_wrapper').classList.add('hidden')
+            })
+        })
+        function retrieveTaproot() {
+            function convert() {
+                let wif = getRef('convert_to_taproot_input').value.trim();
+                getRef('converted_address_wrapper').classList.remove('hidden');
+                const { tr: { address } } = getTaprootAddress(wif);
+                getRef('converted_address').value = address;
+            }
+            if (!document.startViewTransition) {
+                return convert()
+            }
+            document.startViewTransition(() => {
+                convert()
+            })
+        }
+        function addReceiver() {
+            const domParser = new DOMParser()
+            const currencyIcon = domParser.parseFromString(currencyIcons[selectedCurrency], 'image/svg+xml').rootElement
+            getRef('receivers_container').append(html.node/*html*/`
+                <div class="grid gap-0-5 receiver-wrapper">
+                    <sm-input class="receiver-address" placeholder="Receiver's address" data-btc-address required></sm-input>
+                    <div class="flex gap-0-5">
+                        <sm-input class="receiver-amount flex-1 amount-shown" placeholder="Amount" type="number" step="0.00000001" min="0.0000001" error-text="Amount should be grater than 0.0000001 BTC" required>
+                            <div class="currency-symbol flex" slot="icon">
+                                ${currencyIcon}
+                            </div>
+                        </sm-input>
+                        <button class="button button--danger" onclick="removeReceiver(this)">Remove</button>
+                    </div>
+                </div>
+            `)
+        }
+        function removeReceiver(button) {
+            button.closest('.receiver-wrapper').remove()
+        }
+        function getTransactionReceivers() {
+            const receivers = [...getRef('receivers_container').children].reduce((receivers, receiver) => {
+                const receiverAddress = receiver.querySelector('.receiver-address').value.trim()
+                let amount = parseFloat(receiver.querySelector('.receiver-amount').value.trim())
+                amount = amount / (globalExchangeRate[selectedCurrency] || 1) // convert to btc
+                if (!receivers[receiverAddress])
+                    receivers[receiverAddress] = 0
+                receivers[receiverAddress] += amount
+                return receivers
+            }, {})
+            const receiverAddresses = Object.keys(receivers)
+            const receiverAmounts = Object.values(receivers)
+            return { receivers, receiverAddresses, receiverAmounts }
+        }
+        function getTransactionDetails() {
+            const senderPrivateKey = getRef('private_key_input').value.trim();
+            const senderAddress = getTaprootAddress(senderPrivateKey).tr.address;
+            if (btcOperator.validateAddress(senderAddress) !== 'bech32m')
+                return notify('Sender address is not a Taproot address', 'error')
+            const { receivers, receiverAddresses, receiverAmounts } = getTransactionReceivers()
+            let fee = parseFloat(getRef('fee_input')?.value.trim()) || 0
+            fee = fee / (globalExchangeRate[selectedCurrency] || 1)
+            return { senderPrivateKey, senderAddress, receivers, receiverAddresses, receiverAmounts, fee }
+        }
+        async function sendTx() {
+            try {
+                const { senderPrivateKey, senderAddress, receivers, receiverAddresses, receiverAmounts, fee } = getTransactionDetails()
+                const confirmation = await getConfirmation('Confirm transaction', {
+                    message: html`
+                        <div class="grid gap-1-5">
+                            <div class="grid"> 
+                                <span class="label">Sender address</span>
+                                <sm-copy value=${senderAddress}></sm-copy>
+                            </div>
+                            <div class="grid">
+                                <span class="label">Receivers</span>
+                                <div class="grid gap-0-3">
+                                    ${Object.entries(receivers).map(([address, amount]) => html.node/*html*/`
+                                        <div class="grid gap-0-5" style="padding:0.5rem;border:solid thin rgba(var(--text-color),0.3);border-radius: 0.3rem;">
+                                            <b>${address}</b>
+                                            <b class="amount-shown" data-btc-amount=${amount}>${getConvertedAmount(amount, true)}</b>
+                                        </div>
+                                    `)}
+                                </div>
+                            </div>
+                            <div class="grid">
+                                <span class="label">Fee</span>
+                                <b class="amount-shown" data-btc-amount=${fee}>${getConvertedAmount(fee, true)}</b>
+                            </div>
+                        </div>
+                    `,
+                    confirmText: 'Send',
+                })
+                if (!confirmation)
+                    return;
+                buttonLoader('send_tx_button', true)
+                const { txHex } = await createTx({ senderPrivateKey, receivers: receiverAddresses, amounts: receiverAmounts, fee })
+                console.log(txHex)
+                btcOperator.broadcastTx(txHex).then(txid => {
+                    showTransactionResult(true, txid)
+                }).catch(err => {
+                    showTransactionResult(false, err)
+                }).finally(() => {
+                    buttonLoader('send_tx_button', false)
+                })
+            } catch (e) {
+                notify(e, 'error')
+                buttonLoader('send_tx_button', false)
+            }
+        }
+        function showTransactionResult(success, result, options = {}) {
+            let { title, description } = options
+            if (!title)
+                title = success ? 'Transaction initiated' : 'Transaction failed'
+            if (!description)
+                description = success ? 'This might take upto 30 mins to complete and reflect on blockchain.' : result
+
+            renderElem(getRef('transaction_result'), html`
+                ${success ? html`
+                    <svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /> </svg>
+                ` : ''}
+                ${!success ? html`
+                    <svg class="icon icon--failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" /> </svg>
+                ` : ''}
+                <h3 id="transaction_result__title">${title}</h3>
+                <div id="transaction_result__description"> ${description} </div>
+                ${success && result ? html`
+                    <div class="grid gap-1">
+						<a id="transaction_link" class="flex align-center button--colored" href=${`https://ranchimall.github.io/btcwallet/#/search?query=${result}`} style="margin-top: 1.5rem;" target="_blank">
+                            See transaction on blockchain
+                            <svg class="icon margin-left-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"></path> </svg>
+                        </a>
+                        <div class="grid">
+                            <span class="label">Transaction ID</span>
+                            <sm-copy class="justify-self-center" value=${result}></sm-copy>
+                        </div>
+                    </div>
+                ` : ''}
+            `)
+            openPopup('transaction_result_popup')
+        }
+        // detect if given string is a bitcoin transaction id
+        function isTxId(str) {
+            return str.length === 64 && str.match(/^[0-9a-f]+$/i);
+        }
+        //  detect if given string is a bitcoin address or transaction id
+        function checkQueryStringType(str) {
+            if (btcOperator.validateAddress(str) || /^bc1[a-z0-9]{59}$/i.test(str)) {
+                return 'address';
+            } else if (isTxId(str)) {
+                return 'txid';
+            } else {
+                return 'invalid';
+            }
+        }
+        function handleSearch(e) {
+            const query = getRef('search_query_input').value.trim();
+            console.log(router.state)
+            if (router.state.params.hasOwnProperty('query') && query === router.state.params.query) {
+                render.queryResult(query);
+            } else {
+                location.hash = `#/search?query=${query}`;
+            }
+        }
+        function handleFiltering() {
+            const address = getRef('search_query_input').value;
+            render.transactions(address)
+        }
+
+        function showAllAddresses(e) {
+            const addresses = e.target.closest('li').dataset.transactingAddresses
+            const addressesList = addresses.split(',').map(address => html.node`<a href="${`#/search?query=${address}`}" class="tx-participant wrap-around">${address}</a>`)
+            e.target.closest('button').before(...addressesList)
+            e.target.closest('button').remove()
+        }
+
+        let changingFeeOf = null
+        async function initFeeChange(e) {
+            const button = e.target.closest('button')
+            buttonLoader(button, true)
+            const txid = button.closest('li').dataset.txid
+            changingFeeOf = txid
+            try {
+                const { tx, rawTx } = await getTaprootTx(txid)
+                const finalScriptWitness = tx.inputs[0].finalScriptWitness
+                const isScriptPath = finalScriptWitness && finalScriptWitness.length > 1;
+                const { inputs, outputs, fee: previousFee } = parseTransaction(rawTx)
+                let senders = inputs.map(input => input.address)
+                const receivers = outputs.map(output => output.address)
+                const uniqueReceivers = outputs.reduce((acc, { address, value }) => {
+                    if (acc[address]) {
+                        acc[address] += value
+                    } else {
+                        acc[address] = value
+                    }
+                    return acc
+                }, {})
+                if (isScriptPath) {
+                    const script = finalScriptWitness[finalScriptWitness.length - 2]
+                    console.log(finalScriptWitness)
+                    const requiresSignature = btc.Script.decode(script).some(op => op === 'CHECKSIG');
+                    const requiredSolutions = requiresSignature ? finalScriptWitness.length - 3 : finalScriptWitness.length - 2;
+                    const renderSolutionInput = (index) => html`
+                        <sm-input class="solution-input flex-1" placeholder=${`Solution #${index + 1} (Hex)`} pattern="^[0-9A-Fa-f]+$" error-text="Only hexadecimal values are allowed" animate required></sm-input>
+                    `
+                    renderElem(getRef('increase_fee_popup_content'), html`
+                        <sm-form style="--gap: 2rem">
+                            ${requiredSolutions > 0 ? html`
+                                <div class="grid gap-0-5">
+                                    <h4>Enter solutions</h4>
+                                    ${[...Array(requiredSolutions)].map((_, index) => renderSolutionInput(index))}
+                                </div>
+                            ` : ''}
+                            ${requiresSignature ? html`
+                                <div class="grid gap-0-5">
+                                    <h4>Transaction requires signature as a solution</h4>
+                                    <sm-input id="signer_input" placeholder="Signer's private key" data-private-key class="password-field" type="password" animate required>
+                                        <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
+                                        <label slot="right" class="interact">
+                                            <input type="checkbox" class="hidden" autocomplete="off" readonly="" onchange="togglePrivateKeyVisibility(this)">
+                                            <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"> </path> </svg>
+                                            <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"> </path> </svg>
+                                        </label>
+                                    </sm-input>
+                                    <p>*The generated signature will be used as one of the solutions.</p>
+                                </div>
+                                ${finalScriptWitness.length > 3 ? html`
+                                    <sm-input id="signature_place_input" placeholder="Position of signature. (1, 2, ...)" type="number" min="1" max=${requiredSolutions + 1} error-text=${`Value must be between 1 and ${requiredSolutions + 1}`} animate required></sm-input>
+                                ` : html`
+                                    <sm-input id="signature_place_input" placeholder="Position of signature" class="hidden" type="number" value="1" readonly animate required></sm-input>
+                                `}
+                            ` : ''}
+                            <div class="grid gap-0-5">
+                                <p>
+                                    Previous fee: <b>${getConvertedAmount(previousFee, true)}</b>
+                                </p>
+                                <sm-input id="new_fee" placeholder="New fee" type="number" min=${getConvertedAmount(previousFee)} step="0.00000001" error-text=${`New fee should be greater than ${getConvertedAmount(previousFee, true)}`} animate required>
+                                    <div class="currency-symbol flex" slot="icon"> </div>
+                                </sm-input>
+                            </div>
+                            <div class="multi-state-button">
+                                <button id="increase_fee" class="button button--primary" onclick=${() => increaseFee('script-path')} type="submit" disabled>Increase fee</button>
+                            </div>
+                        </sm-form>
+                    `)
+                } else {
+                    renderElem(getRef('increase_fee_popup_content'), html`
+                        <sm-form style="--gap: 2rem">
+                            <div class="grid gap-0-5">
+                                <h4>Senders</h4>
+                                <ul class="grid gap-0-5">
+                                    ${[...new Set(senders)].map((address) => html.node/*html*/`<li class="increase-fee-sender grid gap-1">
+                                        <div>
+                                            <div class="label">Address</div>
+                                            <b class="sender__address wrap-around">${address}</b>
+                                        </div>
+                                        <sm-input class="sender__private-key password-field" type="password" placeholder="Private Key" animate required>
+                                            <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"></path> </g> </svg>
+                                            <label slot="right" class="interact">
+                                                <input type="checkbox" class="hidden" autocomplete="off" readonly="" onchange="togglePrivateKeyVisibility(this)">
+                                                <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"></path> </svg>
+                                                <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path> </svg>
+                                            </label>
+                                        </sm-input>
+                                    </li>`)}
+                                </ul>
+                            </div>
+                            <div class="grid gap-0-5">
+                                <h4>Receivers</h4>
+                                <ul class="grid gap-0-5">
+                                    ${Object.entries(uniqueReceivers).map(([address, value]) => html.node/*html*/`<li class="increase-fee-receiver grid gap-1">
+                                        <div>
+                                            <div class="label">Address</div>
+                                            <b class="wrap-around">${address}</b>
+                                        </div>
+                                        <div>
+                                            <div class="label">Amount</div>
+                                            <b>${getConvertedAmount(value, true)}</b>
+                                        </div>
+                                    </li>`)}
+                                </ul>
+                            </div>
+                            <div class="grid gap-0-5">
+                                <p>
+                                    Previous fee: <b>${getConvertedAmount(previousFee, true)}</b>
+                                </p>
+                                <sm-input id="new_fee" placeholder="New fee" type="number" min=${getConvertedAmount(previousFee)} step="0.00000001" error-text=${`New fee should be greater than ${getConvertedAmount(previousFee, true)}`} animate required>
+                                    <div class="currency-symbol flex" slot="icon"> </div>
+                                </sm-input>
+                            </div>
+                            <div class="multi-state-button">
+                                <button id="increase_fee" class="button button--primary" onclick=${() => increaseFee('key-path')} type="submit" disabled>Increase fee</button>
+                            </div>
+                        </sm-form>
+                    `)
+                }
+                getRef('new_fee').querySelector('.currency-symbol').innerHTML = currencyIcons[selectedCurrency]
+                openPopup('increase_fee_popup')
+            } catch (e) {
+                console.error(e)
+            } finally {
+                buttonLoader(button, false)
+            }
+        }
+        async function increaseFee(type = 'key-path') {
+            try {
+                buttonLoader(getRef('increase_fee'), true)
+                const newFee = parseFloat((parseFloat(getRef('new_fee').value.trim()) / (globalExchangeRate[selectedCurrency] || 1)).toFixed(8))
+                let txHex
+                if (type === 'key-path') {
+                    const privateKeys = []
+                    document.querySelectorAll('.increase-fee-sender').forEach(sender => {
+                        const address = sender.querySelector('.sender__address').textContent.trim()
+                        const privateKey = sender.querySelector('.sender__private-key').value.trim()
+                        if (!btcOperator.verifyKey(address, privateKey))
+                            return notify(`Invalid private key for address ${address}`, 'error')
+                        if (privateKey) {
+                            privateKeys.push(privateKey)
+                        }
+                    })
+                    txHex = await taprootEditFee({
+                        txId: changingFeeOf,
+                        newFee: newFee,
+                        privateKeys
+                    })
+                } else {
+                    const providedSolutions = [...document.querySelectorAll('.solution-input')].map(input => input.value.trim())
+                    const signaturePlace = parseInt(getRef('signature_place_input').value.trim())
+                    const signerPrivateKey = getRef('signer_input') ? getRef('signer_input').value.trim() : null;
+                    const editParams = {
+                        txId: changingFeeOf,
+                        newFee,
+                        providedSolutions,
+                        signaturePlace,
+                    }
+                    if (signerPrivateKey)
+                        editParams.signerSecretKey = hex.decode(coinjs.wif2privkey(signerPrivateKey).privkey)
+                    txHex = await taprootEditFee(editParams)
+                }
+                btcOperator.broadcastTx(txHex).then(txId => {
+                    console.log(txId)
+                    closePopup()
+                    showTransactionResult('success', txId)
+                }).catch(e => {
+                    notify(e, 'error')
+                }).finally(_ => {
+                    buttonLoader(getRef('increase_fee'), false)
+                    changingFeeOf = null
+                })
+            } catch (err) {
+                notify(e, 'error')
+                buttonLoader(getRef('increase_fee'), false)
+            }
+        }
+        router.addRoute('create', state => {
+            renderElem(getRef('page_container'), html`
+                <menu id="creation_menu" class="flex gap-0-5">
+                    <li>
+                        <button class="button button--colored primary-action" onclick="openPopup('generate_key_path_address_popup')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" /> </svg>
+                            <h4> Create key-path address </h4>
+                            <p> Generates a Taproot address and private key pair </p>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="button button--colored primary-action" onclick="openPopup('generate_script_path_address_popup')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" /> </svg>
+                            <h4> Create script-path address </h4>
+                            <p> Generates a Taproot address with given member scripts </p>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="button button--colored primary-action" onclick="openPopup('convert_to_taproot_popup')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z" /> </svg>
+                            <h4>Retrieve Taproot address</h4>
+                            <p>Get Taproot address corresponding to given BTC private key</p>
+                        </button>
+                    </li>
+                </menu>
+            `)
+        })
+    </script>
+    <script type="text/javascript">
+        const DUST_AMT = 546,
+            MIN_FEE_UPDATE = 219;
+
+        const SATOSHI_IN_BTC = 1e8;
+        const BASE_TX_SIZE = 12,
+            BASE_INPUT_SIZE = 41,
+            LEGACY_INPUT_SIZE = 107,
+            BECH32_INPUT_SIZE = 27,
+            SEGWIT_INPUT_SIZE = 59,
+            BECH32M_INPUT_SIZE = 39, // Check this later
+            BASE_OUTPUT_SIZE = 9,
+            LEGACY_OUTPUT_SIZE = 25,
+            BECH32_OUTPUT_SIZE = 23,
+            SEGWIT_OUTPUT_SIZE = 23,
+            BECH32M_OUTPUT_SIZE = 35; // Check this later
+
+        function getTaprootAddress(wif) {
+            if (!wif)
+                wif = coinjs.newKeys().wif
+            const { privkey } = coinjs.wif2privkey(wif)
+            const privKey_arrayform = hex.decode(privkey)
+            const pubS = secp256k1_schnorr.getPublicKey(privKey_arrayform);
+            const tr = taproot.p2tr(pubS);
+            return {
+                tr,
+                wif
+            }
+        }
+        function _sizePerInput(addr) {
+            switch (coinjs.addressDecode(addr).type) {
+                case "standard":
+                    return BASE_INPUT_SIZE + LEGACY_INPUT_SIZE;
+                case "bech32":
+                    return BASE_INPUT_SIZE + BECH32_INPUT_SIZE;
+                case "bech32m":
+                    return BASE_INPUT_SIZE + BECH32M_INPUT_SIZE;
+                default:
+                    return null;
+            }
+        }
+
+        function _sizePerOutput(addr) {
+            switch (coinjs.addressDecode(addr).type) {
+                case "standard":
+                    return BASE_OUTPUT_SIZE + LEGACY_OUTPUT_SIZE;
+                case "bech32":
+                    return BASE_OUTPUT_SIZE + BECH32_OUTPUT_SIZE;
+                case "bech32m":
+                    return BASE_OUTPUT_SIZE + BECH32M_OUTPUT_SIZE;
+                default:
+                    return null;
+            }
+        }
+        /**
+         * @param {string} senderPrivateKey
+         * @param {array} array of receivers 
+         * @param {array} array of amounts in BTC
+         * @param {number} fee in BTC
+         */
+        async function createTx(params = {}) {
+            return new Promise(async (resolve, reject) => {
+                let {
+                    senderAddress,
+                    senderPrivateKey,
+                    receivers = [],
+                    amounts = [],
+                    fee = 0,
+                    isTaprootScriptPath = false,
+                    userScript,
+                    providedSolutions,
+                    signerSecretKey,
+                    userControlBlock,
+                    controlBlockVersion,
+                    signaturePlace
+                } = params
+                try {
+                    let tr
+                    let address, script
+                    let opts = {};
+                    if (isTaprootScriptPath) {
+                        address = senderAddress
+                        script = hex.decode(coinjs.addressDecode(senderAddress).outstring)
+                        opts = { allowUnknownInputs: true }
+                    } else {
+                        tr = getTaprootAddress(senderPrivateKey).tr
+                        address = tr.address
+                        script = tr.script
+                    }
+                    const tx = new taproot.Transaction(opts);
+                    const totalAmount = amounts.reduce((total, amount) => total + amount, 0)
+                    const amountInSat = btcOperator.util.BTC_to_Sat(totalAmount)
+                    const [senderBalance, feeRate] = await Promise.all([btcOperator.getBalance(address), btcOperator.getFeeRate()]);
+                    let calculatedFee = 0;
+                    const { input_size, consumedUtxos } = await addUTXOs(tx, tr, [address], btcOperator.util.BTC_to_Sat(totalAmount), feeRate)
+                    calculatedFee += input_size
+                    // add receivers
+                    receivers.forEach((receiver, i) => {
+                        tx.addOutputAddress(receiver, BigInt(btcOperator.util.BTC_to_Sat(amounts[i])))
+                        calculatedFee += _sizePerOutput(receiver)
+                    })
+                    calculatedFee += _sizePerOutput(address) // add change output
+                    calculatedFee = parseFloat((calculatedFee * feeRate).toFixed(8)) // convert to sat
+                    fee = fee || calculatedFee; // if fee is not provided, pass calculated fee
+                    // add change address
+                    const changeAmount = senderBalance - (totalAmount + fee)
+                    tx.addOutputAddress(address, BigInt(btcOperator.util.BTC_to_Sat(changeAmount)));
+                    if (isTaprootScriptPath) {
+                        tx.inputs.forEach((input, index) => {
+                            const scriptWitness = [
+                                userScript,
+                                userControlBlock,
+                            ]
+                            if (providedSolutions && providedSolutions.length)
+                                scriptWitness.unshift(...providedSolutions)
+                            if (signerSecretKey) {
+                                const { amount } = consumedUtxos[index]
+                                const hash = tx.preimageWitnessV1(index, [script], 0, [amount], undefined, userScript, controlBlockVersion)
+                                const sig = secp.schnorr.signSync(hash, signerSecretKey, new Uint8Array(32))
+                                scriptWitness.splice((signaturePlace - 1), 0, sig)
+                            }
+                            input.finalScriptWitness = scriptWitness
+                        })
+                    } else {
+                        const privKey = coinjs.wif2privkey(senderPrivateKey).privkey;
+                        const decoded = hex.decode(privKey)
+                        tx.inputs.forEach(input => {
+                            tx.sign(decoded, undefined, new Uint8Array(32));
+                        })
+                        tx.finalize()
+                    }
+                    resolve({ txHex: tx.hex, fee })
+                } catch (e) {
+                    reject(e)
+                }
+            })
+        }
+        function addUTXOs(tx, tr, senders = [], required_amount, fee_rate, rec_args = {}) {
+            return new Promise((resolve, reject) => {
+                required_amount = parseFloat(required_amount);
+                if (typeof rec_args.n === "undefined") {
+                    rec_args.n = 0;
+                    rec_args.input_size = 0;
+                    rec_args.input_amount = 0;
+                    rec_args.consumedUtxos = [];
+                }
+                if (required_amount <= 0)
+                    return resolve({
+                        input_size: rec_args.input_size,
+                        input_amount: rec_args.input_amount,
+                        consumedUtxos: rec_args.consumedUtxos,
+                        change_amount: required_amount * -1 //required_amount will be -ve of change_amount
+                    });
+                else if (rec_args.n >= senders.length)
+                    return reject(`Insufficient Balance.`);
+                let addr = senders[rec_args.n];
+                let size_per_input = _sizePerInput(addr);
+                btcOperator.fetch(`unspent?active=${addr}`).then(result => {
+                    let utxos = result.unspent_outputs;
+                    // console.debug("add-utxo", addr, required_amount, utxos);
+                    for (let i = 0; i < utxos.length && required_amount > 0; i++) {
+                        const { tx_output_n, value, confirmations, tx_hash_big_endian } = utxos[i];
+                        if (!confirmations) //ignore unconfirmed utxo
+                            continue;
+                        // changes for taproot
+                        const inputScript = tr ? tr.script : hex.decode(coinjs.addressDecode(addr).outstring);
+                        let input = {
+                            txid: tx_hash_big_endian,
+                            index: tx_output_n,
+                            script: inputScript,
+                            amount: BigInt(value),
+                            witnessUtxo: {
+                                script: inputScript,
+                                amount: BigInt(value)
+                            }
+                        }
+                        if (tr)
+                            input = { ...input, ...tr }
+                        console.log(input)
+                        tx.addInput(input);
+                        //update track values
+                        rec_args.input_size += size_per_input; // Adjust input size calculation
+                        rec_args.input_amount += value;
+                        rec_args.consumedUtxos.push({
+                            txid: input.txid,
+                            index: input.index,
+                            script: input.script,
+                            amount: input.amount
+                        });
+                        required_amount -= value;
+                        if (fee_rate) //automatic fee calculation (dynamic)
+                            required_amount += size_per_input * fee_rate;
+                    }
+                    rec_args.n += 1;
+                    addUTXOs(tx, tr, senders, required_amount, fee_rate, rec_args)
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                }).catch(error => reject(error))
+            });
+        }
+        const parseTransaction = function (tx) {
+            const { inputs, out } = tx;
+            let result = {};
+            //Parse Inputs
+            result.inputs = inputs.map(input => {
+                const { prev_out: { addr, value } } = input;
+                return {
+                    address: addr,
+                    value: btcOperator.util.Sat_to_BTC(value)
+                }
+            });
+            //Parse Outputs
+            result.outputs = tx.out.map((out) => {
+                return {
+                    address: out.addr,
+                    value: btcOperator.util.Sat_to_BTC(out.value)
+                }
+            });
+            //Parse Totals
+            result.total_input = parseFloat(result.inputs.reduce((a, inp) => a += inp.value, 0).toFixed(8));
+            result.total_output = parseFloat(result.outputs.reduce((a, out) => a += out.value, 0).toFixed(8));
+            result.fee = parseFloat((result.total_input - result.total_output).toFixed(8));
+            return result;
+        }
+        function getTaprootTx(txId) {
+            return new Promise((resolve, reject) => {
+                Promise.all([btcOperator.fetch(`rawtx/${txId}`), btcOperator.getTx.hex(txId)])
+                    .then(([rawTx, txHex]) => {
+                        const tx = taproot.Transaction.fromRaw(hex.decode(txHex));
+                        resolve({
+                            tx,
+                            rawTx
+                        });
+                    }).catch(error => reject(error))
+            })
+        }
+
+        const taprootEditFee = function ({ txId, newFee, privateKeys, changeOnly = true, signerSecretKey, providedSolutions, signaturePlace }) {
+            return new Promise((resolve, reject) => {
+                getTaprootTx(txId).then(({ tx, rawTx }) => {
+                    const isScriptPath = tx.inputs[0].finalScriptWitness && tx.inputs[0].finalScriptWitness.length > 1;
+                    const parsedTx = parseTransaction(rawTx)
+                    if (parsedTx.fee >= newFee)
+                        return reject("Fees can only be increased");
+
+                    //editable addresses in output values (for fee increase)
+                    const edit_output_address = new Set();
+                    if (changeOnly === true) //allow only change values (ie, sender address) to be edited to inc fee
+                        parsedTx.inputs.forEach(inp => edit_output_address.add(inp.address));
+                    else if (changeOnly === false) //allow all output values to be edited
+                        parsedTx.outputs.forEach(out => edit_output_address.add(out.address));
+                    else if (typeof changeOnly == 'string') // allow only given receiver id output to be edited
+                        edit_output_address.add(changeOnly);
+                    else if (Array.isArray(changeOnly))    //allow only given set of receiver id outputs to be edited
+                        changeOnly.forEach(id => edit_output_address.add(id));
+
+                    //edit output values to increase fee
+                    let inc_fee = btcOperator.util.BTC_to_Sat(newFee - parsedTx.fee);
+                    if (inc_fee < MIN_FEE_UPDATE)
+                        return reject(`Insufficient additional fee. Minimum increment: ${MIN_FEE_UPDATE}`);
+                    for (let i = tx.outs.length - 1; i >= 0 && inc_fee > 0; i--)   //reduce in reverse order
+                        if (edit_output_address.has(parsedTx.outputs[i].address)) {
+                            let current_value = tx.outs[i].value;
+                            if (current_value instanceof BigInteger)    //convert BigInteger class to inv value
+                                current_value = current_value.intValue();
+                            //edit the value as required
+                            if (current_value > inc_fee) {
+                                tx.outs[i].value = current_value - inc_fee;
+                                inc_fee = 0;
+                            } else {
+                                inc_fee -= current_value;
+                                tx.outs[i].value = 0;
+                            }
+                        }
+                    if (inc_fee > 0) {
+                        let max_possible_fee = btcOperator.util.BTC_to_Sat(newFee) - inc_fee; //in satoshi
+                        return reject(`Insufficient output values to increase fee. Maximum fee possible: ${btcOperator.util.Sat_to_BTC(max_possible_fee)}`);
+                    }
+                    tx.outs = tx.outs.filter(o => o.value >= DUST_AMT); //remove all output with value less than DUST amount
+                    if (isScriptPath) {
+                        tx.inputs.forEach((input, index) => {
+                            // remove every element from the finalScriptWitness except the last two
+                            const scriptWitness = input.finalScriptWitness.slice(-2)
+                            const [userScript, controlBlock] = scriptWitness;
+                            const controlBlockVersion = taproot.TaprootControlBlock.decode(controlBlock).version
+                            const providedSolutions = scriptWitness.slice(0, -1)
+                            if (providedSolutions && providedSolutions.length)
+                                scriptWitness.unshift(...providedSolutions)
+                            if (signerSecretKey) {
+                                const { amount } = consumedUtxos[index]
+                                const hash = tx.preimageWitnessV1(index, [script], 0, [amount], undefined, userScript, controlBlockVersion)
+                                const sig = secp.schnorr.signSync(hash, signerSecretKey, new Uint8Array(32))
+                                scriptWitness.splice((signaturePlace - 1), 0, sig)
+                            }
+                            input.finalScriptWitness = scriptWitness
+                        })
+                    } else {
+                        //remove existing signatures and reset the scripts
+                        if (!Array.isArray(privateKeys))
+                            privateKeys = [privateKeys];
+                        let wif_keys = [];
+                        for (let i in tx.ins) {
+                            const addr = parsedTx.inputs[i].address;
+                            //find the correct key for addr
+                            const privKey = privateKeys.find(pk => btcOperator.verifyKey(addr, pk));
+                            if (!privKey)
+                                return reject(`Private key missing for ${addr}`);
+                        }
+                        tx.witness = false; //remove all witness signatures
+                        //re-sign the transaction
+                        new Set(wif_keys).forEach(key => {
+                            const privKey = coinjs.wif2privkey(key).privkey;
+                            const privKey_arrayForm = hex.decode(privKey);
+                            tx.sign(privKey_arrayForm, undefined, new Uint8Array(32));
+                        }); //Sign the tx using private key WIF
+                        tx.finalize()
+                    }
+                    resolve(tx.hex);
+                }).catch(error => reject(error))
+            })
+        }
+    </script>
+</body>
+
+</html>
