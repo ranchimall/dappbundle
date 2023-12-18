@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Bonds on Blockchain</title>
+    <script id="floGlobals">
+        /* Constants for FLO blockchain operations !!Make sure to add this at begining!! */
+        const floGlobals = {
+            blockchain: "FLO",
+            adminID: "FBBstZ2GretgQqDP55yt8iVd4KNZkdvEzH",
+            application: "BlockchainBonds"
+        }
+    </script>
+    <link rel="stylesheet" href="css/main.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Overpass:ital,wght@0,400;0,500;1,400;1,500;1,700&family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap"
+        rel="stylesheet">
+    <script src="scripts/lib.js"></script>
+    <script src="scripts/floCrypto.js"></script>
+    <script src="scripts/floBlockchainAPI.js"></script>
+    <script src="scripts/floExchangeAPI.js"></script>
+    <script src="scripts/compactIDB.js"></script>
+    <script src="scripts/btcOperator.js"></script>
+    <script src="scripts/bonds.js"></script>
+    <script src="scripts/components.min.js"></script>
+    <script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
+    <script>
+        function onLoadStartUp() {
+            floExchangeAPI.init().then(result => {
+                compactIDB.initDB(floGlobals.application, {
+                    bonds: {},
+                    closings: {},
+                    appendix: {}
+                }).then(result => refreshData())
+                    .catch(error => console.error(error))
+            }).catch(error => reject(error))
+        }
+    </script>
+</head>
+
+<body onload="onLoadStartUp()" data-theme="light">
+    <sm-notifications id="notification_drawer"></sm-notifications>
+    <article id="loading_page" class="page">
+        <h3 class="h3">Bitcoin Bonds</h3>
+        <svg id="main_loader" class="loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+            <polygon points="17.76 23.78 17.76 40.22 32 48.44 46.24 40.22 46.24 23.78 32 15.56 17.76 23.78" />
+            <polyline points="17.76 23.78 32 32 46.24 23.78" />
+            <line x1="32" y1="48.44" x2="32" y2="32" />
+            <polyline points="32 2 6.02 17 6.02 47" />
+            <polyline points="57.98 47 57.98 17 32 2" />
+            <polyline points="6.02 47 32 62 57.98 47" />
+        </svg>
+        <h4>Loading data from blockchain</h4>
+        <footer class="page__footer flex align-items-center">
+            <svg id="rm_logo" class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                    d="M20.46,21.32C20,19.78,18.6,18.59,15.3,17a12.67,12.67,0,0,1-2.64-1.56,4.27,4.27,0,0,1-.79-1,2.6,2.6,0,0,1,0-1.41c.24-.68.49-1,2.43-2.85a7.18,7.18,0,0,0,2.09-2.92,4.25,4.25,0,0,0,0-1.77,6.52,6.52,0,0,0-2.85-3.11c-.56-.36-.81-.4-.81-.15a2.33,2.33,0,0,1-.18.45L12.4,3l-.53-.36c-.28-.21-.64-.41-.77-.49s-.46-.11-.46,0a6.21,6.21,0,0,1-.37.83s-.08,0-.17-.08c-1.15-.83-1.64-1-1.64-.73A7.33,7.33,0,0,1,7.7,3.65C6.48,5.68,5.24,6.7,4,6.7c-.56,0-.54,0-.37.64s.2.58.68.43a3.37,3.37,0,0,0,1.09-.54.86.86,0,0,1,.3-.17,1.34,1.34,0,0,1,.13.39.79.79,0,0,0,.17.4A3.5,3.5,0,0,0,7.37,7.3L7.8,7l.09.34c.12.45.19.51.62.39a4.25,4.25,0,0,0,2.17-1.54l.38-.45,0,.39A5.92,5.92,0,0,1,8.89,9.54L7.67,10.71c-2,1.93-1.89,3.51.37,5a27.41,27.41,0,0,0,2.89,1.51c.17.07.62.32,1,.54C14,19,15,20.23,15,21.48a2,2,0,0,0,0,.49h0c0,.05,0,.05.56-.1a1.89,1.89,0,0,0,.53-.21,2.41,2.41,0,0,0-.34-1.15,7.05,7.05,0,0,0-1.68-1.77,21.91,21.91,0,0,0-3.2-1.83A9.53,9.53,0,0,1,8.16,15.2a2.18,2.18,0,0,1-.74-1.55C7.42,12.79,7.86,12,9,11c1.77-1.64,2.45-2.45,2.92-3.55a2.28,2.28,0,0,0,.26-1.26A2,2,0,0,0,12,5.06l-.2-.45L12,4.3l.28-.49.09-.18L12.6,4a3.69,3.69,0,0,1,.61,1.76A3.47,3.47,0,0,1,12.94,7l-.09.25s-.21.37-.41.69A17.78,17.78,0,0,1,9.91,10.6c-1.07,1-1.43,1.62-1.47,2.47a2.05,2.05,0,0,0,.7,1.73,10.47,10.47,0,0,0,3.28,2.08c2.28,1.13,3.26,1.81,4,2.73a2.94,2.94,0,0,1,.74,1.75,1.26,1.26,0,0,0,.09.57.48.48,0,0,0,.26,0l.51-.13.29-.08,0-.28c-.13-1-1-2-2.47-3a25.52,25.52,0,0,0-3.26-1.77,8.59,8.59,0,0,1-2.23-1.43,2.09,2.09,0,0,1-.5-2.62c.26-.53.5-.83,2.35-2.6,1.51-1.45,2.15-2.58,2.15-3.79A3.67,3.67,0,0,0,13,3.48a3,3,0,0,1-.4-.42A1.85,1.85,0,0,1,13,2.33a6.74,6.74,0,0,1,1.83,1.73,2.62,2.62,0,0,1,.47,1.68,3,3,0,0,1-.55,1.84c-.45.78-.79,1.14-2.67,2.93a5.56,5.56,0,0,0-1.3,1.64,1.77,1.77,0,0,0-.21,1,1.76,1.76,0,0,0,.19.92,6.28,6.28,0,0,0,2.9,2.34,21.6,21.6,0,0,1,3.66,2c1.35,1,2,2,2,3a1.06,1.06,0,0,0,.05.47,2.83,2.83,0,0,0,1-.24C20.56,21.68,20.56,21.66,20.46,21.32ZM7.29,6.4h0a2.23,2.23,0,0,1-.9.28L6,6.72l.43-.53a15.22,15.22,0,0,0,1.89-3,3.52,3.52,0,0,1,.38-.67c.07-.08.49.2,1,.64l.39.35L9.66,4A6.7,6.7,0,0,1,7.29,6.4Zm3.58-1.11A5.8,5.8,0,0,1,9.25,6.51h0a3.3,3.3,0,0,1-.74.17l-.35,0,.39-.49a15.64,15.64,0,0,0,1.32-2,4.63,4.63,0,0,1,.28-.49c.06-.08.33.26.57.77l.28.57Zm1-1.4a1.63,1.63,0,0,1-.28.4A6.63,6.63,0,0,1,11,3.72l-.53-.56.12-.29c.2-.49.24-.51.64-.19a5.57,5.57,0,0,1,.85.78A2.78,2.78,0,0,1,11.87,3.89Z" />
+            </svg>
+            <h4 class="weight-500">RanchiMall</h4>
+        </footer>
+    </article>
+    <article id="error_page" class="page hidden">
+        <h2 class="h2">Bitcoin Bonds</h2>
+        <svg class="sad-face" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500">
+            <g class="face">
+                <g class="eyes">
+                    <circle cx="187.52" cy="249.17" r="13.42" />
+                    <circle cx="312.48" cy="249.17" r="13.42" />
+                </g>
+                <path
+                    d="M288,349.35a6.07,6.07,0,0,1-3.81-1.34c-.09-.07-12.31-9.4-34.14-9.4S216,347.94,215.83,348a6.1,6.1,0,0,1-7.59-9.55c.61-.5,15.4-12.08,41.76-12.08s41.15,11.58,41.76,12.08A6.1,6.1,0,0,1,288,349.35Z" />
+                <path
+                    d="M344.21,237.41a52,52,0,0,1-23.45-6c-15.91-8.09-21.28-19.61-21.5-20.1a4.07,4.07,0,0,1,7.41-3.36c0,.08,4.56,9.49,17.77,16.21S347.93,229,348,229a4.07,4.07,0,0,1,1.63,8A29.26,29.26,0,0,1,344.21,237.41Z" />
+                <path
+                    d="M155.79,237.41a29.26,29.26,0,0,1-5.45-.43,4.07,4.07,0,0,1,1.63-8c.2,0,10.43,1.87,23.59-4.81s17.73-16.13,17.78-16.23a4.07,4.07,0,0,1,7.4,3.38c-.22.49-5.59,12-21.5,20.1A52,52,0,0,1,155.79,237.41Z" />
+            </g>
+            <path
+                d="M450.16,220.16A200.16,200.16,0,0,0,108.46,78.63,200.69,200.69,0,0,0,57.61,275.68V407.4a10.17,10.17,0,1,0,20.33,0V322.6a201.91,201.91,0,0,0,99.41,84.19v52.27l-11.45.62a10.17,10.17,0,0,0,.54,20.32H167l30.69-1.66V413.45a202.3,202.3,0,0,0,104.62,0v64.88L333,480h.56a10.17,10.17,0,0,0,.54-20.32l-11.45-.62V406.79a201.91,201.91,0,0,0,99.41-84.19v84.8a10.17,10.17,0,1,0,20.33,0V275.68A200.81,200.81,0,0,0,450.16,220.16ZM250,400c-99.16,0-179.83-80.67-179.83-179.83S150.84,40.34,250,40.34,429.83,121,429.83,220.16,349.16,400,250,400Z" />
+        </svg>
+        <h4 class="margin-bottom-0-5r">Oops, Couldn't get data from blockchain</h4>
+        <footer class="page__footer flex align-items-center">
+            <svg id="rm_logo" class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                    d="M20.46,21.32C20,19.78,18.6,18.59,15.3,17a12.67,12.67,0,0,1-2.64-1.56,4.27,4.27,0,0,1-.79-1,2.6,2.6,0,0,1,0-1.41c.24-.68.49-1,2.43-2.85a7.18,7.18,0,0,0,2.09-2.92,4.25,4.25,0,0,0,0-1.77,6.52,6.52,0,0,0-2.85-3.11c-.56-.36-.81-.4-.81-.15a2.33,2.33,0,0,1-.18.45L12.4,3l-.53-.36c-.28-.21-.64-.41-.77-.49s-.46-.11-.46,0a6.21,6.21,0,0,1-.37.83s-.08,0-.17-.08c-1.15-.83-1.64-1-1.64-.73A7.33,7.33,0,0,1,7.7,3.65C6.48,5.68,5.24,6.7,4,6.7c-.56,0-.54,0-.37.64s.2.58.68.43a3.37,3.37,0,0,0,1.09-.54.86.86,0,0,1,.3-.17,1.34,1.34,0,0,1,.13.39.79.79,0,0,0,.17.4A3.5,3.5,0,0,0,7.37,7.3L7.8,7l.09.34c.12.45.19.51.62.39a4.25,4.25,0,0,0,2.17-1.54l.38-.45,0,.39A5.92,5.92,0,0,1,8.89,9.54L7.67,10.71c-2,1.93-1.89,3.51.37,5a27.41,27.41,0,0,0,2.89,1.51c.17.07.62.32,1,.54C14,19,15,20.23,15,21.48a2,2,0,0,0,0,.49h0c0,.05,0,.05.56-.1a1.89,1.89,0,0,0,.53-.21,2.41,2.41,0,0,0-.34-1.15,7.05,7.05,0,0,0-1.68-1.77,21.91,21.91,0,0,0-3.2-1.83A9.53,9.53,0,0,1,8.16,15.2a2.18,2.18,0,0,1-.74-1.55C7.42,12.79,7.86,12,9,11c1.77-1.64,2.45-2.45,2.92-3.55a2.28,2.28,0,0,0,.26-1.26A2,2,0,0,0,12,5.06l-.2-.45L12,4.3l.28-.49.09-.18L12.6,4a3.69,3.69,0,0,1,.61,1.76A3.47,3.47,0,0,1,12.94,7l-.09.25s-.21.37-.41.69A17.78,17.78,0,0,1,9.91,10.6c-1.07,1-1.43,1.62-1.47,2.47a2.05,2.05,0,0,0,.7,1.73,10.47,10.47,0,0,0,3.28,2.08c2.28,1.13,3.26,1.81,4,2.73a2.94,2.94,0,0,1,.74,1.75,1.26,1.26,0,0,0,.09.57.48.48,0,0,0,.26,0l.51-.13.29-.08,0-.28c-.13-1-1-2-2.47-3a25.52,25.52,0,0,0-3.26-1.77,8.59,8.59,0,0,1-2.23-1.43,2.09,2.09,0,0,1-.5-2.62c.26-.53.5-.83,2.35-2.6,1.51-1.45,2.15-2.58,2.15-3.79A3.67,3.67,0,0,0,13,3.48a3,3,0,0,1-.4-.42A1.85,1.85,0,0,1,13,2.33a6.74,6.74,0,0,1,1.83,1.73,2.62,2.62,0,0,1,.47,1.68,3,3,0,0,1-.55,1.84c-.45.78-.79,1.14-2.67,2.93a5.56,5.56,0,0,0-1.3,1.64,1.77,1.77,0,0,0-.21,1,1.76,1.76,0,0,0,.19.92,6.28,6.28,0,0,0,2.9,2.34,21.6,21.6,0,0,1,3.66,2c1.35,1,2,2,2,3a1.06,1.06,0,0,0,.05.47,2.83,2.83,0,0,0,1-.24C20.56,21.68,20.56,21.66,20.46,21.32ZM7.29,6.4h0a2.23,2.23,0,0,1-.9.28L6,6.72l.43-.53a15.22,15.22,0,0,0,1.89-3,3.52,3.52,0,0,1,.38-.67c.07-.08.49.2,1,.64l.39.35L9.66,4A6.7,6.7,0,0,1,7.29,6.4Zm3.58-1.11A5.8,5.8,0,0,1,9.25,6.51h0a3.3,3.3,0,0,1-.74.17l-.35,0,.39-.49a15.64,15.64,0,0,0,1.32-2,4.63,4.63,0,0,1,.28-.49c.06-.08.33.26.57.77l.28.57Zm1-1.4a1.63,1.63,0,0,1-.28.4A6.63,6.63,0,0,1,11,3.72l-.53-.56.12-.29c.2-.49.24-.51.64-.19a5.57,5.57,0,0,1,.85.78A2.78,2.78,0,0,1,11.87,3.89Z" />
+            </svg>
+            <h4 class="h4 color-0-8 weight-500">RanchiMall</h4>
+        </footer>
+    </article>
+    <header id="main_header" class="hidden">
+        <div class="flex align-items-center">
+            <svg id="main_header__logo" class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path
+                    d="M20.46,21.32C20,19.78,18.6,18.59,15.3,17a12.67,12.67,0,0,1-2.64-1.56,4.27,4.27,0,0,1-.79-1,2.6,2.6,0,0,1,0-1.41c.24-.68.49-1,2.43-2.85a7.18,7.18,0,0,0,2.09-2.92,4.25,4.25,0,0,0,0-1.77,6.52,6.52,0,0,0-2.85-3.11c-.56-.36-.81-.4-.81-.15a2.33,2.33,0,0,1-.18.45L12.4,3l-.53-.36c-.28-.21-.64-.41-.77-.49s-.46-.11-.46,0a6.21,6.21,0,0,1-.37.83s-.08,0-.17-.08c-1.15-.83-1.64-1-1.64-.73A7.33,7.33,0,0,1,7.7,3.65C6.48,5.68,5.24,6.7,4,6.7c-.56,0-.54,0-.37.64s.2.58.68.43a3.37,3.37,0,0,0,1.09-.54.86.86,0,0,1,.3-.17,1.34,1.34,0,0,1,.13.39.79.79,0,0,0,.17.4A3.5,3.5,0,0,0,7.37,7.3L7.8,7l.09.34c.12.45.19.51.62.39a4.25,4.25,0,0,0,2.17-1.54l.38-.45,0,.39A5.92,5.92,0,0,1,8.89,9.54L7.67,10.71c-2,1.93-1.89,3.51.37,5a27.41,27.41,0,0,0,2.89,1.51c.17.07.62.32,1,.54C14,19,15,20.23,15,21.48a2,2,0,0,0,0,.49h0c0,.05,0,.05.56-.1a1.89,1.89,0,0,0,.53-.21,2.41,2.41,0,0,0-.34-1.15,7.05,7.05,0,0,0-1.68-1.77,21.91,21.91,0,0,0-3.2-1.83A9.53,9.53,0,0,1,8.16,15.2a2.18,2.18,0,0,1-.74-1.55C7.42,12.79,7.86,12,9,11c1.77-1.64,2.45-2.45,2.92-3.55a2.28,2.28,0,0,0,.26-1.26A2,2,0,0,0,12,5.06l-.2-.45L12,4.3l.28-.49.09-.18L12.6,4a3.69,3.69,0,0,1,.61,1.76A3.47,3.47,0,0,1,12.94,7l-.09.25s-.21.37-.41.69A17.78,17.78,0,0,1,9.91,10.6c-1.07,1-1.43,1.62-1.47,2.47a2.05,2.05,0,0,0,.7,1.73,10.47,10.47,0,0,0,3.28,2.08c2.28,1.13,3.26,1.81,4,2.73a2.94,2.94,0,0,1,.74,1.75,1.26,1.26,0,0,0,.09.57.48.48,0,0,0,.26,0l.51-.13.29-.08,0-.28c-.13-1-1-2-2.47-3a25.52,25.52,0,0,0-3.26-1.77,8.59,8.59,0,0,1-2.23-1.43,2.09,2.09,0,0,1-.5-2.62c.26-.53.5-.83,2.35-2.6,1.51-1.45,2.15-2.58,2.15-3.79A3.67,3.67,0,0,0,13,3.48a3,3,0,0,1-.4-.42A1.85,1.85,0,0,1,13,2.33a6.74,6.74,0,0,1,1.83,1.73,2.62,2.62,0,0,1,.47,1.68,3,3,0,0,1-.55,1.84c-.45.78-.79,1.14-2.67,2.93a5.56,5.56,0,0,0-1.3,1.64,1.77,1.77,0,0,0-.21,1,1.76,1.76,0,0,0,.19.92,6.28,6.28,0,0,0,2.9,2.34,21.6,21.6,0,0,1,3.66,2c1.35,1,2,2,2,3a1.06,1.06,0,0,0,.05.47,2.83,2.83,0,0,0,1-.24C20.56,21.68,20.56,21.66,20.46,21.32ZM7.29,6.4h0a2.23,2.23,0,0,1-.9.28L6,6.72l.43-.53a15.22,15.22,0,0,0,1.89-3,3.52,3.52,0,0,1,.38-.67c.07-.08.49.2,1,.64l.39.35L9.66,4A6.7,6.7,0,0,1,7.29,6.4Zm3.58-1.11A5.8,5.8,0,0,1,9.25,6.51h0a3.3,3.3,0,0,1-.74.17l-.35,0,.39-.49a15.64,15.64,0,0,0,1.32-2,4.63,4.63,0,0,1,.28-.49c.06-.08.33.26.57.77l.28.57Zm1-1.4a1.63,1.63,0,0,1-.28.4A6.63,6.63,0,0,1,11,3.72l-.53-.56.12-.29c.2-.49.24-.51.64-.19a5.57,5.57,0,0,1,.85.78A2.78,2.78,0,0,1,11.87,3.89Z" />
+            </svg>
+            <div class="grid">
+                <h5 class="header__company-name">RanchiMall</h5>
+            </div>
+        </div>
+        <div id="current_price" class="grid gap-1 flow-column align-items-center">
+            <span id="btc-usd-rate" class="weight-700"></span>
+            <span id="usd-rate" class="weight-700"></span>
+        </div>
+        <div class="dropdown">
+            <button id="profile_button" onclick="changeDropdownState('profile_dropdown', 'toggle', this)">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px"
+                    viewBox="0 0 24 24" width="24px" fill="#000000">
+                    <g>
+                        <path d="M0,0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z" />
+                    </g>
+                </svg>
+            </button>
+            <ul id="profile_dropdown" class="dropdown__panel hidden">
+                <li class="grid gap-0-5">
+                    <h4 class="margin-bottom-0-5r">Preferred currency</h4>
+                    <p>This will convert all amounts to preferred currency.</p>
+                    <sm-select id="currency_selector" class="justify-self-start">
+                        <sm-option value="inr">INR</sm-option>
+                        <sm-option value="usd">USD</sm-option>
+                    </sm-select>
+                </li>
+                <li class="flex align-items-center space-between">
+                    <div class="flex weight-700">Dark theme</div>
+                    <theme-toggle></theme-toggle>
+                </li>
+                <li class="interact weight-700" onclick="showPage('add_bond_page')">
+                    Add Bond (Admin only!)
+                </li>
+            </ul>
+        </div>
+    </header>
+
+    <main id="home_page" class="page page-layout hidden">
+        <section id="homepage__hero-section">
+            <h3 class="h3 margin-bottom-1r">Bitcoin Bonds <br>on FLO Blockchain</h3>
+            <p>Bondholders get a minimum guarantee of typically 13% interest per annum during the lock-in period or
+                typically 50% of all Bitcoin price gains whichever is higher. <br> <strong> It offers full capital
+                    protection if Bitcoin prices fall below acquisition price.</strong></p>
+        </section>
+        <sm-input id="search_bonds" type="search" placeholder="Search bonds with FLO/BTC address">
+            <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                width="24px" fill="#000000">
+                <path d="M0 0h24v24H0V0z" fill="none"></path>
+                <path
+                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z">
+                </path>
+            </svg>
+        </sm-input>
+        <header class="bond-list__header">
+            <h4 class="h4">Bonds</h4>
+            <button id="refresh_button" class="button justify-right">Refresh</button>
+        </header>
+        <ul id="bond_list"></ul>
+        <div id="bond_list__empty-state" class="grid hidden">
+            <svg class="icon icon--big" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                <path fill="none" d="M0 0h24v24H0z" />
+                <path
+                    d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-4-6h8v2H8v-2zm0-3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm8 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" />
+            </svg>
+            <h4>No bonds found</h4>
+        </div>
+    </main>
+    <article id="add_bond_page" class="page page-layout hidden">
+        <header class="flex margin-top-1-5 align-items-center margin-bottom-1-5r">
+            <button class="back-button" onclick="showPage('home_page')">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="none" d="M0 0h24v24H0z" />
+                    <path d="M7.828 11H20v2H7.828l5.364 5.364-1.414 1.414L4 12l7.778-7.778 1.414 1.414z" />
+                </svg>
+            </button>
+            <h3>Admin Panel</h3>
+        </header>
+        <form id="add_bond_form" class="grid gap-1-5">
+            <label class="grid gap-0-5">
+                FLO address
+                <input type="text" name="floid" pattern="[0-9a-zA-Z]{34}" required>
+            </label>
+            <label class="grid gap-0-5">
+                Amount (₹)
+                <input type="text" inputmode="numeric" name="amount" pattern="\d.+" required>
+            </label>
+            <label class="grid gap-0-5">
+                Bond start date
+                <input type="date" name="start_date" required>
+            </label>
+            <label class="grid gap-0-5">
+                Base BTC value ($)
+                <input type="text" name="base" pattern="[\d,]+(.\d+)?" required>
+            </label>
+            <label class="grid gap-0-5">
+                Base USD rate (₹)
+                <input type="number" inputmode="numeric" name="usd_rate" min=0 step="0.01" required>
+            </label>
+            <label class="grid gap-0-5">
+                Guaranteed interest rate (%)
+                <input type="number" inputmode="numeric" name="gi_r" min=0 max=100 step="0.01" required>
+            </label>
+            <div class="grid gap-0-5">
+                Guaranteed interest period
+                <div class="flex">
+                    <input type="number" inputmode="numeric" name="gi_pv" required>
+                    <sm-select id="gi_pt" align-select="right">
+                        <sm-option value="year(s)" selected>year(s)</sm-option>
+                        <sm-option value="month(s)">month(s)</sm-option>
+                        <sm-option value="week(s)">week(s)</sm-option>
+                        <sm-option value="day(s)">day(s)</sm-option>
+                    </sm-select>
+                </div>
+            </div>
+            <label class="grid gap-0-5">
+                Gain share (%)
+                <input type="number" inputmode="numeric" name="cut" min=0 max=100 required>
+            </label>
+            <div class="grid gap-0-5">
+                Lock-in period
+                <div class="flex">
+                    <input type="number" inputmode="numeric" name="lockin_v" required>
+                    <sm-select id="lockin_t" align-select="right">
+                        <sm-option value="year(s)" selected>year(s)</sm-option>
+                        <sm-option value="month(s)">month(s)</sm-option>
+                        <sm-option value="week(s)">week(s)</sm-option>
+                        <sm-option value="day(s)">day(s)</sm-option>
+                    </sm-select>
+                </div>
+            </div>
+            <div class="grid flow-column align-items-center gap-1 justify-start">
+                <button type="submit" class="button--primary">Continue</button>
+                <button type="reset">Clear</button>
+            </div>
+        </form>
+    </article>
+    <article id="confirm_bond_page" class="page page-layout hidden">
+        <header class="flex margin-top-1-5 align-items-center margin-bottom-1-5r">
+            <button class="back-button" onclick="showPage('add_bond_page')">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="none" d="M0 0h24v24H0z" />
+                    <path d="M7.828 11H20v2H7.828l5.364 5.364-1.414 1.414L4 12l7.778-7.778 1.414 1.414z" />
+                </svg>
+            </button>
+            <h3>Confirm Details</h3>
+        </header>
+        <form class="grid gap-1-5" onsubmit="return false">
+            <section id="bond_details" class="breakable"></section>
+            <div class="grid">
+                <h4 class="weight-400 margin-bottom-1r" id="admin_id"></h4>
+                <sm-input id="get_private_key" type="password" placeholder="Private key"></sm-input>
+            </div>
+            <button id="add_bond_button" type="submit" class="button--primary justify-self-start">Add Bond</button>
+        </form>
+    </article>
+    <sm-popup id="withdraw_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                    <path fill="none" d="M0 0h24v24H0z" />
+                    <path
+                        d="M12 10.586l4.95-4.95 1.414 1.414-4.95 4.95 4.95 4.95-1.414 1.414-4.95-4.95-4.95 4.95-1.414-1.414 4.95-4.95-4.95-4.95L7.05 5.636z" />
+                </svg>
+            </button>
+            <h3>Withdraw bond</h3>
+        </header>
+        <div id="withdraw_process">
+            <div id="withdraw_precess__get_priv_key">
+                <sm-form class="grid gap-1-5">
+                    <div id="withdraw__id"></div>
+                    <sm-input id="withdraw_private_key" class="password-field" type="password"
+                        placeholder="FLO private key" error-text="Private key is invalid" autofocus data-private-key
+                        required>
+                        <label slot="right" class="interact">
+                            <input type="checkbox" class="hidden" autocomplete="off" readonly
+                                onchange="togglePrivateKeyVisibility(this)">
+                            <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <title>Hide password</title>
+                                <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
+                            </svg>
+                            <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px"
+                                viewBox="0 0 24 24" width="24px" fill="#000000">
+                                <title>Show password</title>
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                            </svg>
+                        </label>
+                    </sm-input>
+                    <div class="multi-state-button">
+                        <button id="withdraw_private_key_button" type="submit"
+                            class="button button--primary cta">Confirm
+                            withdrawal</button>
+                    </div>
+                </sm-form>
+            </div>
+            <div class="grid gap-0-5 hidden justify-center text-center">
+                <svg class="icon user-action-result__icon success" xmlns="http://www.w3.org/2000/svg" height="24px"
+                    viewBox="0 0 24 24" width="24px" fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+                </svg>
+                <h4>Withdraw request sent</h4>
+                <p>Balance may take upto 30mins to reflect in your FLO address</p>
+            </div>
+            <div class="grid gap-0-5 hidden justify-center text-center">
+                <svg class="icon user-action-result__icon failed" xmlns="http://www.w3.org/2000/svg" height="24px"
+                    viewBox="0 0 24 24" width="24px" fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                </svg>
+                <h3>Failed</h3>
+                <p id="withdraw_failed_message"></p>
+            </div>
+        </div>
+    </sm-popup>
+    <script id="ui">
+        const { html, render: renderElem } = uhtml;
+        const domRefs = {}
+        //Checks for internet connection status
+        if (!navigator.onLine)
+            notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error', '', true)
+        window.addEventListener('offline', () => {
+            notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error', true, true)
+        })
+        window.addEventListener('online', () => {
+            getRef('notification_drawer').clearAll()
+            notify('We are back online.', 'success')
+        })
+
+        function getRef(elementId) {
+            if (!domRefs.hasOwnProperty(elementId)) {
+                domRefs[elementId] = {
+                    count: 1,
+                    ref: null,
+                };
+                return document.getElementById(elementId);
+            } else {
+                if (domRefs[elementId].count < 3) {
+                    domRefs[elementId].count = domRefs[elementId].count + 1;
+                    return document.getElementById(elementId);
+                } else {
+                    if (!domRefs[elementId].ref)
+                        domRefs[elementId].ref = document.getElementById(elementId);
+                    return domRefs[elementId].ref;
+                }
+            }
+        }
+        //Function for displaying toast notifications. pass in error for mode param if you want to show an error.
+        function notify(message, mode, options = {}) {
+            let icon
+            switch (mode) {
+                case 'success':
+                    icon = `<svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"/></svg>`
+                    break;
+                case 'error':
+                    icon = `<svg class="icon icon--error" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z"/></svg>`
+                    options.pinned = true
+                    break;
+            }
+            if (mode === 'error') {
+                console.error(message)
+            }
+            return getRef("notification_drawer").push(message, { icon, ...options });
+        }
+
+        window.addEventListener("load", () => {
+            document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateAddr)
+            document.querySelectorAll('sm-input[data-private-key]').forEach(input => input.customValidation = floCrypto.getPubKeyHex)
+            document.addEventListener('keyup', (e) => {
+                if (e.code === 'Escape') {
+                    closePopup()
+                }
+            })
+            document.addEventListener('keydown', e => {
+                if (e.key === '/') {
+                    e.preventDefault();
+                    getRef('search_bonds').focusIn()
+                }
+            })
+            document.addEventListener('copy', () => {
+                notify('copied', 'success')
+            })
+            document.addEventListener("pointerdown", (e) => {
+                if (e.target.closest("button:not([disabled]), .interact")) {
+                    createRipple(e, e.target.closest("button, .interact"));
+                }
+                else if (isDropdownOpen && !e.target.closest('.dropdown')) {
+                    changeDropdownState('profile_dropdown', 'hide')
+                }
+            });
+
+            if (localStorage.getItem('preferred-currency')) {
+                preferredCurrency = localStorage.getItem('preferred-currency')
+                setTimeout(() => {
+                    getRef('currency_selector').value = preferredCurrency
+                }, 1000);
+            } else {
+                preferredCurrency = 'inr'
+                localStorage.setItem('preferred-currency', 'inr')
+            }
+        });
+        function createRipple(event, target) {
+            const circle = document.createElement("span");
+            const diameter = Math.max(target.clientWidth, target.clientHeight);
+            const radius = diameter / 2;
+            const targetDimensions = target.getBoundingClientRect();
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - (targetDimensions.left + radius)}px`;
+            circle.style.top = `${event.clientY - (targetDimensions.top + radius)}px`;
+            circle.classList.add("ripple");
+            const rippleAnimation = circle.animate(
+                [
+                    {
+                        transform: "scale(4)",
+                        opacity: 0,
+                    },
+                ],
+                {
+                    duration: floGlobals.prefersReducedMotion ? 0 : 600,
+                    fill: "forwards",
+                    easing: "ease-out",
+                }
+            );
+            target.append(circle);
+            rippleAnimation.onfinish = () => {
+                circle.remove();
+            };
+        }
+        const debounce = (callback, wait) => {
+            let timeoutId = null;
+            return (...args) => {
+                window.clearTimeout(timeoutId);
+                timeoutId = window.setTimeout(() => {
+                    callback.apply(null, args);
+                }, wait);
+            };
+        }
+        let zIndex = 50
+        // function required for popups or modals to appear
+        function openPopup(popupId, pinned) {
+            zIndex++
+            getRef(popupId).setAttribute('style', `z-index: ${zIndex}`)
+            getRef(popupId).show({ pinned })
+            return getRef(popupId);
+        }
+
+        // hides the popup or modal
+        function closePopup() {
+            if (popupStack.peek() === undefined)
+                return;
+            popupStack.peek().popup.hide()
+        }
+        function buttonLoader(id, show) {
+            const button = typeof id === 'string' ? getRef(id) : id;
+            button.disabled = show;
+            const animOptions = {
+                duration: floGlobals.prefersReducedMotion ? 0 : 200,
+                fill: 'forwards',
+                easing: 'ease'
+            }
+            if (show) {
+                button.animate([
+                    {
+                        clipPath: 'circle(100%)',
+                    },
+                    {
+                        clipPath: 'circle(0)',
+                    },
+                ], animOptions)
+                button.parentNode.append(document.createElement('sm-spinner'))
+            } else {
+                button.getAnimations().forEach(anim => anim.cancel())
+                const potentialTarget = button.parentNode.querySelector('sm-spinner')
+                if (potentialTarget) potentialTarget.remove();
+            }
+        }
+        document.addEventListener('popupopened', e => {
+            getRef('home_page').setAttribute('inert', '')
+        })
+        document.addEventListener('popupclosed', e => {
+            switch (e.detail.popup.id) {
+                case 'withdraw_popup':
+                    showChildElement(getRef('withdraw_process'), 0);
+                    buttonLoader('withdraw_private_key_button', false)
+                    getRef('withdraw_private_key_button').disabled = true;
+                    break;
+            }
+            if (popupStack.items.length === 0) {
+                getRef('home_page').removeAttribute('inert')
+            }
+        })
+        const slideInLeft = [
+            {
+                opacity: 0,
+                transform: 'translateX(1rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            }
+        ]
+        const slideOutLeft = [
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateX(-1rem)'
+            },
+        ]
+        const slideInRight = [
+            {
+                opacity: 0,
+                transform: 'translateX(-1rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            }
+        ]
+        const slideOutRight = [
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateX(1rem)'
+            },
+        ]
+        const slideInDown = [
+            {
+                opacity: 0,
+                transform: 'translateY(-1rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateY(0)'
+            },
+        ]
+        const slideOutDown = [
+            {
+                opacity: 1,
+                transform: 'translateY(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateY(1rem)'
+            },
+        ]
+        const slideInUp = [
+            {
+                opacity: 0,
+                transform: 'translateY(1rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateY(0)'
+            },
+        ]
+        const slideOutUp = [
+            {
+                opacity: 1,
+                transform: 'translateY(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateY(-1rem)'
+            },
+        ]
+
+        function showChildElement(id, index, options = {}) {
+            return new Promise((resolve) => {
+                const { mobileView = false, entry, exit } = options
+                const animOptions = {
+                    duration: floGlobals.prefersReducedMotion ? 0 : 150,
+                    easing: 'ease',
+                    fill: 'forwards'
+                }
+                const parent = typeof id === 'string' ? document.getElementById(id) : id;
+                const visibleElement = [...parent.children].find(elem => !elem.classList.contains(mobileView ? 'hide-on-mobile' : 'hidden'));
+                if (visibleElement === parent.children[index]) return;
+                visibleElement.getAnimations().forEach(anim => anim.cancel())
+                parent.children[index].getAnimations().forEach(anim => anim.cancel())
+                if (visibleElement) {
+                    if (exit) {
+                        parent.style.overflow = 'hidden'
+                        visibleElement.animate(exit, animOptions).onfinish = () => {
+                            visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+                            parent.style.overflow = ''
+                        }
+                        parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                        if (entry)
+                            parent.children[index].animate(entry, animOptions).onfinish = () => resolve()
+                    } else {
+                        visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+                        parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                        resolve()
+                    }
+                } else {
+                    parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                    parent.children[index].animate(entry, animOptions).onfinish = () => resolve()
+                }
+            })
+        }
+        function togglePrivateKeyVisibility(input) {
+            const target = input.closest('sm-input')
+            target.type = target.type === 'password' ? 'text' : 'password';
+            target.focusIn()
+        }
+
+        function formatAmount(amount = 0, currency = 'inr') {
+            amount = parseFloat(amount);
+            if (!amount)
+                return '₹0';
+            return amount.toLocaleString(currency === 'inr' ? `en-IN` : 'en-US', { style: 'currency', currency })
+        }
+
+        const render = {
+            bondCard(details) {
+                const {
+                    id,
+                    href,
+                    floId,
+                    bondStartDate,
+                    amountInvested,
+                    netValue,
+                    guaranteedInterest,
+                    guaranteedInterestDuration,
+                    gainShare,
+                    lockinEnd,
+                    baseBtcRate,
+                    usdRate,
+                } = details
+                const hasMatured = new Date(lockinEnd) < new Date()
+                const btcId = btcOperator.convert.legacy2bech(floId)
+                return html`
+                    <li id=${id} class="bond-transaction" .dataset=${{ floId, btcId }}>
+                        <div class="flex flex-direction-column">
+                            <span class="label">FLO address</span>
+                            <span class="value flo-id">${floId}</span>
+                        </div>
+                        <div class="flex flex-direction-column">
+                            <span class="label">BTC address</span>
+                            <span class="value btc-id">${btcId}</span>
+                        </div>
+                        <div class="flex-grid">
+                            <div class="flex flex-direction-column justify-self-end">
+                                <span class="label">Started</span>
+                                <span class="value bond-start-date">${blockchainBond.dateFormat(bondStartDate)}</span>
+                            </div>
+                            <div class="flex flex-direction-column">
+                                <span class="label">Lock-in end</span>
+                                <span class="value bond-end-date">${blockchainBond.dateFormat(lockinEnd)}</span>
+                            </div>
+                            <div class="flex flex-direction-column">
+                                <span class="label">Invested</span>
+                                <span class="value amount-invested">${formatAmount(amountInvested[preferredCurrency], preferredCurrency)}</span>
+                            </div>
+                            <div class="flex flex-direction-column">
+                                <span class="label">Present bond value</span>
+                                <span class="value net-value" style="color: var(--green)">${formatAmount(netValue[preferredCurrency], preferredCurrency)}</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-0-5">
+                            <a class="button button--colored" href=${href} target="_blank">
+                                <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"></path> </svg>
+                                View transaction
+                            </a>
+                            <button class="button button--colored toggle-details">
+                                <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"></path><path d="M12 5.83L15.17 9l1.41-1.41L12 3 7.41 7.59 8.83 9 12 5.83zm0 12.34L8.83 15l-1.41 1.41L12 21l4.59-4.59L15.17 15 12 18.17z"></path></svg>
+                                See details
+                            </button>
+                            <button class="button bond-transaction__withdraw" ?disabled=${!hasMatured}>Withdraw</button>
+                        </div>
+                        <div class="more-details flex-grid hidden">
+                            <div class="flex flex-direction-column">
+                                <span class="label">Guaranteed interest</span>
+                                <span class="value guaranteed-interest">${guaranteedInterest} P.A for ${guaranteedInterestDuration}</span>
+                            </div>
+                            <div class="flex flex-direction-column">
+                                <span class="label">Gain share</span>
+                                <span class="value gain-share">${gainShare}</span>
+                            </div>
+                            <div class="flex flex-direction-column">
+                                <span class="label">Base BTC rate</span>
+                                <span class="value base-btc-rate">${formatAmount(baseBtcRate, 'usd')}</span>
+                            </div>
+                            <div class="flex flex-direction-column">
+                                <span class="label">USD rate</span>
+                                <span class="value usd-rate">₹${usdRate}</span>
+                            </div>
+                        </div>
+                    </li>
+                `;
+            },
+            closedBondCard(details) {
+                const {
+                    floId,
+                    bondID,
+                    href,
+                    BTC_net,
+                    endDate,
+                    amountFinal,
+                    payment_refRef,
+                    USD_net,
+                    refSign,
+                } = details
+                const { amountInvested, netValue } = floGlobals.bonds[bondID]
+                const btcId = btcOperator.convert.legacy2bech(floId)
+                return html`
+                    <li id=${bondID} class="bond-transaction bond-transaction--closed" .dataset=${{ floId, btcId }}>
+                        <div class="flex align-items-center space-between w-100">
+                            <span class="tag">Closed: ${blockchainBond.dateFormat(endDate)}</span>
+                        </div>
+                        <div class="flex-grid">
+                            <div class="flex flex-direction-column" style="flex-basis: 36ch">
+                                <span class="label">FLO address</span>
+                                <span class="value flo-id">${floId}</span>
+                            </div>
+                            <div class="flex flex-direction-column" style="flex-basis: 36ch">
+                                <span class="label">BTC address</span>
+                                <span class="value btc-id">${btcId}</span>
+                            </div>
+                            <div class="flex flex-direction-column">
+                                <span class="label">Invested</span>
+                                <span class="value amount-invested">${formatAmount(amountInvested[preferredCurrency], preferredCurrency)}</span>
+                            </div>
+                            <div class="flex flex-direction-column">
+                                <span class="label">Withdrawn amount</span>
+                                <span class="value net-value" style="color: var(--green)">${formatAmount(netValue[preferredCurrency], preferredCurrency)}</span>
+                            </div>
+                            <a class="button button--colored margin-left-auto" href=${href} target="_blank">
+                                <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"></path> </svg>
+                                View transaction
+                            </a>
+                        </div>
+                    </li>
+                `;
+            }
+        }
+
+        let preferredCurrency
+
+        if (localStorage.getItem('preferred-currency')) {
+            preferredCurrency = localStorage.getItem('preferred-currency')
+            document.querySelector(`sm-option[value="${localStorage.getItem('preferred-currency')}"]`).setAttribute('selected', '')
+        } else {
+            preferredCurrency = 'inr'
+            localStorage.setItem('preferred-currency', 'inr')
+            getRef('currency_selector').value = 'INR'
+            document.querySelector(`sm-option[value="inr"]`).setAttribute('selected', '')
+        }
+
+
+        getRef('currency_selector').addEventListener('change', e => {
+            preferredCurrency = e.detail.value
+            localStorage.setItem('preferred-currency', e.detail.value)
+            document.querySelectorAll('.bond-transaction').forEach(bond => {
+                const { amountInvested, netValue } = floGlobals.bonds[bond.id];
+                bond.querySelector('.amount-invested').textContent = formatAmount(amountInvested[preferredCurrency], preferredCurrency)
+                bond.querySelector('.net-value').textContent = formatAmount(netValue[preferredCurrency], preferredCurrency)
+            })
+            renderRates()
+        })
+
+
+        let isDropdownOpen = false
+
+        function changeDropdownState(target, mode, trigger) {
+            const options = {
+                duration: 300,
+                easing: 'ease',
+                fill: 'both',
+            }
+            if (mode === 'show') {
+                showDropdown(target, options, trigger)
+            }
+            else if (mode === 'toggle') {
+                if (isDropdownOpen) {
+                    hideDropdown(target, options)
+                }
+                else {
+                    showDropdown(target, options, trigger)
+                }
+            }
+            else if (mode === 'hide') {
+                hideDropdown(target, options)
+            }
+        }
+
+        function showDropdown(target, options, trigger) {
+            if (isDropdownOpen) return
+            if (trigger) {
+                const triggerDimensions = trigger.getBoundingClientRect()
+                getRef(target).setAttribute('style', `top: ${triggerDimensions.top + triggerDimensions.height + document.documentElement.scrollTop}px; right: calc(${window.innerWidth - triggerDimensions.right}px - 1.5rem)`)
+            }
+            getRef(target).classList.remove('hidden')
+            getRef(target).animate([
+                { transform: 'translateY(-1rem)', opacity: 0 },
+                { transform: 'translateY(0)', opacity: 1 },
+            ], options)
+                .onfinish = () => {
+                    isDropdownOpen = true
+                }
+        }
+
+        function hideDropdown(target, options) {
+            if (!isDropdownOpen) return
+            getRef(target).animate([
+                { transform: 'translateY(0)', opacity: 1 },
+                { transform: 'translateY(-1rem)', opacity: 0 },
+            ], options)
+                .onfinish = () => {
+                    isDropdownOpen = false
+                    getRef(target).classList.add('hidden')
+                }
+        }
+
+        function showPage(target) {
+            document.querySelector('.page:not(.hidden)')?.classList.add('hidden')
+            getRef(target).classList.remove('hidden')
+            if (target !== 'confirm_bond_page') {
+                getRef('get_private_key').value = ''
+            }
+            if (target === 'home_page') {
+                getRef("add_bond_form").reset()
+            }
+            if (target === 'loading_page' || target === 'error_page') {
+                getRef('main_header').classList.add('hidden')
+            }
+            else {
+                getRef('main_header').classList.remove('hidden')
+            }
+        }
+
+        getRef('search_bonds').addEventListener('input', debounce((e) => {
+            let hiddenElements = 0;
+            const searchKey = e.target.value.trim().toLowerCase();
+            [...getRef('bond_list').children].forEach(bond => {
+                if (bond.dataset.floId.toLowerCase().includes(searchKey) || bond.dataset.btcId.toLowerCase().includes(searchKey)) {
+                    bond.classList.remove('hidden')
+                } else {
+                    bond.classList.add('hidden')
+                    hiddenElements++
+                }
+            })
+            if (hiddenElements === getRef('bond_list').children.length) {
+                getRef('bond_list__empty-state').classList.remove('hidden')
+            }
+            else {
+                getRef('bond_list__empty-state').classList.add('hidden')
+            }
+        }, 100))
+
+        floGlobals.bonds = {}
+        async function renderBondData(data, wipe) {
+            const period = duration => {
+                let y = parseInt(duration.match(/\d+Y/)),
+                    m = parseInt(duration.match(/\d+M/)),
+                    d = parseInt(duration.match(/\d+D/));
+                let r = "";
+                if (!isNaN(y))
+                    r += y + ` Year${y > 1 ? 's' : ''}`;
+                if (!isNaN(m))
+                    r += m + ` Month${m > 1 ? 's' : ''}`;
+                if (!isNaN(d))
+                    r += d + ` Day${d > 1 ? 's' : ''}`;
+                return r;
+            }
+
+            const renderedBonds = []
+            for (let i in data) {
+                // console.log(i)
+                let b = blockchainBond.parse.main(data[i]);
+                b.netValue = blockchainBond.calcNetValue(b.BTC_base, BTC_current, b.startDate, b.minIpa, b.maxPeriod, b.cut, b.amount, b.USD_base, USD_current);
+                // console.info(b);
+                const obj = {
+                    id: i,
+                    href: `${floBlockchainAPI.current_server}tx/${i}`,
+                    floId: b.floID,
+                    bondStartDate: b.startDate,
+                    amountInvested: {
+                        inr: b.amount,
+                        usd: b.amount / b.USD_base
+                    },
+                    netValue: {
+                        inr: b.netValue,
+                        usd: b.netValue / USD_current
+                    },
+                    guaranteedInterest: b.minIpa * 100 + '%',
+                    guaranteedInterestDuration: period(b.maxPeriod),
+                    gainShare: b.cut * 100 + '%',
+                    lockinPeriod: period(b.lockinPeriod),
+                    lockinEnd: blockchainBond.dateAdder(b.startDate, b.lockinPeriod),
+                    baseBtcRate: b.BTC_base,
+                    usdRate: b.USD_base
+                }
+                //bond.setAttribute("title", data[i].replace(/\|/g, "\n"))
+                renderedBonds.push(render.bondCard(obj))
+                floGlobals.bonds[i] = {
+                    amountInvested: obj.amountInvested,
+                    netValue: obj.netValue,
+                }
+            }
+            renderElem(getRef('bond_list'), html`${renderedBonds}`)
+        }
+
+        async function renderBondClosingData(data) {
+            for (let i in data) {
+                let b = blockchainBond.parse.end(data[i]);
+                const mappedTo = document.getElementById(b.bondID);
+                if (mappedTo) {
+                    b.href = `${floBlockchainAPI.current_server}tx/${b.bondID}`;
+                    floGlobals.bonds[b.bondID].netValue = {
+                        inr: b.amountFinal,
+                        usd: b.amountFinal / b.USD_net
+                    }
+                    b.floId = mappedTo.dataset.floId
+                    const closedBondCard = html.node`${render.closedBondCard(b)}`
+                    // mappedTo.replaceWith(closedBondCard)
+                }
+                console.info(b);
+                /*TODO: UI: render bond closing 
+                Note: should be mapped with bond details that were rendered
+                if closed, netVal should not be displayed
+                b -> Object {
+                    bondID: id of the bond closed (map to var i in renderBondData's loop)
+                    BTC_net: BTC value at closing date
+                    endDate: closing date
+                    amountFinal: amount at closing
+                    payment_refRef: if amount if withdrawn by token system, txid of token transfer
+                    USD_net: USD value at closing date
+                    refSign: user signature for closing (hidden)
+                }
+                */
+            }
+        }
+
+        getRef('bond_list').addEventListener('click', e => {
+            if (e.target.closest('.bond-transaction__withdraw')) {
+                const bond = e.target.closest('.bond-transaction')
+                floGlobals.withdrawing = {
+                    floId: bond.dataset.floId,
+                    bondId: bond.id
+                }
+                renderElem(getRef('withdraw__id'), html`<div class='label'>Investor address</div> <strong class="value">${floGlobals.withdrawing.floId}</strong>`)
+                openPopup('withdraw_popup')
+            } else if (e.target.closest('.toggle-details')) {
+                const bond = e.target.closest('.bond-transaction')
+                const moreDetailsPanel = bond.querySelector('.more-details')
+                if (moreDetailsPanel.classList.contains('hidden')) {
+                    e.target.closest('.toggle-details').innerHTML = `
+                        <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M24 0v24H0V0h24z" fill="none" opacity=".87"></path><path d="M7.41 18.59L8.83 20 12 16.83 15.17 20l1.41-1.41L12 14l-4.59 4.59zm9.18-13.18L15.17 4 12 7.17 8.83 4 7.41 5.41 12 10l4.59-4.59z"></path></svg>
+                        Hide details
+                    `;
+                    moreDetailsPanel.classList.remove('hidden')
+                    moreDetailsPanel.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    })
+                } else {
+                    e.target.closest('.toggle-details').innerHTML = `
+                        <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"></path><path d="M12 5.83L15.17 9l1.41-1.41L12 3 7.41 7.59 8.83 9 12 5.83zm0 12.34L8.83 15l-1.41 1.41L12 21l4.59-4.59L15.17 15 12 18.17z"></path></svg>    
+                        See details
+                    `;
+                    moreDetailsPanel.classList.add('hidden')
+                }
+            }
+        })
+        getRef('withdraw_private_key_button').addEventListener('click', e => {
+            buttonLoader('withdraw_private_key_button', true)
+            const privKey = getRef('withdraw_private_key').value
+            const { bondId, floId } = floGlobals.withdrawing
+            floExchangeAPI.closeBlockchainBond(bondId, floId, privKey).then(result => {
+                console.log(result)
+                showChildElement(getRef('withdraw_process'), 1, { entry: slideInLeft, exit: slideOutLeft });
+                const withdrawButton = document.getElementById(floGlobals.withdrawId.join('_'))?.querySelector('.bond-transaction__withdraw')
+                if (withdrawButton) {
+                    withdrawButton.textContent = 'Withdrawn'
+                    withdrawButton.disabled = true
+                }
+            }).catch(error => {
+                getRef('withdraw_failed_message').textContent = error.message
+                showChildElement(getRef('withdraw_process'), 2, { entry: slideInLeft, exit: slideOutLeft });
+                console.error(error)
+            }).finally(() => {
+                buttonLoader('withdraw_private_key_button', false)
+            })
+        })
+
+        function renderRates() {
+            preferredCurrency = getRef('currency_selector').value;
+            if (preferredCurrency === 'usd') {
+                getRef("usd-rate").classList.add("hidden")
+                getRef("btc-usd-rate").textContent = `BTC: ${formatAmount(BTC_current, 'usd')}`;
+
+            } else {
+                getRef("usd-rate").classList.remove("hidden")
+                getRef("usd-rate").textContent = `USD: ${formatAmount(USD_current)}`;
+                getRef("btc-usd-rate").textContent = `BTC: ${formatAmount(BTC_current * USD_current)}`;
+            }
+        }
+
+        var USD_current, BTC_current;
+        getRef('refresh_button').addEventListener("click", refreshData);
+        function refreshData() {
+            showPage('loading_page')
+            getCurrentRates().then(rates => {
+                USD_current = rates.USD_INR;
+                BTC_current = rates.BTC_USD;
+                console.log(`USD rate: ${USD_current} INR\nBTC rate: ${BTC_current} USD`);
+                renderRates()
+                showPage('home_page')
+                renderElem(getRef('bond_list'), html`<svg class="loader" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"> <polygon points="17.76 23.78 17.76 40.22 32 48.44 46.24 40.22 46.24 23.78 32 15.56 17.76 23.78" /> <polyline points="17.76 23.78 32 32 46.24 23.78" /> <line x1="32" y1="48.44" x2="32" y2="32" /> <polyline points="32 2 6.02 17 6.02 47" /> <polyline points="57.98 47 57.98 17 32 2" /> <polyline points="6.02 47 32 62 57.98 47" /> </svg>`)
+                refreshBlockchainData().then(result => {
+                    compactIDB.readAllData("bonds").then(result => {
+                        renderBondData(result);
+                        compactIDB.readAllData('closings').then(result => {
+                            renderBondClosingData(result);
+                        }).catch(error => console.error(error))
+                    }).catch(error => console.error(error))
+                }).catch(error => {
+                    console.error(error)
+                    showPage('error_page')
+                })
+            });
+        }
+
+        getRef("add_bond_form").addEventListener("submit", evt => {
+            evt.preventDefault()
+            let f = evt.target;
+
+            let bondStr = blockchainBond.stringify.main(f["base"].value, f["start_date"].value, f["gi_r"].value, f["gi_pv"].value + " " + getRef("gi_pt").value, f["cut"].value, f["amount"].value, f["usd_rate"].value, f["lockin_v"].value + " " + getRef("lockin_t").value, f["floid"].value);
+
+            getRef('bond_details').innerHTML = bondStr.replace(/\|/g, "<br>")
+
+            getRef('admin_id').innerHTML = `Enter Private key of adminID <h5 class="weight-400 marg">${floGlobals.adminID}</h5>`
+
+            showPage('confirm_bond_page')
+            // bond_details = prompt(bondStr + `\n\nEnter Private key of adminID (${floGlobals.adminID})`);
+
+            getRef('add_bond_button').onclick = () => {
+                const privKey = getRef('get_private_key').value
+                if (!floCrypto.verifyPrivKey(privKey, floGlobals.adminID)) {
+                    notify("Access Denied! incorrect private key", 'error');
+                    return
+                }
+                console.log(bondStr);
+                floBlockchainAPI.writeData(floGlobals.adminID, bondStr, privKey, f["floid"].value).then(result => {
+                    console.log(result);
+                    showPage('add_bond_page')
+                    notify("Bond added in blockchain", 'success');
+                    getRef("add_bond_form").reset()
+                }).catch(error => reject(error))
+            }
+        })
+    </script>
+</body>
+
+</html>
