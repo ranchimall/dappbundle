@@ -1,4 +1,4 @@
-name: Pull changes and deploy API
+name: Push to Dappbundle
 on: [push]
 jobs:
   build:
