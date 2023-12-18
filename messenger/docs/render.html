@@ -1,0 +1,41 @@
+<!-- A simple example illustrating render logic we have extensively used in this application -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic List with uhtml</title>
+</head>
+
+<body>
+    <div id="app"></div>
+
+    <script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
+    <script>
+        const { html, render : renderElem } = uhtml;
+
+        // Data to be displayed
+        const items = ['Apple', 'Banana', 'Cherry', 'Date', 'Elderberry'];
+
+        // Function to render items using uhtml
+        function renderItems(items) {
+            return html`
+                <ul>
+                    ${items.map(item => html`<li>${item}</li>`)}
+                </ul>
+            `;
+        }
+
+        // Render items into the 'app' element
+        const appElement = document.getElementById('app');
+
+        
+        // render is defined and exported from uhtml. html is also define and exported from uhtml
+        // Create html first, and then render it
+        // Creates actual HTML when render is applied to something that creates html
+        renderElem(appElement, renderItems(items));
+    </script>
+</body>
+
+</html>
