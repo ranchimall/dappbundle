@@ -1,5 +1,5 @@
 # BTC Wallet
-[![Pull changes and deploy API](https://github.com/ranchimall/btcwallet/actions/workflows/repopush.yml/badge.svg)](https://github.com/ranchimall/btcwallet/actions/workflows/repopush.yml)
+[![Push to Dappbundle](https://github.com/ranchimall/btcwallet/actions/workflows/repopush.yml/badge.svg)](https://github.com/ranchimall/btcwallet/actions/workflows/repopush.yml)
 
 BTC Wallet
 It is a web-based Bitcoin wallet and Bitcoin explorer that promotes self-custody by generating Bitcoin addresses and private keys locally on the user's device. If you are suspicious about internet monitoring, then open the URL, disconnect your computer from the internet, and then generate the Bitcoin address and private key.  
