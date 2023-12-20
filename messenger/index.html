@@ -1657,14 +1657,18 @@
             else
                 return contactAddress
         }
+        function isValidEthereumAddress(address) {
+            return /^0x[a-fA-F0-9]{40}$/.test(address);
+        }
         window.addEventListener('hashchange', e => routeTo(window.location.hash))
         window.addEventListener("load", () => {
             document.body.classList.remove('hidden')
             document.querySelectorAll('sm-input[data-address]').forEach(input => input.customValidation = (value) => {
-                if (!value) return { isValid: false, errorText: 'Please enter a FLO address' }
+                if (!value) return { isValid: false, errorText: 'Please enter an address' }
+
                 return {
-                    isValid: floCrypto.validateAddr(value),
-                    errorText: `Invalid FLO address.<br> It usually starts with "F"`
+                    isValid: isValidEthereumAddress(value) || floCrypto.validateAddr(value),
+                    errorText: `Invalid address.`
                 }
             })
             document.addEventListener('keyup', (e) => {
