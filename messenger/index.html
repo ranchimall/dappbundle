@@ -18,7 +18,7 @@
         }
     </script>
     <script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
-    <script src="scripts/lib.js"></script>
+    <script src="scripts/lib.min.js"></script>
     <script src="scripts/floCrypto.js"></script>
     <script src="scripts/btcOperator.js"></script>
     <script src="scripts/floBlockchainAPI.js"></script>
@@ -27,7 +27,7 @@
     <script src="scripts/floDapps.js"></script>
     <script src="scripts/keccak.js"></script>
     <script src="scripts/messengerEthereum.js"></script>
-    <script src="scripts/messenger.js"></script>
+    <script src="scripts/messenger.min.js"></script>
     <script id="onLoadStartUp">
         function onLoadStartUp() {
             routeTo('loading')
@@ -45,14 +45,14 @@
                 //load messages from IDB and render them
                 console.log(`Loading Data! Please Wait...`)
                 //Set UI render functions
-                messenger.renderUI.chats = renderChatList;
-                messenger.renderUI.directChat = renderDirectUI;
-                messenger.renderUI.groupChat = renderGroupUI;
-                messenger.renderUI.pipeline = renderPipelineUI;
-                messenger.renderUI.mails = m => renderMailList(m, false);
-                messenger.renderUI.marked = renderMarked;
+                rmMessenger.renderUI.chats = renderChatList;
+                rmMessenger.renderUI.directChat = renderDirectUI;
+                rmMessenger.renderUI.groupChat = renderGroupUI;
+                rmMessenger.renderUI.pipeline = renderPipelineUI;
+                rmMessenger.renderUI.mails = m => renderMailList(m, false);
+                rmMessenger.renderUI.marked = renderMarked;
                 //init messenger
-                messenger.init().then(result => {
+                rmMessenger.init().then(result => {
                     console.log(result);
                     //Check for available bg image
                     setBgImage();
@@ -692,8 +692,8 @@
             <h4>Add contact</h4>
         </header>
         <sm-form>
-            <sm-input id="add_contact_floID" data-flo-address placeholder="FLO/BTC/ETH address"
-                error-text="Invalid address" animate autofocus required></sm-input>
+            <sm-input id="add_contact_floID" data-address placeholder="FLO/BTC/ETH address" error-text="Invalid address"
+                animate autofocus required></sm-input>
             <sm-input id="add_contact_name" placeholder="Name" animate required></sm-input>
             <button class="button button--primary" id="add_contact_button" type="submit" disabled>Add</button>
         </sm-form>
@@ -1196,9 +1196,9 @@
         }
 
         function getAddressType(floID) {
-            if (messenger.groups.hasOwnProperty(floID))
+            if (rmMessenger.groups.hasOwnProperty(floID))
                 return 'group';
-            else if (messenger.pipeline.hasOwnProperty(floID))
+            else if (rmMessenger.pipeline.hasOwnProperty(floID))
                 return 'pipeline';
             else return 'plain';
         }
@@ -1221,7 +1221,7 @@
                     let contactBtcAddress;
                     let contactEthAddress;
                     if (addressType === 'group')
-                        isAdmin = messenger.groups[chatAddress].admin === floDapps.user.id;
+                        isAdmin = rmMessenger.groups[chatAddress].admin === floDapps.user.id;
                     let addAsContact
                     if (!floGlobals.contacts.hasOwnProperty(chatAddress) && addressType === 'plain')
                         addAsContact = html`
@@ -1230,7 +1230,7 @@
                                 Add as contact
                             </button>`;
                     let markReadUnread
-                    if (messenger.marked[chatAddress] && messenger.marked[chatAddress].includes('unread')) {
+                    if (rmMessenger.marked[chatAddress] && rmMessenger.marked[chatAddress].includes('unread')) {
                         markReadUnread = html`
                             <button id="mark_read_option" class="option" onclick="markAsRead()">
                                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24" /> <path d="M12,18l-6,0l-4,4V4c0-1.1,0.9-2,2-2h16c1.1,0,2,0.9,2,2v7l-2,0V4H4v12l8,0V18z M23,14.34l-1.41-1.41l-4.24,4.24l-2.12-2.12 l-1.41,1.41L17.34,20L23,14.34z" /> </g> </svg>
@@ -1246,7 +1246,7 @@
                             `;
                     }
                     let blockUnblock
-                    if (messenger.blocked.has(chatAddress)) {
+                    if (rmMessenger.blocked.has(chatAddress)) {
                         blockUnblock = html`
                                 <button class="option" onclick="unblockUser()">
                                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
@@ -1272,7 +1272,7 @@
                             `
                     }
                     if (addressType === 'group') {
-                        const { description, created } = messenger.groups[chatAddress]
+                        const { description, created } = rmMessenger.groups[chatAddress]
                         contactInitial = html.node`<svg class="icon group-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M13.61,28.09c-1.63,0-4.72-2.35-5.33-3.58a21.65,21.65,0,0,1-1.35-7.32s-.26-6.07,6.68-6.07a6.38,6.38,0,0,1,6.69,6.07A21.65,21.65,0,0,1,19,24.51c-.62,1.23-3.7,3.58-5.34,3.58"/><path d="M50.39,28.09c-1.64,0-4.72-2.35-5.34-3.58a21.9,21.9,0,0,1-1.35-7.32s-.26-6.07,6.69-6.07a6.37,6.37,0,0,1,6.68,6.07,21.65,21.65,0,0,1-1.35,7.32c-.61,1.23-3.7,3.58-5.33,3.58"/><path d="M32,31.74c-2.21,0-6.37-3.17-7.2-4.83A29.3,29.3,0,0,1,23,17s-.35-8.21,9-8.21c8.68,0,9,8.21,9,8.21a29.3,29.3,0,0,1-1.83,9.88c-.82,1.66-5,4.83-7.2,4.83"/><path d="M48.29,38.58c-4.16-1.83-8.57-3.08-10.34-6.4a12,12,0,0,1-6,3.73,12,12,0,0,1-5.95-3.73c-1.77,3.32-6.18,4.57-10.34,6.4-1.7.71-3.11,9.88-1.13,9.88A33.06,33.06,0,0,0,31.23,53h1.54a33.06,33.06,0,0,0,16.65-4.53C51.4,48.46,50,39.29,48.29,38.58Z"/><path d="M14.82,36.57c.76-.33,1.54-.65,2.3-1,2.49-1,4.85-2,6.22-3.44C21.07,31.23,19,30.25,18,28.41a8.83,8.83,0,0,1-4.41,2.76,8.83,8.83,0,0,1-4.4-2.76c-1.31,2.46-4.58,3.38-7.66,4.74-1.26.52-2.3,7.31-.84,7.31a24.55,24.55,0,0,0,10.86,3.31C11.89,40.81,12.86,37.39,14.82,36.57Z"/><path d="M62.45,33.15c-3.08-1.36-6.35-2.28-7.66-4.74a8.83,8.83,0,0,1-4.4,2.76A8.83,8.83,0,0,1,46,28.41c-1,1.84-3,2.82-5.32,3.76,1.37,1.43,3.73,2.41,6.22,3.44.76.31,1.54.63,2.26,1,2,.83,3,4.25,3.29,7.21a24.55,24.55,0,0,0,10.86-3.31C64.75,40.46,63.71,33.67,62.45,33.15Z"/></svg>`
                         lastInteraction = `Created ${getFormattedTime(created)}`;
                         disableContactName = !isAdmin
@@ -1280,10 +1280,10 @@
                         getRef('contact_details_popup').classList.add('is-group');
                         floAddressType = 'Group FLO address'
                     } else if (addressType === 'pipeline') {
-                        const { model, members } = messenger.pipeline[chatAddress]
+                        const { model, members } = rmMessenger.pipeline[chatAddress]
                         contactInitial = html.node`<svg class="icon group-icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"></rect></g><g><g><path d="M6,15c1.1,0,2,0.9,2,2s-0.9,2-2,2s-2-0.9-2-2S4.9,15,6,15 M6,13c-2.2,0-4,1.8-4,4s1.8,4,4,4s4-1.8,4-4S8.2,13,6,13z M12,5 c1.1,0,2,0.9,2,2s-0.9,2-2,2s-2-0.9-2-2S10.9,5,12,5 M12,3C9.8,3,8,4.8,8,7s1.8,4,4,4s4-1.8,4-4S14.2,3,12,3z M18,15 c1.1,0,2,0.9,2,2s-0.9,2-2,2s-2-0.9-2-2S16.9,15,18,15 M18,13c-2.2,0-4,1.8-4,4s1.8,4,4,4s4-1.8,4-4S20.2,13,18,13z"></path></g></g></svg>`
                         getRef('contact_details_popup').classList.add('is-group');
-                        floAddressType = `${messenger.pipeline[chatAddress].model === 'flo_multisig' ? 'FLO' : 'BTC'} Multisig address`;
+                        floAddressType = `${rmMessenger.pipeline[chatAddress].model === 'flo_multisig' ? 'FLO' : 'BTC'} Multisig address`;
                     } else {
                         disableContactName = false;
                         contactInitial = getContactName(chatAddress).charAt(0);
@@ -1295,7 +1295,7 @@
                             // Get pipeline origin multisig address
                             getTxHex(chatAddress).then(async tx_hex => {
                                 let details
-                                switch (messenger.pipeline[chatAddress].model) {
+                                switch (rmMessenger.pipeline[chatAddress].model) {
                                     case 'flo_multisig':
                                         details = await floBlockchainAPI.parseTransaction(tx_hex)
                                         break;
@@ -1403,7 +1403,7 @@
                     const contacts = []
                     const groupID = getRef('edit_group_button').dataset.groupId;
                     for (const contact in floGlobals.contacts) {
-                        if (!messenger.groups[groupID].members.includes(contact) && floDapps.user.get_pubKey(contact)) {
+                        if (!rmMessenger.groups[groupID].members.includes(contact) && floDapps.user.get_pubKey(contact)) {
                             contacts.push(render.selectableContact(contact))
                         }
                     }
@@ -1443,7 +1443,7 @@
             switch (e.target.id) {
                 case 'contact_details_popup':
                     renderElem(getRef('contact_details_section'), html``)
-                    if (messenger.groups.hasOwnProperty(floGlobals.viewingDetailsOfAddress)) {
+                    if (rmMessenger.groups.hasOwnProperty(floGlobals.viewingDetailsOfAddress)) {
                         isGroupEditable = true;
                     }
                     break;
@@ -1650,8 +1650,8 @@
         function getContactName(contactAddress) {
             if (floDapps.user.get_contact(contactAddress))
                 return floDapps.user.get_contact(contactAddress)
-            else if (messenger.groups[contactAddress])
-                return messenger.groups[contactAddress].name
+            else if (rmMessenger.groups[contactAddress])
+                return rmMessenger.groups[contactAddress].name
             else if (floCrypto.isSameAddr(contactAddress, floDapps.user.id))
                 return 'You'
             else
@@ -1824,7 +1824,7 @@
                             getRef('main_navbar').classList.remove('hide-on-mobile')
                         }
                     }
-                    messenger.list_request_received({ completed: false }).then(requests => addNotificationBadge('#notification_panel_button', Object.keys(requests).length, { replace: true }))
+                    rmMessenger.list_request_received({ completed: false }).then(requests => addNotificationBadge('#notification_panel_button', Object.keys(requests).length, { replace: true }))
                     removeNotificationBadge('#chat_page_button')
                     if (floGlobals.idInterval)
                         clearInterval(floGlobals.idInterval)
@@ -2470,7 +2470,7 @@
                 let initial
                 if (type === 'group') {
                     initial = html`<svg class="icon group-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M13.61,28.09c-1.63,0-4.72-2.35-5.33-3.58a21.65,21.65,0,0,1-1.35-7.32s-.26-6.07,6.68-6.07a6.38,6.38,0,0,1,6.69,6.07A21.65,21.65,0,0,1,19,24.51c-.62,1.23-3.7,3.58-5.34,3.58"/><path d="M50.39,28.09c-1.64,0-4.72-2.35-5.34-3.58a21.9,21.9,0,0,1-1.35-7.32s-.26-6.07,6.69-6.07a6.37,6.37,0,0,1,6.68,6.07,21.65,21.65,0,0,1-1.35,7.32c-.61,1.23-3.7,3.58-5.33,3.58"/><path d="M32,31.74c-2.21,0-6.37-3.17-7.2-4.83A29.3,29.3,0,0,1,23,17s-.35-8.21,9-8.21c8.68,0,9,8.21,9,8.21a29.3,29.3,0,0,1-1.83,9.88c-.82,1.66-5,4.83-7.2,4.83"/><path d="M48.29,38.58c-4.16-1.83-8.57-3.08-10.34-6.4a12,12,0,0,1-6,3.73,12,12,0,0,1-5.95-3.73c-1.77,3.32-6.18,4.57-10.34,6.4-1.7.71-3.11,9.88-1.13,9.88A33.06,33.06,0,0,0,31.23,53h1.54a33.06,33.06,0,0,0,16.65-4.53C51.4,48.46,50,39.29,48.29,38.58Z"/><path d="M14.82,36.57c.76-.33,1.54-.65,2.3-1,2.49-1,4.85-2,6.22-3.44C21.07,31.23,19,30.25,18,28.41a8.83,8.83,0,0,1-4.41,2.76,8.83,8.83,0,0,1-4.4-2.76c-1.31,2.46-4.58,3.38-7.66,4.74-1.26.52-2.3,7.31-.84,7.31a24.55,24.55,0,0,0,10.86,3.31C11.89,40.81,12.86,37.39,14.82,36.57Z"/><path d="M62.45,33.15c-3.08-1.36-6.35-2.28-7.66-4.74a8.83,8.83,0,0,1-4.4,2.76A8.83,8.83,0,0,1,46,28.41c-1,1.84-3,2.82-5.32,3.76,1.37,1.43,3.73,2.41,6.22,3.44.76.31,1.54.63,2.26,1,2,.83,3,4.25,3.29,7.21a24.55,24.55,0,0,0,10.86-3.31C64.75,40.46,63.71,33.67,62.45,33.15Z"/></svg> `
-                    name = messenger.groups[contactAddress].name
+                    name = rmMessenger.groups[contactAddress].name
                 } else if (type === 'pipeline') {
                     initial = html`<svg class="icon group-icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M6,15c1.1,0,2,0.9,2,2s-0.9,2-2,2s-2-0.9-2-2S4.9,15,6,15 M6,13c-2.2,0-4,1.8-4,4s1.8,4,4,4s4-1.8,4-4S8.2,13,6,13z M12,5 c1.1,0,2,0.9,2,2s-0.9,2-2,2s-2-0.9-2-2S10.9,5,12,5 M12,3C9.8,3,8,4.8,8,7s1.8,4,4,4s4-1.8,4-4S14.2,3,12,3z M18,15 c1.1,0,2,0.9,2,2s-0.9,2-2,2s-2-0.9-2-2S16.9,15,18,15 M18,13c-2.2,0-4,1.8-4,4s1.8,4,4,4s4-1.8,4-4S20.2,13,18,13z"/></g></g></svg>`
                 } else {
@@ -2500,7 +2500,7 @@
                     }
                 }
                 let tag = 'BTC'
-                if (type === 'pipeline' && messenger.pipeline[contactAddress].model === 'flo_multisig') {
+                if (type === 'pipeline' && rmMessenger.pipeline[contactAddress].model === 'flo_multisig') {
                     tag = 'FLO'
                 }
                 const className = `contact ${type !== 'contact' ? type : ''} ${markUnread ? 'unread' : ''} interactive collapsed`
@@ -2509,7 +2509,7 @@
                         <div class="initial flex align-center">
                             ${initial}
                         </div>
-                        ${type === 'pipeline' ? html`<div class="tag">${tag} Multisig ${messenger.pipeline[contactAddress].disabled ? ' - Completed' : ''}</div>` : ''}
+                        ${type === 'pipeline' ? html`<div class="tag">${tag} Multisig ${rmMessenger.pipeline[contactAddress].disabled ? ' - Completed' : ''}</div>` : ''}
                         <h4 class="name">${name}</h4>
                         ${type === 'contact' ? html`<p class="contact__flo-address wrap-around">${contactAddress}</p>` : ''}
                     </div>
@@ -2599,7 +2599,7 @@
                 } else if (admin) {
                     if (newMembers.length) {
                         const cards = document.createDocumentFragment()
-                        const { admin } = messenger.groups[groupID]
+                        const { admin } = rmMessenger.groups[groupID]
                         newMembers.forEach(member => {
                             let eventCard = html.node`<p class="group-event-card event-card">${getContactName(admin)} added ${member === floDapps.user.id ? 'you' : getContactName(member)}</p>`
                             cards.append(eventCard)
@@ -2607,7 +2607,7 @@
                         return cards
                     } else if (rmMembers.length) {
                         const cards = document.createDocumentFragment()
-                        const { admin } = messenger.groups[groupID]
+                        const { admin } = rmMessenger.groups[groupID]
                         rmMembers.forEach(member => {
                             let eventCard = html.node`<p class="group-event-card event-card">${getContactName(admin)} removed ${member === floDapps.user.id ? 'you' : getContactName(member)}</p>`
                             cards.append(eventCard)
@@ -2636,7 +2636,7 @@
                             // disable chatting
                             getRef('chat_footer').classList.add('hidden')
                             let redirectTo = `https://ranchimall.github.io/btcwallet/#/check_details?query=`
-                            if (messenger.pipeline[activeChat.address].model === 'flo_multisig')
+                            if (rmMessenger.pipeline[activeChat.address].model === 'flo_multisig')
                                 redirectTo = `https://blockbook.ranchimall.net/tx/`
                             return html.node`<div class="pipeline-event pipeline-event--signed event-card flex align-center wrap-around">
                                 <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M23,12l-2.44-2.79l0.34-3.69l-3.61-0.82L15.4,1.5L12,2.96L8.6,1.5L6.71,4.69L3.1,5.5L3.44,9.2L1,12l2.44,2.79l-0.34,3.7 l3.61,0.82L8.6,22.5l3.4-1.47l3.4,1.46l1.89-3.19l3.61-0.82l-0.34-3.69L23,12z M10.09,16.72l-3.8-3.81l1.48-1.48l2.32,2.33 l5.85-5.87l1.48,1.48L10.09,16.72z"/></g></svg>
@@ -2655,8 +2655,8 @@
             },
             groupMembers(groupID, areSelectable = false) {
                 const groupMembersCards = [];
-                messenger.groups[groupID].members.forEach(floID => {
-                    let isAdmin = messenger.groups[groupID].admin === floID ? true : false
+                rmMessenger.groups[groupID].members.forEach(floID => {
+                    let isAdmin = rmMessenger.groups[groupID].admin === floID ? true : false
                     let name = getContactName(floID)
                     let initial = name.charAt(0)
                     if (areSelectable) {
@@ -2679,7 +2679,7 @@
             },
             pipelineMembers(pipeID) {
                 const groupMembersCards = [];
-                messenger.pipeline[pipeID].members.forEach(floID => {
+                rmMessenger.pipeline[pipeID].members.forEach(floID => {
                     let name = getContactName(floID)
                     let initial = name.charAt(0)
                     groupMembersCards.push(html`
@@ -2692,7 +2692,7 @@
                 renderElem(getRef('group_members_list'), html`${groupMembersCards}`)
             },
             blockedList() {
-                const blockedListCards = [...messenger.blocked].map(floID => {
+                const blockedListCards = [...rmMessenger.blocked].map(floID => {
                     const name = getContactName(floID)
                     const initial = name.charAt(0)
                     return html`
@@ -2752,7 +2752,7 @@
             multisigAddresses() {
                 const multisigMode = getRef('multisig_mode_selector').value || 'btc'
                 return new Promise((resolve, reject) => {
-                    Promise.all([messenger.multisig.listAddress(), compactIDB.readAllData('multisigLabels')])
+                    Promise.all([rmMessenger.multisig.listAddress(), compactIDB.readAllData('multisigLabels')])
                         .then(([addresses, labels]) => {
                             renderElem(getRef('select_multisig_list'), html``)
                             const list = Object.keys(addresses).map(address => render.multisigAddressCard(address, addresses[address], labels[address], multisigMode)) || []
@@ -2783,7 +2783,7 @@
             },
             async notifications() {
                 try {
-                    const notifications = await messenger.list_request_received({ completed: false })
+                    const notifications = await rmMessenger.list_request_received({ completed: false })
                     let receivedRequests = []
                     for (const key in notifications) {
                         receivedRequests.unshift(render.notification(key, notifications[key]))
@@ -2846,24 +2846,24 @@
             return new Promise((resolve, reject) => {
                 let chatGetter
                 let type
-                if (messenger.chats[floID]) {
+                if (rmMessenger.chats[floID]) {
                     type = 'chat'
                     chatGetter = getMergedChat
                 } else {
-                    if (messenger.groups[floID])
+                    if (rmMessenger.groups[floID])
                         type = 'group'
-                    if (messenger.pipeline[floID])
+                    if (rmMessenger.pipeline[floID])
                         type = 'pipeline'
-                    chatGetter = messenger.getChat
+                    chatGetter = rmMessenger.getChat
                 }
                 chatGetter(floID).then(chat => {
                     let lastMessage = Object.values(chat).reverse().find(({ message }) => message) || { message: '', time: 0 }
                     let { message, time, sender, category } = lastMessage
                     if (type === 'group' && time === 0)
-                        lastMessage.time = messenger.groups[floID].created
+                        lastMessage.time = rmMessenger.groups[floID].created
                     const amISender = type === 'chat' && category === 'sent' || type === 'group' && sender === floDapps.user.id
                     lastMessage.lastMessage = ''
-                    if (messenger.blocked.has(floID)) {
+                    if (rmMessenger.blocked.has(floID)) {
                         lastMessage.lastText = 'Blocked conversation'
                     } else {
                         if (amISender) {
@@ -2985,7 +2985,7 @@
                 document.title = `New mail(s)`
                 addNotificationBadge('#mail_page_button', Object.keys(data.mails).length)
             }
-            messenger.list_request_received({ completed: false }).then(requests => addNotificationBadge('#notification_panel_button', Object.keys(requests).length, { replace: true }))
+            rmMessenger.list_request_received({ completed: false }).then(requests => addNotificationBadge('#notification_panel_button', Object.keys(requests).length, { replace: true }))
             updateMessageUI(data.messages)
             renderMailList(data.mails, true)
         }
@@ -3020,7 +3020,7 @@
                 }
                 let floChatID = floCrypto.toFloID(chatID);
                 let btcChatID = btcOperator.convert.legacy2bech(floChatID);
-                Promise.all([messenger.getChat(floChatID), messenger.getChat(btcChatID)])
+                Promise.all([rmMessenger.getChat(floChatID), rmMessenger.getChat(btcChatID)])
                     .then(async ([floChat, btcChat]) => {
                         const transaction = mergeSortedArrays(Object.values(floChat), Object.values(btcChat), 'time')
                             .reverse()
@@ -3118,8 +3118,8 @@
                 } else {
                     const chatType = floID ? 'chat' : groupID ? 'group' : 'pipeline'
                     if (floID) {
-                        if (!(floID in messenger.chats) || !(floCrypto.toFloID(floID) in messenger.chats)) {
-                            await messenger.addChat(floID).catch(err => console.error(err))
+                        if (!(floID in rmMessenger.chats) || !(floCrypto.toFloID(floID) in rmMessenger.chats)) {
+                            await rmMessenger.addChat(floID).catch(err => console.error(err))
                         }
                     }
                     getRef('chats_list').prepend(html.node`${render.contactCard(chatAddress, { type: chatType, prepend: true, markUnread: true, ref: getRef('chats_list') })}`)
@@ -3129,7 +3129,7 @@
                     chatCard.classList.add('active')
                 }
                 let finalMessage
-                if (messenger.groups && messenger.groups[groupID]) {
+                if (rmMessenger.groups && rmMessenger.groups[groupID]) {
                     finalMessage = `${getContactName(sender)}: ${message}`
                 }
                 else
@@ -3146,7 +3146,7 @@
                         getRef('scroll_to_bottom').classList.add('new-message')
                     else {
                         if (document.hasFocus()) {
-                            messenger.removeMark(chatAddress, 'unread')
+                            rmMessenger.removeMark(chatAddress, 'unread')
                             setTimeout(() => {
                                 document.title = 'RanchiMall Messenger'
                                 getChatCard(chatAddress).classList.remove('unread')
@@ -3291,7 +3291,7 @@
                     let contact = e.target.closest(".contact")
                     clickedContact['chatCard'] = contact
                     clickedContact.address = contact.dataset.address
-                    clickedContact['isGroup'] = messenger.groups.hasOwnProperty(clickedContact.address)
+                    clickedContact['isGroup'] = rmMessenger.groups.hasOwnProperty(clickedContact.address)
                     floGlobals.viewingDetailsOfAddress = clickedContact.address
                     openPopup('contact_details_popup')
                 }, 500)
@@ -3331,7 +3331,7 @@
             clickedContact = {
                 chatCard: e.delegateTarget,
                 address: e.delegateTarget.dataset.address,
-                isGroup: messenger.groups.hasOwnProperty(e.delegateTarget.dataset.address)
+                isGroup: rmMessenger.groups.hasOwnProperty(e.delegateTarget.dataset.address)
             }
             if (clickedContact.address === floGlobals.myFloID) return
             if (e.target.closest(".initial") || e.target.closest(".menu")) {
@@ -3404,7 +3404,7 @@
         })
         delegate(getRef('select_contacts_container'), 'click', '.request-pubkey', e => {
             const floID = e.delegateTarget.closest('.selectable-contact').dataset.address
-            messenger.request_pubKey(floID)
+            rmMessenger.request_pubKey(floID)
             e.delegateTarget.disabled = true;
             e.delegateTarget.textContent = 'Request sent'
         })
@@ -3506,7 +3506,7 @@
             const label = getRef('multisig_label').value.trim();
             buttonLoader('create_multisig_button', true)
             console.log('creating multisig address', selctedPubKeys, minRequired)
-            messenger.multisig.createAddress(selctedPubKeys, minRequired).then(multisigAddress => {
+            rmMessenger.multisig.createAddress(selctedPubKeys, minRequired).then(multisigAddress => {
                 console.log('created multisig address', multisigAddress)
                 compactIDB.writeData('multisigLabels', label, multisigAddress).then(() => {
                     notify('Created multisig address', 'success');
@@ -3545,14 +3545,14 @@
             const groupName = getRef('group_name_field').value.trim()
             const groupDescription = getRef('group_description_field').value.trim()
             buttonLoader('create_group_button', true)
-            messenger.createGroup(groupName, groupDescription)
+            rmMessenger.createGroup(groupName, groupDescription)
                 .then(groupInfo => {
                     getRef('chats_list').prepend(html.node`${render.contactCard(groupInfo.groupID, { type: 'group', ref: getRef('chats_list') })}`);
                     getRef('chats_list').children[0].click()
                     closePopup()
                     notify('Group created', 'success')
                     if (selectedMembers.size) {
-                        messenger.addGroupMembers(groupInfo.groupID, [...selectedMembers])
+                        rmMessenger.addGroupMembers(groupInfo.groupID, [...selectedMembers])
                             .then(res => {
                                 clearAllMembers()
                             })
@@ -3682,7 +3682,7 @@
         function clearUserData() {
             getConfirmation('Clear Data', { message: 'Are you sure you want to clear all data?', confirmText: 'Yes', cancelText: 'No' }).then(confirmed => {
                 if (confirmed) {
-                    messenger.clearUserData().then(result => {
+                    rmMessenger.clearUserData().then(result => {
                         notify("Successfully Cleared local data", 'success')
                         onLoadStartUp()
                     }).catch(error => notify(error, "error"))
@@ -3696,7 +3696,7 @@
 
         getRef("backup_data").addEventListener("click", function (e) {
             renderElem(getRef("backup_info"), html`Generating the backup file! Please wait...`)
-            messenger.backupData().then(blob => {
+            rmMessenger.backupData().then(blob => {
                 renderElem(getRef("backup_info"), html`
                     Backup file generated! If the download didn't start automatically, 
                     <a href="${URL.createObjectURL(blob)}" download="${`BackupFor_${floDapps.user.id}_${Date.now()}.json`}">click here</a>
@@ -3717,11 +3717,11 @@
                 notify(`No files selected!`);
                 return;
             }
-            messenger.parseBackup(file).then(async data => {
+            rmMessenger.parseBackup(file).then(async data => {
                 getConfirmation('Restore Data?', { message: `Found: ${Object.keys(data.contacts).length} Contacts,\n ${Object.keys(data.messages).length} Messages, ${Object.keys(data.mails).length} Mails.`, confirmText: 'Restore', cancelText: 'Cancel' }).then(confirmed => {
                     if (confirmed) {
                         notify(`Restoring data! Please wait.`);
-                        messenger.restoreData(data).then(result => {
+                        rmMessenger.restoreData(data).then(result => {
                             notify("Data restore completed successful! Initiating reload, Please wait", 'success')
                             setTimeout(() => {
                                 location.reload()
@@ -3762,13 +3762,13 @@
             try {
                 switch (activeChat.type) {
                     case 'group':
-                        await messenger.sendGroupMessage(message, receiver)
+                        await rmMessenger.sendGroupMessage(message, receiver)
                         break;
                     case 'pipeline':
-                        await messenger.sendPipelineMessage(message, receiver)
+                        await rmMessenger.sendPipelineMessage(message, receiver)
                         break;
                     case 'plain':
-                        await messenger.sendMessage(message, receiver)
+                        await rmMessenger.sendMessage(message, receiver)
                         break;
                 }
                 if (getRef('messages_container').querySelector(`.unconfirmed`))
@@ -3797,7 +3797,7 @@
                 notify(`Equivalent Address is already saved as ${getContactName(addrInFlo)}`, 'error');
                 return;
             }
-            messenger.storeContact(addressToSave, name).then(result => {
+            rmMessenger.storeContact(addressToSave, name).then(result => {
                 closePopup()
                 notify(`Added Contact: ${addressToSave}`)
                 const chatCard = getChatCard(addressToSave)
@@ -3829,7 +3829,7 @@
         }
         async function renderCreationList() {
             const contacts = []
-            const sentRequests = await messenger.list_request_sent();
+            const sentRequests = await rmMessenger.list_request_sent();
             const skipSendingRequest = new Set();
             for (const key in sentRequests) {
                 skipSendingRequest.add(sentRequests[key].floID)
@@ -3846,14 +3846,14 @@
             renderElem(getRef('select_contacts_container'), html`${contacts}`)
         }
 
-        async function renderChatList(chatOrder = messenger.getChatOrder()) {
+        async function renderChatList(chatOrder = rmMessenger.getChatOrder()) {
             const chatOrderLookup = new Set()
             const mergedChatOrder = []
             // merge equivalent addresses
             chatOrder.forEach(address => {
-                if (messenger.groups.hasOwnProperty(address))
+                if (rmMessenger.groups.hasOwnProperty(address))
                     return mergedChatOrder.push(address)
-                if (messenger.pipeline.hasOwnProperty(address))
+                if (rmMessenger.pipeline.hasOwnProperty(address))
                     return mergedChatOrder.push(address)
                 let priorityAddress;
                 let equivalentFloAddress;
@@ -3880,13 +3880,13 @@
                 }
             });
             const chats = mergedChatOrder.map(address => {
-                const markUnread = messenger.marked[address] ? messenger.marked[address].includes('unread') : false;
+                const markUnread = rmMessenger.marked[address] ? rmMessenger.marked[address].includes('unread') : false;
                 let type
-                if (messenger.chats[address])
+                if (rmMessenger.chats[address])
                     type = 'chat'
-                else if (messenger.groups[address])
+                else if (rmMessenger.groups[address])
                     type = 'group'
-                else if (messenger.pipeline[address])
+                else if (rmMessenger.pipeline[address])
                     type = 'pipeline'
                 return render.contactCard(address, { type, markUnread, ref: getRef('chats_list') })
             })
@@ -3903,7 +3903,7 @@
 
         function scrollToBottom(smooth = false) {
             if (activeChat.address) {
-                messenger.removeMark(activeChat.address, 'unread')
+                rmMessenger.removeMark(activeChat.address, 'unread')
                 if (getChatCard(activeChat.address))
                     getChatCard(activeChat.address).classList.remove('unread')
             }
@@ -3918,10 +3918,10 @@
                     buttonLoader(button, true)
                     const tx_hex_signed = floGlobals.pipelineTxHex || getTxHex(pipeID)
                     if (!tx_hex_signed) reject('No transaction found')
-                    const pipeline = messenger.pipeline[pipeID]
+                    const pipeline = rmMessenger.pipeline[pipeID]
                     const txid = await floBlockchainAPI.broadcastTx(tx_hex_signed)
                     console.debug(txid);
-                    const result = await messenger.sendRaw(messenger.encrypt(txid, pipeline.eKey), pipeline.id, "BROADCAST", false)
+                    const result = await rmMessenger.sendRaw(rmMessenger.encrypt(txid, pipeline.eKey), pipeline.id, "BROADCAST", false)
                     renderElem(button.closest('.grid'), html``)
                     resolve({
                         tx_hex: tx_hex_signed,
@@ -3954,7 +3954,7 @@
                 if (newFee <= fee)
                     return notify('New fee should be greater than current fee', 'error')
                 buttonLoader(button, true)
-                const newPipeID = await messenger.editFee(floGlobals.pipelineTxID, newFee, await floDapps.user.private)
+                const newPipeID = await rmMessenger.editFee(floGlobals.pipelineTxID, newFee, await floDapps.user.private)
                 highlightNewGroup(newPipeID)
                 notify('Created a new multisig group. Please collect required signs again.', 'success')
             } catch (error) {
@@ -3971,10 +3971,10 @@
                 floChatAddress = validateEthAddress(address) ? floCrypto.getFloID(floGlobals.pubKeys[address] || getEthPubKey(address)) : floCrypto.toFloID(address);
                 if (floChatAddress) {
                     btcChatAddress = btcOperator.convert.legacy2bech(floChatAddress);
-                    promises.push(messenger.getChat(floChatAddress), messenger.getChat(btcChatAddress))
+                    promises.push(rmMessenger.getChat(floChatAddress), rmMessenger.getChat(btcChatAddress))
                 }
                 if (validateEthAddress(address))
-                    promises.push(messenger.getChat(address))
+                    promises.push(rmMessenger.getChat(address))
                 Promise.all(promises)
                     .then((chats) => {
                         // recursively merge chats using mergeSortedArrays
@@ -3989,7 +3989,7 @@
         let chatLazyLoader
         function renderMessages(address) {
             return new Promise(async (resolve, reject) => {
-                (getAddressType(address) === 'plain' ? getMergedChat(address) : messenger.getChat(address)).then(chat => {
+                (getAddressType(address) === 'plain' ? getMergedChat(address) : rmMessenger.getChat(address)).then(chat => {
                     chat = Object.values(chat)
                     if (chatLazyLoader) {
                         chatLazyLoader.update(chat)
@@ -4071,13 +4071,13 @@
                     getChatCard(floID)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                 }, 100);
                 getRef("receiver_initial").setAttribute('style', `--contact-color: var(${contactColor(floID)})`)
-                messenger.removeMark(floID, "unread");
+                rmMessenger.removeMark(floID, "unread");
                 if (this.scrollHeight <= this.clientHeight) {
                     chatScrollInfo['isScrolledUp'] = false
                     getRef('scroll_to_bottom').classList.remove('no-transformations')
                 }
                 const floIdType = getAddressType(floID)
-                if (floIdType === 'pipeline' && messenger.pipeline[floID].disabled) {
+                if (floIdType === 'pipeline' && rmMessenger.pipeline[floID].disabled) {
                     getRef('chat_footer').classList.add('hidden')
                 } else {
                     getRef('chat_footer').classList.remove('hidden')
@@ -4085,7 +4085,7 @@
                 lastSender = ''
                 renderMessages(floID).then(async () => {
                     if (activeChat.type === 'pipeline') {
-                        if (!messenger.pipeline[floID].disabled && floGlobals.pipeSigns[floID] && !floGlobals.pipeSigns[floID].has(floDapps.user.id)) {
+                        if (!rmMessenger.pipeline[floID].disabled && floGlobals.pipeSigns[floID] && !floGlobals.pipeSigns[floID].has(floDapps.user.id)) {
                             getRef('messages_container').append(html.node`
                                 <div class="grid gap-1 card signing-banner" style="margin: 1.5rem auto;">
                                     <div class="grid gap-0-5">
@@ -4101,7 +4101,7 @@
                         if (floGlobals.pipelineTxHex) {
                             try {
                                 let parsedTx, currency
-                                switch (messenger.pipeline[floID].model) {
+                                switch (rmMessenger.pipeline[floID].model) {
                                     case 'flo_multisig':
                                         currency = 'FLO'
                                         parsedTx = await floBlockchainAPI.parseTransaction(floGlobals.pipelineTxHex)
@@ -4116,8 +4116,8 @@
                                 const pendingSigns = minSignsRequired - signsDone || 0;
                                 if (getRef('transaction_details')) getRef('transaction_details').remove()
                                 let retrySection = ''
-                                if (pendingSigns === 0 && !messenger.pipeline[floID].disabled) {
-                                    switch (messenger.pipeline[floID].model) {
+                                if (pendingSigns === 0 && !rmMessenger.pipeline[floID].disabled) {
+                                    switch (rmMessenger.pipeline[floID].model) {
                                         case 'flo_multisig':
                                             retrySection = html`
                                             <div class="grid gap-0-5 margin-top-1">
@@ -4130,8 +4130,8 @@
                                             break;
                                     }
                                 }
-                                if (messenger.pipeline[floID].disabled && floGlobals.pipelineTxID) {
-                                    switch (messenger.pipeline[floID].model) {
+                                if (rmMessenger.pipeline[floID].disabled && floGlobals.pipelineTxID) {
+                                    switch (rmMessenger.pipeline[floID].model) {
                                         case 'btc_multisig':
                                             const { block, confirmations } = await btcOperator.getTx(floGlobals.pipelineTxID)
                                             if (!block || confirmations === 0)
@@ -4248,7 +4248,7 @@
         function viewMail(mailRef, newView = true) {
             //stop rerendering if same mail is already open
             if (mailRef === (activeMail ? activeMail.dataset.ref : '')) return
-            messenger.getMail(mailRef).then(result => {
+            rmMessenger.getMail(mailRef).then(result => {
                 let { from, to, prev, ref, subject, time, content } = result
                 if (newView)
                     getRef('mail_container').innerHTML = ''
@@ -4257,7 +4257,7 @@
                 getRef("mail_container").lastElementChild.scrollIntoView();
                 //add prop for previous mail (if available)
                 getRef("prev_mail").dataset["value"] = prev;
-                messenger.getMail(prev).then(result => {
+                rmMessenger.getMail(prev).then(result => {
                     getRef("prev_mail").classList.remove("hidden");
                 }).catch(err => {
                     getRef("prev_mail").classList.add("hidden");
@@ -4270,7 +4270,7 @@
                     getRef('reply_mail_popup').dataset["prev"] = mailRef;
                     getRef('reply_mail_popup').dataset["subject"] = subject.startsWith("Re: ") ? subject : `Re: ${subject}`;
                 }
-                messenger.removeMark(mailRef, "unread");
+                rmMessenger.removeMark(mailRef, "unread");
                 location.hash = `#/mail_page/${getRef("mail_type_selector").value}/mail`
             }).catch(error => notify("Unable to read mail", "error", error))
         }
@@ -4289,7 +4289,7 @@
                         recipients.push(tmp);
                 })
                 buttonLoader('send_mail_button', true)
-                messenger.sendMail(subject, content, recipients).then(result => {
+                rmMessenger.sendMail(subject, content, recipients).then(result => {
                     notify(`Mail sent!`, 'success')
                     renderMailList(result)
                     closePopup()
@@ -4307,7 +4307,7 @@
                 recipient = recipient.split(',')
             let subject = getRef('subject_of_reply_mail').value;
             let content = getRef('reply_mail_content').value;
-            messenger.sendMail(subject, content, recipient, prev).then(result => {
+            rmMessenger.sendMail(subject, content, recipient, prev).then(result => {
                 notify(`Mail replied!`);
                 renderMailList(result)
                 closePopup()
@@ -4407,7 +4407,7 @@
             }
         }
         function handleGroupDescriptionChange(e) {
-            messenger.changeGroupDescription(floGlobals.viewingDetailsOfAddress, e.detail.value.trim())
+            rmMessenger.changeGroupDescription(floGlobals.viewingDetailsOfAddress, e.detail.value.trim())
                 .then(res => {
                     notify('Changed group description', 'success')
                 })
@@ -4418,13 +4418,13 @@
             const floID = floGlobals.viewingDetailsOfAddress
             const type = getAddressType(floID)
             if (type === 'group') {
-                messenger.changeGroupName(floID, name).then(res => {
+                rmMessenger.changeGroupName(floID, name).then(res => {
                     updateChatCards({ name, floID })
                     notify('Changed group name', 'success')
                 })
                     .catch(error => notify(error, "error"));
             } else {
-                messenger.storeContact(floID, name).then(result => {
+                rmMessenger.storeContact(floID, name).then(result => {
                     updateChatCards({ name, floID })
                     notify('Changed contact name', 'success')
                 })
@@ -4468,20 +4468,20 @@
 
         function markAsUnread() {
             getChatCard(floGlobals.viewingDetailsOfAddress).classList.add('unread')
-            messenger.addMark(floGlobals.viewingDetailsOfAddress, 'unread')
+            rmMessenger.addMark(floGlobals.viewingDetailsOfAddress, 'unread')
             closePopup()
         }
 
         function markAsRead() {
             getChatCard(floGlobals.viewingDetailsOfAddress).classList.remove('unread')
-            messenger.removeMark(floGlobals.viewingDetailsOfAddress, 'unread')
+            rmMessenger.removeMark(floGlobals.viewingDetailsOfAddress, 'unread')
             closePopup()
         }
 
         function blockUser() {
             getConfirmation('Block this address?', { message: `Are you sure to block this address?`, confirmText: 'Block', cancelText: 'Cancel' }).then(confirmed => {
                 if (confirmed) {
-                    messenger.blockUser(floGlobals.viewingDetailsOfAddress).then(result => {
+                    rmMessenger.blockUser(floGlobals.viewingDetailsOfAddress).then(result => {
                         getChatCard(floGlobals.viewingDetailsOfAddress).querySelector('.last-message').textContent = 'This user is blocked'
                         closePopup()
                         notify('Address blocked', 'success')
@@ -4492,7 +4492,7 @@
         function unblockUser(floID) {
             getConfirmation('Unblock this address?', { message: `Are you sure to unblock this address?`, confirmText: 'Unblock', cancelText: 'Cancel' }).then(confirmed => {
                 if (confirmed) {
-                    messenger.unblockUser(floID || floGlobals.viewingDetailsOfAddress).then(result => {
+                    rmMessenger.unblockUser(floID || floGlobals.viewingDetailsOfAddress).then(result => {
                         const chatCard = getChatCard(floID || floGlobals.viewingDetailsOfAddress);
                         getLastMessage(floGlobals.viewingDetailsOfAddress).then(({ lastText }) => {
                             chatCard.querySelector('.last-message').textContent = lastText
@@ -4516,7 +4516,7 @@
         function clearChat() {
             getConfirmation('Clear chat?', { message: `Are you sure to clear this chat?`, confirmText: 'Clear', cancelText: 'Cancel', danger: true }).then(confirmed => {
                 if (confirmed) {
-                    messenger.clearChat(floGlobals.viewingDetailsOfAddress).then(result => {
+                    rmMessenger.clearChat(floGlobals.viewingDetailsOfAddress).then(result => {
                         let chatCard = getChatCard(floGlobals.viewingDetailsOfAddress);
                         if (chatCard) {
                             chatCard.querySelector('.last-message').textContent = ''
@@ -4533,7 +4533,7 @@
         function deleteChat() {
             getConfirmation('Delete chat', { message: `Are you sure to delete this chat?`, confirmText: 'Delete', cancelText: 'Cancel', danger: true }).then(confirmed => {
                 if (confirmed) {
-                    messenger.rmChat(floGlobals.viewingDetailsOfAddress).then(result => {
+                    rmMessenger.rmChat(floGlobals.viewingDetailsOfAddress).then(result => {
                         getChatCard(floGlobals.viewingDetailsOfAddress).remove()
                         closePopup()
                         activeChat = {}
@@ -4597,7 +4597,7 @@
 
         function addGroupMembers() {
             const groupID = getRef('edit_group_button').dataset.groupId
-            messenger.addGroupMembers(groupID, [...membersToAdd])
+            rmMessenger.addGroupMembers(groupID, [...membersToAdd])
                 .then(res => {
                     render.groupMembers(groupID)
                     closePopup()
@@ -4609,7 +4609,7 @@
             getConfirmation('Remove group members', { message: `Are you sure to remove these members from this group?`, confirmText: 'Remove', cancelText: 'No' }).then(confirmed => {
                 if (confirmed) {
                     const groupID = getRef('edit_group_button').dataset.groupId
-                    messenger.rmGroupMembers(groupID, [...membersToRemove])
+                    rmMessenger.rmGroupMembers(groupID, [...membersToRemove])
                         .then(res => {
                             editGroupMembers(groupID)
                         })
@@ -4818,7 +4818,7 @@
             const multisigAddress = e.target.closest('.multisig-option').dataset.address;
             renderElem(getRef('multisig_details'), html`<sm-spinner></sm-spinner>`)
             openPopup('multisig_detail_popup')
-            messenger.multisig.listAddress().then(addresses => {
+            rmMessenger.multisig.listAddress().then(addresses => {
                 const { minRequired, pubKeys, time } = addresses[multisigAddress]
                 renderElem(getRef('multisig_details'), html`
                     <div class="grid gap-0-3">
@@ -5025,7 +5025,7 @@
                 const amounts = [...getRef('receiver_container').querySelectorAll('.amount-input')].filter(input => input.value.trim() !== '').map(input => {
                     return parseFloat(input.value.trim())
                 });
-                const multisigList = await messenger.multisig.listAddress()
+                const multisigList = await rmMessenger.multisig.listAddress()
                 const redeemScript = multisigList[sender].redeemScript;
                 return [sender, receivers, amounts, redeemScript]
             } catch (err) {
@@ -5141,16 +5141,16 @@
             });
             const multisigMode = getRef('multisig_mode_selector').value;
             try {
-                const allMultiSigs = await messenger.multisig.listAddress()
+                const allMultiSigs = await rmMessenger.multisig.listAddress()
                 const { redeemScript } = allMultiSigs[selectedMultisigAddress]
                 let result
                 if (multisigMode === 'btc') {
                     const fee = parseFloat(getRef('send_fee').value.trim());
                     console.debug(selectedMultisigAddress, receivers, amounts, fee);
-                    result = await messenger.multisig.createTx_BTC(selectedMultisigAddress, redeemScript, receivers, amounts, fee)
+                    result = await rmMessenger.multisig.createTx_BTC(selectedMultisigAddress, redeemScript, receivers, amounts, fee)
                 } else if (multisigMode === 'flo') {
                     const floData = getRef('send_tx__flo_data').value.trim();
-                    result = await messenger.multisig.createTx_FLO(floCrypto.toMultisigFloID(selectedMultisigAddress), redeemScript, receivers, amounts, floData)
+                    result = await rmMessenger.multisig.createTx_FLO(floCrypto.toMultisigFloID(selectedMultisigAddress), redeemScript, receivers, amounts, floData)
                 }
                 console.log(result);
                 notify('New multisig group created', 'success')
@@ -5181,17 +5181,17 @@
                 buttonLoader(button, true)
                 console.log('Signing transaction', pipeID);
                 try {
-                    switch (messenger.pipeline[pipeID].model) {
+                    switch (rmMessenger.pipeline[pipeID].model) {
                         case 'flo_multisig':
-                            await messenger.multisig.signTx_FLO(pipeID)
+                            await rmMessenger.multisig.signTx_FLO(pipeID)
                             break;
                         case 'btc_multisig':
-                            await messenger.multisig.signTx_BTC(pipeID)
+                            await rmMessenger.multisig.signTx_BTC(pipeID)
                             break;
                     }
                     getRef('messages_container').querySelector('.signing-banner').remove()
                     notify('Transaction signed', 'success')
-                    if (messenger.pipeline[pipeID].disabled)
+                    if (rmMessenger.pipeline[pipeID].disabled)
                         getRef('transaction_details').querySelector('h4').textContent = 'Transaction signatures complete'
                 } catch (err) {
                     notify(err, 'error')
@@ -5211,7 +5211,7 @@
             getConfirmation('Are you sure you want to accept this request?').then((res) => {
                 if (!res) return;
                 const vectorClock = e.target.closest('.notification').dataset.id;
-                messenger.respond_pubKey(vectorClock).then(() => {
+                rmMessenger.respond_pubKey(vectorClock).then(() => {
                     notify('Request accepted', 'success')
                     render.notifications()
                 }).catch(err => {
