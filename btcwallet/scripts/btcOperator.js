@@ -1,19 +1,198 @@
 (function (EXPORTS) { //btcOperator v1.1.4
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
+    const SATOSHI_IN_BTC = 1e8;
 
-    //This library uses API provided by chain.so (https://chain.so/)
-    const URL = "https://blockchain.info/";
+    const util = btcOperator.util = {};
+
+    util.Sat_to_BTC = value => parseFloat((value / SATOSHI_IN_BTC).toFixed(8));
+    util.BTC_to_Sat = value => parseInt(value * SATOSHI_IN_BTC);
+    const APIs = btcOperator.APIs = [
+        {
+            url: 'https://api.blockcypher.com/v1/btc/main/',
+            name: 'Blockcypher',
+            balance(addr) {
+                return fetch_api(`addrs/${addr}/balance`, { url: this.url })
+                    .then(result => util.Sat_to_BTC(result.balance))
+            },
+            unspent(addr) {
+                return fetch_api(`addrs/${addr}?unspentOnly=true`, { url: this.url })
+                    .then(result => result.txrefs)
+            },
+            tx(txid) {
+                return fetch_api(`txs/${txid}`, { url: this.url })
+                    .then(result => result.hex)
+            },
+            txs(addr, before, after) {
+                return fetch_api(`addrs/${addr}/full?limit=50${before ? `&before=${before}` : ''}${after ? `&after=${after}` : ''}`, { url: this.url })
+                    .then(result => result.txs)
+
+            },
+            block(block) {
+                return fetch_api(`blocks/${block}`, { url: this.url })
+                    .then(result => result.hex)
+            }
+        },
+        {
+            url: 'https://blockchain.info/',
+            name: 'Blockchain',
+            balance(addr) {
+                return fetch_api(`q/addressbalance/${addr}`, { url: this.url })
+                    .then(result => util.Sat_to_BTC(result))
+            },
+            unspent(addr) {
+                return fetch_api(`unspent?active=${addr}`, { url: this.url })
+                    .then(result => result.unspent_outputs)
+            },
+            tx(txid) {
+                return fetch_api(`rawtx/${txid}`, { url: this.url })
+                    .then(result => result.rawtx)
+            },
+            txs(addr, before, after) {
+                return fetch_api(`rawaddr/${addr}${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: this.url })
+                    .then(result => result.txs)
+            },
+            block(block) {
+                return fetch_api(`rawblock/${block}`, { url: this.url })
+                    .then(result => result.rawblock)
+            }
+        },
+        {
+            url: 'https://blockstream.info/api/',
+            name: 'Blockstream',
+            balance(addr) {
+                return fetch_api(`address/${addr}/utxo`, { url: this.url })
+                    .then(result => {
+                        const balance = result.reduce((t, u) => t + u.value, 0)
+                        return util.Sat_to_BTC(balance)
+                    })
+            },
+            unspent(addr) {
+                return fetch_api(`address/${addr}/utxo`, { url: this.url })
+            },
+            tx(txid) {
+                return fetch_api(`tx/${txid}/hex`, { url: this.url })
+            },
+            txs(addr, before, after) {
+                return fetch_api(`address/${addr}/txs${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: this.url })
+            },
+            block(block) {
+                return fetch_api(`block/${block}/hex`, { url: this.url })
+            }
+        },
+        {
+            url: 'https://mempool.space/api/',
+            name: 'Mempool',
+            balance(addr) {
+                return fetch_api(`address/${addr}`, { url: this.url })
+                    .then(result => util.Sat_to_BTC(result.chain_stats.funded_txo_sum - result.chain_stats.spent_txo_sum))
+            },
+            unspent(addr) {
+                return fetch_api(`address/${addr}`, { url: this.url })
+                    .then(result => result.mempool_txs)
+            },
+            tx(txid) {
+                return fetch_api(`tx/${txid}/hex`, { url: this.url })
+            },
+            txs(addr, before, after) {
+                return fetch_api(`address/${addr}/txs${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: this.url })
+            },
+            block(block) {
+                return fetch_api(`block/${block}/hex`, { url: this.url })
+            }
+        }
+    ]
+
+    const multiApi = btcOperator.multiApi = (fnName, { index = 0, ...args } = {}) => {
+        return new Promise((resolve, reject) => {
+            if (index >= APIs.length)
+                return reject("All APIs failed");
+            if (APIs[index].coolDownTime && APIs[index].coolDownTime > new Date().getTime())
+                return multiApi(fnName, { index: index + 1, ...args })
+                    .then(result => resolve(result))
+                    .catch(error => reject(error))
+            APIs[index][fnName](...Object.values(args))
+                .then(result => resolve(result))
+                .catch(error => {
+                    // if failed add a cool down and try next API
+                    console.debug(error);
+                    APIs[index].coolDownTime = new Date().getTime() + 1000 * 60 * 10; // 10 minutes
+                    multiApi(fnName, { index: index + 1, ...args })
+                        .then(result => resolve(result))
+                        .catch(error => reject(error))
+                })
+        })
+    }
+
+
+    function parseTx(tx, maddressOfTx) {
+        const { txid, hash, time, block_height, inputs, outputs, out, vin, vout, fee, fees, received, confirmed, status: { block_height: statusBlockHeight } = {} } = tx;
+        let parsedTx = {
+            txid: hash || txid,
+            time: (time * 1000) || new Date(confirmed || received).getTime(),
+            block: block_height || statusBlockHeight,
+        }
+        //sender list
+        parsedTx.tx_senders = {};
+        (inputs || vin).forEach(i => {
+            const address = i.prev_out?.addr || i.addresses?.[0] || i.prev_out?.address || i.addr;
+            const value = i.prev_out?.value || i.output_value;
+            if (address in parsedTx.tx_senders)
+                parsedTx.tx_senders[address] += value;
+            else parsedTx.tx_senders[address] = value;
+        });
+        parsedTx.tx_input_value = 0;
+        for (let senderAddr in parsedTx.tx_senders) {
+            let val = parsedTx.tx_senders[senderAddr];
+            parsedTx.tx_senders[senderAddr] = util.Sat_to_BTC(val);
+            parsedTx.tx_input_value += val;
+        }
+        parsedTx.tx_input_value = util.Sat_to_BTC(parsedTx.tx_input_value);
+        //receiver list
+        parsedTx.tx_receivers = {};
+        (outputs || out || vout).forEach(o => {
+            const address = o.scriptpubkey_address || o.addresses?.[0] || o.scriptpubkey_address || o.addr;
+            const value = o.value || o.scriptpubkey_value;
+            if (address in parsedTx.tx_receivers)
+                parsedTx.tx_receivers[address] += value;
+            else parsedTx.tx_receivers[address] = value;
+        });
+        parsedTx.tx_output_value = 0;
+        for (let receiverAddr in parsedTx.tx_receivers) {
+            let val = parsedTx.tx_receivers[receiverAddr];
+            parsedTx.tx_receivers[receiverAddr] = util.Sat_to_BTC(val);
+            parsedTx.tx_output_value += val;
+        }
+        parsedTx.tx_output_value = util.Sat_to_BTC(parsedTx.tx_output_value);
+        // tx fee
+        parsedTx.tx_fee = util.Sat_to_BTC(fee || fees || (parsedTx.tx_input_value - parsedTx.tx_output_value));
+        //detect tx type (in, out, self)
+        if (Object.keys(parsedTx.tx_receivers).length === 1 && Object.keys(parsedTx.tx_senders).length === 1 && Object.keys(parsedTx.tx_senders)[0] === Object.keys(parsedTx.tx_receivers)[0]) {
+            parsedTx.type = 'self';
+            parsedTx.amount = parsedTx.tx_receivers[maddressOfTx];
+            parsedTx.address = maddressOfTx;
+        } else if (maddressOfTx in parsedTx.tx_senders && Object.keys(parsedTx.tx_receivers).some(addr => addr !== maddressOfTx)) {
+            parsedTx.type = 'out';
+            parsedTx.receiver = Object.keys(parsedTx.tx_receivers).filter(addr => addr != maddressOfTx);
+            parsedTx.amount = parsedTx.receiver.reduce((t, addr) => t + parsedTx.tx_receivers[addr], 0) + parsedTx.tx_fee;
+        } else {
+            parsedTx.type = 'in';
+            parsedTx.sender = Object.keys(parsedTx.tx_senders).filter(addr => addr != maddressOfTx);
+            parsedTx.amount = parsedTx.tx_receivers[maddressOfTx];
+        }
+        return parsedTx;
+    }
+
 
     const DUST_AMT = 546,
         MIN_FEE_UPDATE = 219;
 
-    const fetch_api = btcOperator.fetch = function (api, json_res = true) {
+    const fetch_api = btcOperator.fetch = function (api, { asJson = true, url = 'https://blockchain.info/' } = {}) {
         return new Promise((resolve, reject) => {
-            console.debug(URL + api);
-            fetch(URL + api).then(response => {
+            console.debug(url + api);
+            fetch(url + api).then(response => {
                 if (response.ok) {
-                    (json_res ? response.json() : response.text())
+                    (asJson ? response.json() : response.text())
                         .then(result => resolve(result))
                         .catch(error => reject(error))
                 } else {
@@ -24,13 +203,6 @@
             }).catch(error => reject(error))
         })
     };
-
-    const SATOSHI_IN_BTC = 1e8;
-
-    const util = btcOperator.util = {};
-
-    util.Sat_to_BTC = value => parseFloat((value / SATOSHI_IN_BTC).toFixed(8));
-    util.BTC_to_Sat = value => parseInt(value * SATOSHI_IN_BTC);
 
     function get_fee_rate() {
         return new Promise((resolve, reject) => {
@@ -273,10 +445,11 @@
     }
 
     //BTC blockchain APIs
-
     btcOperator.getBalance = addr => new Promise((resolve, reject) => {
-        fetch_api(`q/addressbalance/${addr}`)
-            .then(result => resolve(util.Sat_to_BTC(result)))
+        if (!validateAddress(addr))
+            return reject("Invalid address");
+        multiApi('balance', { addr })
+            .then(result => resolve(result))
             .catch(error => reject(error))
     });
 
@@ -1056,69 +1229,22 @@
     });
 
     getTx.hex = btcOperator.getTx.hex = txid => new Promise((resolve, reject) => {
-        fetch_api(`rawtx/${txid}?format=hex`, false)
+        fetch_api(`rawtx/${txid}?format=hex`, { asJson: false })
             .then(result => resolve(result))
             .catch(error => reject(error))
     })
 
     btcOperator.getAddressData = address => new Promise((resolve, reject) => {
-        fetch_api(`rawaddr/${address}`).then(data => {
-            let details = {};
-            details.balance = util.Sat_to_BTC(data.final_balance);
-            details.address = data.address;
-            details.txs = data.txs.map(tx => {
-                let d = {
-                    txid: tx.hash,
-                    time: tx.time * 1000, //s to ms
-                    block: tx.block_height,
-                }
-                //sender list
-                d.tx_senders = {};
-                tx.inputs.forEach(i => {
-                    if (i.prev_out.addr in d.tx_senders)
-                        d.tx_senders[i.prev_out.addr] += i.prev_out.value;
-                    else d.tx_senders[i.prev_out.addr] = i.prev_out.value;
-                });
-                d.tx_input_value = 0;
-                for (let s in d.tx_senders) {
-                    let val = d.tx_senders[s];
-                    d.tx_senders[s] = util.Sat_to_BTC(val);
-                    d.tx_input_value += val;
-                }
-                d.tx_input_value = util.Sat_to_BTC(d.tx_input_value);
-                //receiver list
-                d.tx_receivers = {};
-                tx.out.forEach(o => {
-                    if (o.addr in d.tx_receivers)
-                        d.tx_receivers[o.addr] += o.value;
-                    else d.tx_receivers[o.addr] = o.value;
-                });
-                d.tx_output_value = 0;
-                for (let r in d.tx_receivers) {
-                    let val = d.tx_receivers[r];
-                    d.tx_receivers[r] = util.Sat_to_BTC(val);
-                    d.tx_output_value += val;
-                }
-                d.tx_output_value = util.Sat_to_BTC(d.tx_output_value);
-                d.tx_fee = util.Sat_to_BTC(tx.fee);
-                //tx type
-                if (tx.result > 0) { //net > 0, balance inc => type=in
-                    d.type = "in";
-                    d.amount = util.Sat_to_BTC(tx.result);
-                    d.sender = Object.keys(d.tx_senders).filter(s => s !== address);
-                } else if (Object.keys(d.tx_receivers).some(r => r !== address)) { //net < 0, balance dec & receiver present => type=out
-                    d.type = "out";
-                    d.amount = util.Sat_to_BTC(tx.result * -1);
-                    d.receiver = Object.keys(d.tx_receivers).filter(r => r !== address);
-                    d.fee = d.tx_fee;
-                } else { //net < 0 (fee) & no other id in receiver list => type=self
-                    d.type = "self";
-                    d.amount = d.tx_receivers[address];
-                    d.address = address
-                }
-                return d;
-            })
-            resolve(details);
+        Promise.all([
+            multiApi('balance', { addr: address }),
+            multiApi('txs', { addr: address })
+        ]).then(([balance, txs]) => {
+            const parsedTxs = txs.map(tx => parseTx(tx, address));
+            resolve({
+                address,
+                balance,
+                txs: parsedTxs
+            });
         }).catch(error => reject(error))
     });
 
