@@ -1265,7 +1265,6 @@
                 }
                 txDetailsAbortController = new AbortController();
                 btcOperator.getTx(txid).then(result => {
-                    console.log(result)
                     const { block, time, size, fee, inputs, outputs, confirmations = 0, total_input_value, total_output_value } = result;
                     const isUnconfirmed = block === null || confirmations === 0 || confirmations === null || block <= 0;
                     renderElem(getRef('tx_details'), html`

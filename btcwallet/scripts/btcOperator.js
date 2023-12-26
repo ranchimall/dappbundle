@@ -1361,7 +1361,7 @@
             resolve({
                 block: result.block_height,
                 txid: result.hash,
-                time: result.time * 1000,
+                time: result.time,
                 size: result.size,
                 fee: util.Sat_to_BTC(result.fee),
                 inputs: result.inputs.map(i => Object({ address: i.prev_out.addr, value: util.Sat_to_BTC(i.prev_out.value) })),
