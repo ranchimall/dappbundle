@@ -1265,18 +1265,19 @@
                 }
                 txDetailsAbortController = new AbortController();
                 btcOperator.getTx(txid).then(result => {
-                    const { block, time, size, fee, inputs, outputs, confirmations, total_input_value, total_output_value } = result;
-                    console.debug('tx', result);
+                    console.log(result)
+                    const { block, time, size, fee, inputs, outputs, confirmations = 0, total_input_value, total_output_value } = result;
+                    const isUnconfirmed = block === null || confirmations === 0 || confirmations === null || block <= 0;
                     renderElem(getRef('tx_details'), html`
                             <h3>Transaction Details</h3>
                             <div class="flex align-center gap-1 space-between flex-wrap">
                                 <time>${getFormattedTime(time)}</time>
-                                ${!block ? html` <h4 id="tx_status">
+                                ${isUnconfirmed ? html` <h4 id="tx_status">
                                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
                                     Unconfirmed
                                 </h4> ` : ''}
                             </div>
-                            ${!block ? html`
+                            ${isUnconfirmed ? html`
                                 <div class="flex flex-direction-column gap-0-5" style="padding: 1rem;border-radius:0.5rem; border: solid thin rgba(var(--text-color),0.3); background-color: rgba(var(--text-color),0.02)">
                                     <h3>
                                         Taking too long to confirm?
@@ -1300,7 +1301,7 @@
                                     </div>
                                     <div style="font-size: 1.5rem">${confirmations}</div>
                                 </div>
-                                ${block ? html`
+                                ${!isUnconfirmed ? html`
                                     <div class="tx-detail">
                                         <div class="flex align-center gap-0-3">
                                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><g><path d="M3,3v8h8V3H3z M9,9H5V5h4V9z M3,13v8h8v-8H3z M9,19H5v-4h4V19z M13,3v8h8V3H13z M19,9h-4V5h4V9z M13,13v8h8v-8H13z M19,19h-4v-4h4V19z"/></g></g></g></svg>
