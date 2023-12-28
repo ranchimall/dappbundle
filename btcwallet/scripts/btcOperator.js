@@ -1,4 +1,4 @@
-(function (EXPORTS) { //btcOperator v1.2.0
+(function (EXPORTS) { //btcOperator v1.2.4
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
     const SATOSHI_IN_BTC = 1e8;
