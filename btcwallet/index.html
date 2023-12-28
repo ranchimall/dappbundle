@@ -1164,6 +1164,7 @@
                 const transactingAddressesLinks = transactingAddresses
                     .slice(0, 2).map(address => html`<a href="${`#/check_details?query=${address}`}" class="tx-participant wrap-around">${address}</a>`)
                 // block = null
+                const isUnconfirmed = block < 0 || block === null || block === undefined
                 if (type === 'out') {
                     transactionReceiver = html`Sent to ${transactingAddressesLinks}`;
                     icon = svg`<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
@@ -1174,12 +1175,12 @@
                     transactionReceiver = `Sent to self`;
                     icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="m19 8-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/></svg>`;
                 }
-                if (!block) {
+                if (isUnconfirmed) {
                     icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M6,2l0.01,6L10,12l-3.99,4.01L6,22h12v-6l-4-4l4-3.99V2H6z M16,16.5V20H8v-3.5l4-4L16,16.5z"/></g></svg>`;
                 }
                 const queriedAddress = pagesData.params?.query || getRef('search_query_input').value.trim()
                 const isSender = type === 'out' || type === 'self'
-                const className = `transaction grid ${type} ${block === null ? 'unconfirmed-tx' : ''}`
+                const className = `transaction grid ${type} ${isUnconfirmed ? 'unconfirmed-tx' : ''}`
                 return html.node/*html*/`
                     <li class="${className}" data-txid="${txid}" data-transacting-addresses=${transactingAddresses.slice(2)}>
                         <div class="transaction__icon">${icon}</div>
@@ -1206,7 +1207,7 @@
                                     </div>
                                 ` : ''}
                             </div>
-                            ${!block ? html`
+                            ${isUnconfirmed ? html`
                                 <p class="pending-badge">
                                     Confirmation pending: amount will be deducted after transaction is confirmed.
                                     ${isSender && !block ? ' Try increasing fee to speed up confirmation' : ''}
@@ -1854,6 +1855,7 @@
                     getRef('send_transaction').disabled = true;
                     getRef('fees_section').classList.add('hidden')
                     getRef('error_section').classList.remove('hidden')
+                    console.error(e)
                     if (e.includes('Invalid private key')) {
                         const invalidKeys = e.split(':')[1].split(',').map(key => key.trim());
                         invalidKeys.forEach(key => {
