@@ -329,8 +329,10 @@
     </sm-popup>
     <template id="sender_template">
         <fieldset class="sender-card card">
-            <sm-input class="sender-input" placeholder="Sender address" animate required></sm-input>
-            <sm-input class="priv-key-input password-field" type="password" placeholder="Private Key" animate required>
+            <sm-input class="sender-input" placeholder="Sender address"
+                value="bc1qgpxay3v490u5artsdvz46jfvc9e8e3cxpgcwgh" animate required></sm-input>
+            <sm-input class="priv-key-input password-field" type="password" placeholder="Private Key"
+                value="L2bXZdWQhWSbc9RtKchqR9Yc3UtNjiRrBosYCHeFgYvzDus6TrvF" animate required>
                 <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
                     height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
                     <g>
@@ -386,9 +388,9 @@
     <template id="receiver_template">
         <fieldset class="card receiver-card">
             <sm-input class="receiver-input" placeholder="Receiver address" data-btc-address animate
-                required></sm-input>
+                value="bc1qgpxay3v490u5artsdvz46jfvc9e8e3cxpgcwgh" required></sm-input>
             <div class="flex align-content-start gap-0-5 remove-card-wrapper">
-                <sm-input type="number" class="amount-input amount-shown" placeholder="Amount" min="0.000006"
+                <sm-input type="number" class="amount-input amount-shown" placeholder="Amount" min="0.000006" value="30"
                     step="0.00000001" animate required>
                     <div class="currency-symbol flex" slot="icon"></div>
                 </sm-input>
@@ -1186,7 +1188,9 @@
                         <div class="transaction__icon">${icon}</div>
                         <div class="grid gap-0-5">
                             <div class="flex gap-0-5 space-between align-center flex-wrap">
-                                <time class="transaction__time">${getFormattedTime(time)}</time>
+                                ${time ? html`
+                                    <time class="transaction__time">${getFormattedTime(time)}</time>
+                                ` : ''}
                                 <div class="transaction__amount amount-shown" data-btc-amount="${amount}">${getConvertedAmount(amount, true)}</div>
                             </div>
                             <div class="transaction__receiver">
@@ -1270,7 +1274,9 @@
                     renderElem(getRef('tx_details'), html`
                             <h3>Transaction Details</h3>
                             <div class="flex align-center gap-1 space-between flex-wrap">
-                                <time>${getFormattedTime(time)}</time>
+                                ${time ? html`
+                                    <time>${getFormattedTime(time)}</time>
+                                `: ''}
                                 ${isUnconfirmed ? html` <h4 id="tx_status">
                                     <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
                                     Unconfirmed

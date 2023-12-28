@@ -7,6 +7,16 @@
 
     util.Sat_to_BTC = value => parseFloat((value / SATOSHI_IN_BTC).toFixed(8));
     util.BTC_to_Sat = value => parseInt(value * SATOSHI_IN_BTC);
+    const checkIfTor = btcOperator.checkIfTor = () => {
+        return fetch('https://check.torproject.org/api/ip', {
+            mode: 'no-cors'
+        })
+            .then(response => response.json())
+            .then(result => result.IsTor)
+            .catch(error => false)
+    }
+    let isTor = false;
+    checkIfTor().then(result => isTor = result);
     const APIs = btcOperator.APIs = [
         {
             url: 'https://api.blockcypher.com/v1/btc/main/',
@@ -15,10 +25,11 @@
                 return fetch_api(`addrs/${addr}/balance`, { url: this.url })
                     .then(result => util.Sat_to_BTC(result.balance))
             },
-            unspent({ addr }) {
-                return fetch_api(`addrs/${addr}?unspentOnly=true&includeScript=true`, { url: this.url })
-                    .then(result => formatUtxos(result.txrefs))
-            },
+            // unspent({ addr, allowUnconfirmedUtxos = false }) { // doesn't return correct utxos
+            //     console.log('allowUnconfirmedUtxos', allowUnconfirmedUtxos)
+            //     return fetch_api(`addrs/${addr}?unspentOnly=true&includeScript=true`, { url: this.url })
+            //         .then(result => formatUtxos(result.txrefs, allowUnconfirmedUtxos))
+            // },
             tx({ txid }) {
                 return fetch_api(`txs/${txid}`, { url: this.url })
                     .then(result => formatTx(result))
@@ -27,11 +38,11 @@
                 return fetch_api(`txs/${txid}?includeHex=true`, { url: this.url })
                     .then(result => result.hex)
             },
-            txs({ addr, before, after }) {
-                return fetch_api(`addrs/${addr}/full?limit=50${before ? `&before=${before}` : ''}${after ? `&after=${after}` : ''}`, { url: this.url })
-                    .then(result => result.txs)
+            // txs({ addr, before, after }) { //NOTE: API doesn't return pending txs correctly
+            //     return fetch_api(`addrs/${addr}/full?limit=50${before ? `&before=${before}` : ''}${after ? `&after=${after}` : ''}`, { url: this.url })
+            //         .then(result => result.txs)
 
-            },
+            // },
             async block({ id }) {
                 try {
                     let block = await fetch_api(`blocks/${id}`, { url: this.url })
@@ -40,23 +51,24 @@
                     console.log(e)
                 }
             },
-            broadcast(rawTxHex) {
-                return fetch_api('txs/push', {
-                    url: this.url,
+            broadcast({ rawTxHex, url }) {
+                return fetch(`${this.url}txs/push`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ tx: rawTxHex })
-                })
+                }).then(response => response.json())
                     .then(result => result.hash)
             }
         },
         {
             url: 'https://blockstream.info/api/',
             name: 'Blockstream',
-            balance({ addr }) {
-                return fetch_api(`address/${addr}/utxo`, { url: this.url })
+            hasOnion: true,
+            onionUrl: `http://explorerzydxu5ecjrkwceayqybizmpjjznk5izmitf2modhcusuqlid.onion/api/`,
+            balance({ addr, url }) {
+                return fetch_api(`address/${addr}/utxo`, { url: url || this.url })
                     .then(result => {
                         const balance = result.reduce((t, u) => t + u.value, 0)
                         return util.Sat_to_BTC(balance)
@@ -66,37 +78,36 @@
             //     return fetch_api(`address/${addr}/utxo`, { url: this.url })
             //     .then(result => formatUtxos(result))
             // },
-            tx({ txid }) {
-                return fetch_api(`tx/${txid}`, { url: this.url })
+            tx({ txid, url }) {
+                return fetch_api(`tx/${txid}`, { url: url || this.url })
                     .then(result => formatTx(result))
             },
-            txHex({ txid }) {
-                return fetch_api(`tx/${txid}/hex`, { url: this.url, asJson: false })
+            txHex({ txid, url }) {
+                return fetch_api(`tx/${txid}/hex`, { url: url || this.url, asText: true })
             },
-            txs({ addr, before, after }) {
-                return fetch_api(`address/${addr}/txs${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: this.url })
+            txs({ addr, before, after, url }) {
+                return fetch_api(`address/${addr}/txs${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: url || this.url })
             },
-            async block({ id }) {
+            async block({ id, url }) {
                 // if id is hex string then it is block hash
                 try {
                     let blockHash = id
                     if (!/^[0-9a-f]{64}$/i.test(id))
-                        blockHash = await fetch_api(`block-height/${id}`, { url: this.url, asJson: false })
-                    const block = await fetch_api(`block/${blockHash}`, { url: this.url })
+                        blockHash = await fetch_api(`block-height/${id}`, { url: url || this.url, asText: true })
+                    const block = await fetch_api(`block/${blockHash}`, { url: url || this.url })
                     return formatBlock(block)
                 } catch (e) {
                     console.error(e)
                 }
             },
-            broadcast(rawTxHex) {
-                return fetch_api('tx', {
-                    url: this.url,
+            broadcast({ rawTxHex, url }) {
+                return fetch(`${url || this.url}tx`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ tx: rawTxHex })
-                }, { asJson: false })
+                }).then(response => response.text())
             }
         },
         {
@@ -116,7 +127,7 @@
 
             },
             txHex({ txid }) {
-                return fetch_api(`tx/${txid}/hex`, { url: this.url, asJson: false })
+                return fetch_api(`tx/${txid}/hex`, { url: this.url, asText: true })
             },
             txs({ addr, before, after }) {
                 return fetch_api(`address/${addr}/txs${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: this.url })
@@ -126,22 +137,21 @@
                 try {
                     let blockHash = id
                     if (!/^[0-9a-f]{64}$/i.test(id))
-                        blockHash = await fetch_api(`block-height/${id}`, { url: this.url, asJson: false })
+                        blockHash = await fetch_api(`block-height/${id}`, { url: this.url, asText: true })
                     const block = await fetch_api(`block/${blockHash}`, { url: this.url })
                     return formatBlock(block)
                 } catch (e) {
                     console.error(e)
                 }
             },
-            broadcast(rawTxHex) {
-                return fetch_api('tx', {
-                    url: this.url,
+            broadcast({ rawTxHex, url }) {
+                return fetch(`${this.url}tx`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ tx: rawTxHex })
-                }, { asJson: false })
+                }).then(response => response.text())
             }
         },
         {
@@ -151,16 +161,16 @@
                 return fetch_api(`q/addressbalance/${addr}`, { url: this.url })
                     .then(result => util.Sat_to_BTC(result))
             },
-            unspent({ addr }) {
+            unspent({ addr, allowUnconfirmedUtxos = false }) {
                 return fetch_api(`unspent?active=${addr}`, { url: this.url })
-                    .then(result => formatUtxos(result.unspent_outputs))
+                    .then(result => formatUtxos(result.unspent_outputs, allowUnconfirmedUtxos))
             },
             tx({ txid }) {
                 return fetch_api(`rawtx/${txid}`, { url: this.url })
                     .then(result => formatTx(result))
             },
             txHex({ txid }) {
-                return fetch_api(`rawtx/${txid}?format=hex`, { url: this.url, asJson: false })
+                return fetch_api(`rawtx/${txid}?format=hex`, { url: this.url, asText: true })
             },
             txs({ addr, before, after }) {
                 return fetch_api(`rawaddr/${addr}${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: this.url })
@@ -195,16 +205,6 @@
                 } catch (e) {
                     console.error(e)
                 }
-            },
-            broadcast(rawTxHex) {
-                return fetch_api('pushtx', {
-                    url: this.url,
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: "tx=" + rawTxHex
-                })
             }
         }
     ]
@@ -229,8 +229,14 @@
             console.error(e)
         }
     }
-    const formatUtxos = btcOperator.util.format.utxos = async (utxos) => {
+    const formatUtxos = btcOperator.util.format.utxos = async (utxos, allowUnconfirmedUtxos = false) => {
         try {
+            console.log('allowUnconfirmedUtxos', allowUnconfirmedUtxos, utxos)
+            if (!allowUnconfirmedUtxos && !utxos || !Array.isArray(utxos))
+                throw {
+                    message: "No utxos found",
+                    code: 1000 //error code for when issue is not from API but situational (like no utxos found) 
+                }
             return utxos.map(utxo => {
                 const { tx_hash, tx_hash_big_endian, txid, tx_output_n, vout, value, script, confirmations, status: { confirmed } = {} } = utxo;
                 return {
@@ -242,15 +248,15 @@
                 }
             })
         } catch (e) {
-            console.error(e)
+            throw e
         }
     }
 
-    const formatTx = btcOperator.util.format.tx = async (tx, addressOfTx) => {
+    const formatTx = btcOperator.util.format.tx = async (tx) => {
         try {
             const { txid, hash, time, block_height, fee, fees, received,
                 confirmed, size, double_spend, block_hash, confirmations,
-                status: { block_height: statusBlockHeight, block_hash: statusBlockHash } = {}
+                status: { block_height: statusBlockHeight, block_hash: statusBlockHash, block_time } = {}
             } = tx;
             const inputs = tx.vin || tx.inputs;
             const outputs = tx.vout || tx.outputs || tx.out;
@@ -259,7 +265,7 @@
                 size: size,
                 fee: fee || fees,
                 double_spend,
-                time: (time * 1000) || new Date(confirmed || received).getTime(),
+                time: (time * 1000) || new Date(confirmed || received).getTime() || block_time * 1000 || new Date().getTime(),
                 block_height: block_height || statusBlockHeight,
                 block_hash: block_hash || statusBlockHash,
                 confirmations,
@@ -267,8 +273,8 @@
                     return {
                         index: input.n || input.output_index || input.vout,
                         prev_out: {
-                            addr: input.prev_out?.addr || input.addresses?.[0] || input.prev_out?.address || input.addr,
-                            value: input.prev_out?.value || input.output_value,
+                            addr: input.prev_out?.addr || input.addresses?.[0] || input.prev_out?.address || input.addr || input.prevout.scriptpubkey_address,
+                            value: input.prev_out?.value || input.output_value || input.prevout.value,
                         },
                     }
                 }),
@@ -284,40 +290,51 @@
         }
     }
 
-    const multiApi = btcOperator.multiApi = (fnName, { index = 0, ...args } = {}) => {
-        return new Promise((resolve, reject) => {
-            if (index >= APIs.length)
-                return reject("All APIs failed");
-            if (!APIs[index][fnName] || APIs[index].coolDownTime && APIs[index].coolDownTime > new Date().getTime())
-                return multiApi(fnName, { index: index + 1, ...args })
-                    .then(result => resolve(result))
-                    .catch(error => reject(error))
-            APIs[index][fnName](args)
-                .then(result => resolve(result))
-                .catch(error => {
-                    // if failed add a cool down and try next API
-                    console.debug(error);
-                    APIs[index].coolDownTime = new Date().getTime() + 1000 * 60 * 10; // 10 minutes
-                    multiApi(fnName, { index: index + 1, ...args })
-                        .then(result => resolve(result))
-                        .catch(error => reject(error))
-                })
-        })
-    }
+    const multiApi = btcOperator.multiApi = async (fnName, { index = 0, ...args } = {}) => {
+        try {
+            let triedOnion = false;
+            while (index < APIs.length) {
+                if (!APIs[index][fnName] || (APIs[index].coolDownTime && APIs[index].coolDownTime > new Date().getTime())) {
+                    index += 1;
+                    continue;
+                }
+                return await APIs[index][fnName](args);
+            }
+            if (isTor && !triedOnion) {
+                triedOnion = true;
+                index = 0;
+                while (index < APIs.length) {
+                    if (!APIs[index].hasOnion || (APIs[index].coolDownTime && APIs[index].coolDownTime > new Date().getTime())) {
+                        index += 1;
+                        continue;
+                    }
+                    return await multiApi(fnName, { index: index + 1, ...args, url: APIs[index].onionUrl });
+                }
+            }
+            throw "No API available"
+        } catch (error) {
+            if (error.code && error.code === 1000) {
+                throw error.message;
+            } else {
+                console.debug(error);
+                APIs[index].coolDownTime = new Date().getTime() + 1000 * 60 * 10; // 10 minutes
+                return multiApi(fnName, { index: index + 1, ...args });
+            }
+        }
+    };
 
-
-    function parseTx(tx, maddressOfTx) {
-        const { txid, hash, time, block_height, inputs, outputs, out, vin, vout, fee, fees, received, confirmed, status: { block_height: statusBlockHeight } = {} } = tx;
+    function parseTx(tx, addressOfTx) {
+        const { txid, hash, time, block_height, inputs, outputs, out, vin, vout, fee, fees, received, confirmed, status: { block_height: statusBlockHeight, block_time } = {} } = tx;
         let parsedTx = {
             txid: hash || txid,
-            time: (time * 1000) || new Date(confirmed || received).getTime(),
+            time: (time * 1000) || new Date(confirmed || received).getTime() || block_time * 1000,
             block: block_height || statusBlockHeight,
         }
         //sender list
         parsedTx.tx_senders = {};
         (inputs || vin).forEach(i => {
-            const address = i.prev_out?.addr || i.addresses?.[0] || i.prev_out?.address || i.addr;
-            const value = i.prev_out?.value || i.output_value;
+            const address = i.prev_out?.addr || i.addresses?.[0] || i.prev_out?.address || i.addr || i.prevout.scriptpubkey_address;
+            const value = i.prev_out?.value || i.output_value || i.value || i.prevout.value;
             if (address in parsedTx.tx_senders)
                 parsedTx.tx_senders[address] += value;
             else parsedTx.tx_senders[address] = value;
@@ -350,16 +367,16 @@
         //detect tx type (in, out, self)
         if (Object.keys(parsedTx.tx_receivers).length === 1 && Object.keys(parsedTx.tx_senders).length === 1 && Object.keys(parsedTx.tx_senders)[0] === Object.keys(parsedTx.tx_receivers)[0]) {
             parsedTx.type = 'self';
-            parsedTx.amount = parsedTx.tx_receivers[maddressOfTx];
-            parsedTx.address = maddressOfTx;
-        } else if (maddressOfTx in parsedTx.tx_senders && Object.keys(parsedTx.tx_receivers).some(addr => addr !== maddressOfTx)) {
+            parsedTx.amount = parsedTx.tx_receivers[addressOfTx];
+            parsedTx.address = addressOfTx;
+        } else if (addressOfTx in parsedTx.tx_senders && Object.keys(parsedTx.tx_receivers).some(addr => addr !== addressOfTx)) {
             parsedTx.type = 'out';
-            parsedTx.receiver = Object.keys(parsedTx.tx_receivers).filter(addr => addr != maddressOfTx);
+            parsedTx.receiver = Object.keys(parsedTx.tx_receivers).filter(addr => addr != addressOfTx);
             parsedTx.amount = parsedTx.receiver.reduce((t, addr) => t + parsedTx.tx_receivers[addr], 0) + parsedTx.tx_fee;
         } else {
             parsedTx.type = 'in';
-            parsedTx.sender = Object.keys(parsedTx.tx_senders).filter(addr => addr != maddressOfTx);
-            parsedTx.amount = parsedTx.tx_receivers[maddressOfTx];
+            parsedTx.sender = Object.keys(parsedTx.tx_senders).filter(addr => addr != addressOfTx);
+            parsedTx.amount = parsedTx.tx_receivers[addressOfTx];
         }
         return parsedTx;
     }
@@ -368,12 +385,12 @@
     const DUST_AMT = 546,
         MIN_FEE_UPDATE = 219;
 
-    const fetch_api = btcOperator.fetch = function (api, { asJson = true, url = 'https://blockchain.info/' } = {}) {
+    const fetch_api = btcOperator.fetch = function (api, { asText = false, url = 'https://blockchain.info/' } = {}) {
         return new Promise((resolve, reject) => {
             console.debug(url + api);
             fetch(url + api).then(response => {
                 if (response.ok) {
-                    (asJson ? response.json() : response.text())
+                    (asText ? response.text() : response.json())
                         .then(result => resolve(result))
                         .catch(error => reject(error))
                 } else {
@@ -408,6 +425,7 @@
             },
             body: "rawtx=" + rawTxHex
         }).then(response => {
+            // multiApi('broadcast', { rawTxHex }).then(response => {
             response.text().then(resultText => {
                 let r = resultText.match(/<result>.*<\/result>/);
                 if (!r)
@@ -839,7 +857,7 @@
                 rs = redeemScripts[rec_args.n];
             let addr_type = coinjs.addressDecode(addr).type;
             let size_per_input = _sizePerInput(addr, rs);
-            multiApi('unspent', { addr }).then(utxos => {
+            multiApi('unspent', { addr, allowUnconfirmedUtxos: rec_args.allowUnconfirmedUtxos }).then(utxos => {
                 //console.debug("add-utxo", addr, rs, required_amount, utxos);
                 for (let i = 0; i < utxos.length && required_amount > 0; i++) {
                     if (utxos.length === 1 && rec_args.allowUnconfirmedUtxos) {
@@ -1382,6 +1400,7 @@
             multiApi('txs', { addr: address })
         ]).then(([balance, txs]) => {
             const parsedTxs = txs.map(tx => parseTx(tx, address));
+            console.log(parsedTxs);
             resolve({
                 address,
                 balance,
