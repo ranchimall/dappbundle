@@ -1966,7 +1966,9 @@
                 getRef('send_tx').reset();
             }).catch(error => {
                 console.error(error)
-                if (error === 'TypeError: Failed to fetch') {
+                if (error.hasOwnProperty('hasInsufficientBalance')) {
+                    notify('Insufficient balance', 'error')
+                } else if (error === 'TypeError: Failed to fetch') {
                     notify(`
                         <div style="display: grid; gap: 0.3rem;">
                             <h4>Couldn't fetch transaction ID!</h4>
@@ -2106,7 +2108,7 @@
                 document.getElementById('new_fee').querySelector('.currency-symbol').innerHTML = currencyIcons[selectedCurrency]
                 openPopup('increase_fee_popup')
             } catch (e) {
-                notify(e, 'error')
+                notify(e.message || e, 'error')
             } finally {
                 buttonLoader(button, false)
             }
@@ -2142,6 +2144,7 @@
                     changingFeeOf = null
                 })
             } catch (err) {
+                console.log(typeof e)
                 notify(e, 'error')
                 buttonLoader(document.getElementById('increase_fee'), false)
             }
