@@ -499,7 +499,6 @@
                 console.error(error)
             })
             // connectToMetaMask().then(() => {
-            console.log('MetaMask connected')
             if (window.ethereum) {
                 // setMetaMaskStatus(window.ethereum.isConnected())
                 window.ethereum.on('chainChanged', (chainId) => {
