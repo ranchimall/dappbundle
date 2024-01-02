@@ -494,6 +494,7 @@
             compactIDB.initDB('floEthereum', {
                 contacts: {}
             }).then((result) => {
+                console.log(result)
             }).catch((error) => {
                 console.error(error)
             })
@@ -695,8 +696,8 @@
             buttonLoader('check_balance_button', true)
             Promise.all([
                 ethOperator.getBalance(ethAddress),
-                ethOperator.getTokenBalance({ address: ethAddress, token: 'usdc' }),
-                ethOperator.getTokenBalance({ address: ethAddress, token: 'usdt' })
+                ethOperator.getTokenBalance(ethAddress, 'usdc'),
+                ethOperator.getTokenBalance(ethAddress, 'usdt')
             ])
                 .then(([etherBalance, usdcBalance, usdtBalance]) => {
                     compactIDB.readData('contacts', floAddress).then(result => {
@@ -826,7 +827,7 @@
             const promises = [ethOperator.getBalance(address)]
             const selectedAsset = getRef('asset_selector').value
             if (selectedAsset !== 'ether')
-                promises.push(ethOperator.getTokenBalance({ address, token: selectedAsset }))
+                promises.push(ethOperator.getTokenBalance(address, selectedAsset))
             Promise.all(promises).then(([ethBalance, tokenBalance]) => {
                 renderElem(getRef('sender_balance_container'), html`
                     <div class="grid gap-1 w-100" style="padding: 1rem; border-radius: 0.5rem; border: solid thin rgba(var(--text-color),0.3)">

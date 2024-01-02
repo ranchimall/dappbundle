@@ -280,7 +280,7 @@
       return error;
     }
   }
-  const getTokenBalance = ethOperator.getTokenBalance = async ({ address, token, contractAddress }) => {
+  const getTokenBalance = ethOperator.getTokenBalance = async (address, token, { contractAddress } = {}) => {
     try {
       // if (!window.ethereum.isConnected()) {
       //   await connectToMetaMask();
