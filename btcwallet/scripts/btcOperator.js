@@ -1119,7 +1119,6 @@
         options.sendingTx = true;
         return new Promise((resolve, reject) => {
             createSignedTx(senders, privkeys, receivers, amounts, fee, options).then(result => {
-                return
                 broadcastTx(result.transaction.serialize())
                     .then(txid => resolve(txid))
                     .catch(error => reject(error));
