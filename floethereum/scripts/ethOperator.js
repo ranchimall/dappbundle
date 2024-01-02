@@ -289,7 +289,7 @@
         return new Error("Token not specified");
       if (!CONTRACT_ADDRESSES[token] && contractAddress)
         return new Error('Contract address of token not available')
-      const usdcContract = new ethers.Contract(CONTRACT_ADDRESSES['usdc'] || contractAddress, ERC20ABI, getProvider());
+      const usdcContract = new ethers.Contract(CONTRACT_ADDRESSES[token] || contractAddress, ERC20ABI, getProvider());
       let balance = await usdcContract.balanceOf(address);
       balance = parseFloat(ethers.utils.formatUnits(balance, 6)); // Assuming 6 decimals
       return balance;
