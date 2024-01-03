@@ -770,7 +770,7 @@
         </header>
         <div class="scrolling-wrapper grid gap-1-5">
             <div class="grid gap-1">
-                <sm-input id="search_contacts" type="search" placeholder="Search"> </sm-input>
+                <sm-input id="search_contacts" type="search" placeholder="Search name or address"> </sm-input>
                 <fieldset id="all_contacts_options" class="flex align-center flex-wrap gap-0-5">
                     <button id="create_group_option" class="interactive button button--colored button--small gap-0-5"
                         onclick="openCreationPopup('group')">
@@ -800,7 +800,7 @@
                 <div id="contacts_container" class="observe-empty-state"></div>
                 <div class="empty-state">
                     <h4 class="margin-bottom-0-5">No saved contacts</h4>
-                    <p>Use 'Add contact' to add new FLO/BTC/ETH address as a contact.</p>
+                    <p>Use 'Add contact' to add new FLO/BTC/ETH address as a contact</p>
                 </div>
             </div>
         </div>
@@ -1411,11 +1411,6 @@
                     isRemovingMember = false
                     break
                 case 'new_message_popup':
-                    if (Object.keys(floGlobals.contacts).length) {
-                        getRef('search_contacts').classList.remove('hidden')
-                    } else {
-                        getRef('search_contacts').classList.add('hidden')
-                    }
                     renderContactList()
                     break
                 case 'creation_popup': {
@@ -2469,8 +2464,9 @@
                 `
             },
             contactCard(contactAddress, options = {}) {
-                let { type, prepend = false, markUnread = false, ref } = options
-                let name = getContactName(contactAddress)
+                let { type, prepend = false, markUnread = false, ref, name } = options
+                if (!name)
+                    name = getContactName(contactAddress)
                 let initial
                 if (type === 'group') {
                     initial = html`<svg class="icon group-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M13.61,28.09c-1.63,0-4.72-2.35-5.33-3.58a21.65,21.65,0,0,1-1.35-7.32s-.26-6.07,6.68-6.07a6.38,6.38,0,0,1,6.69,6.07A21.65,21.65,0,0,1,19,24.51c-.62,1.23-3.7,3.58-5.34,3.58"/><path d="M50.39,28.09c-1.64,0-4.72-2.35-5.34-3.58a21.9,21.9,0,0,1-1.35-7.32s-.26-6.07,6.69-6.07a6.37,6.37,0,0,1,6.68,6.07,21.65,21.65,0,0,1-1.35,7.32c-.61,1.23-3.7,3.58-5.33,3.58"/><path d="M32,31.74c-2.21,0-6.37-3.17-7.2-4.83A29.3,29.3,0,0,1,23,17s-.35-8.21,9-8.21c8.68,0,9,8.21,9,8.21a29.3,29.3,0,0,1-1.83,9.88c-.82,1.66-5,4.83-7.2,4.83"/><path d="M48.29,38.58c-4.16-1.83-8.57-3.08-10.34-6.4a12,12,0,0,1-6,3.73,12,12,0,0,1-5.95-3.73c-1.77,3.32-6.18,4.57-10.34,6.4-1.7.71-3.11,9.88-1.13,9.88A33.06,33.06,0,0,0,31.23,53h1.54a33.06,33.06,0,0,0,16.65-4.53C51.4,48.46,50,39.29,48.29,38.58Z"/><path d="M14.82,36.57c.76-.33,1.54-.65,2.3-1,2.49-1,4.85-2,6.22-3.44C21.07,31.23,19,30.25,18,28.41a8.83,8.83,0,0,1-4.41,2.76,8.83,8.83,0,0,1-4.4-2.76c-1.31,2.46-4.58,3.38-7.66,4.74-1.26.52-2.3,7.31-.84,7.31a24.55,24.55,0,0,0,10.86,3.31C11.89,40.81,12.86,37.39,14.82,36.57Z"/><path d="M62.45,33.15c-3.08-1.36-6.35-2.28-7.66-4.74a8.83,8.83,0,0,1-4.4,2.76A8.83,8.83,0,0,1,46,28.41c-1,1.84-3,2.82-5.32,3.76,1.37,1.43,3.73,2.41,6.22,3.44.76.31,1.54.63,2.26,1,2,.83,3,4.25,3.29,7.21a24.55,24.55,0,0,0,10.86-3.31C64.75,40.46,63.71,33.67,62.45,33.15Z"/></svg> `
@@ -3272,12 +3268,19 @@
 
         getRef('search_contacts').addEventListener('input', function () {
             const contacts = {}
+            const searchQuery = this.value.trim()
             for (contact in floGlobals.contacts) {
-                if (contact.toLowerCase().includes(this.value.toLowerCase()) || floGlobals.contacts[contact].toLowerCase().includes(this.value.toLowerCase())) {
+                if (contact.toLowerCase().includes(searchQuery.toLowerCase()) || floGlobals.contacts[contact].toLowerCase().includes(searchQuery.toLowerCase())) {
                     contacts[contact] = floGlobals.contacts[contact]
                 }
             }
-            renderContactList(contacts)
+            if (Object.keys(contacts).length) {
+                renderContactList(contacts)
+            } else if (floCrypto.validateAddr(searchQuery) || validateEthAddress(searchQuery)) {
+                renderElem(getRef('contacts_container'), render.contactCard(searchQuery, {
+                    type: 'contact', ref: getRef('contacts_container'), name: 'Start a chat with'
+                }))
+            }
         })
         document.addEventListener('click', e => {
             // detect click outside emoji panel and emoji button
