@@ -1,4 +1,4 @@
-(function (EXPORTS) { //btcOperator v1.2.6
+(function (EXPORTS) { //btcOperator v1.2.7
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
     const SATOSHI_IN_BTC = 1e8;
@@ -75,6 +75,9 @@
                         return util.Sat_to_BTC(balance)
                     })
             },
+            latestBlock() {
+                return fetch_api(`blocks/tip/height`, { url: this.url })
+            },
             // tx({ txid, url }) {
             //     return fetch_api(`tx/${txid}`, { url: url || this.url })
             //         .then(result => formatTx(result))
@@ -107,6 +110,9 @@
             balance({ addr }) {
                 return fetch_api(`address/${addr}`, { url: this.url })
                     .then(result => util.Sat_to_BTC(result.chain_stats.funded_txo_sum - result.chain_stats.spent_txo_sum))
+            },
+            latestBlock() {
+                return fetch_api(`blocks/tip/height`, { url: this.url })
             },
             // tx({ txid }) {
             //     return fetch_api(`tx/${txid}`, { url: this.url })
@@ -156,6 +162,9 @@
             txs({ addr, before, after }) {
                 return fetch_api(`rawaddr/${addr}${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: this.url })
                     .then(result => result.txs)
+            },
+            latestBlock() {
+                return fetch_api(`q/getblockcount`, { url: this.url })
             },
             async block({ id }) {
                 try {
@@ -234,10 +243,14 @@
 
     const formatTx = btcOperator.util.format.tx = async (tx) => {
         try {
-            const { txid, hash, time, block_height, fee, fees, received,
+            let { txid, hash, time, block_height, fee, fees, received,
                 confirmed, size, double_spend, block_hash, confirmations,
                 status: { block_height: statusBlockHeight, block_hash: statusBlockHash, block_time } = {}
             } = tx;
+            if ((block_height || statusBlockHeight) && confirmations === undefined || confirmations === null) {
+                const latestBlock = await multiApi('latestBlock');
+                confirmations = latestBlock - (block_height || statusBlockHeight);
+            }
             const inputs = tx.vin || tx.inputs;
             const outputs = tx.vout || tx.outputs || tx.out;
             return {
@@ -294,9 +307,9 @@
             throw "No API available"
         } catch (error) {
             console.error(error)
-            if (error.code && [429, 404].includes(error.code)) {
-                APIs[index].coolDownTime = new Date().getTime() + 1000 * 60 * 10; // 10 minutes
-                return multiApi(fnName, { index: index + 1, ...args });
+            APIs[index].coolDownTime = new Date().getTime() + 1000 * 60 * 10; // 10 minutes
+            return multiApi(fnName, { index: index + 1, ...args });
+            if (error.code && [301, 429, 404].includes(error.code)) {
             } else {
                 throw error.message || error;
             }
@@ -1380,18 +1393,11 @@
         return Crypto.util.bytesToHex(txid);
     }
 
-    const getLatestBlock = btcOperator.getLatestBlock = () => new Promise((resolve, reject) => {
-        fetch_api(`q/getblockcount`)
-            .then(result => resolve(result))
-            .catch(error => reject(error))
-    })
-
     const getTx = btcOperator.getTx = txid => new Promise(async (resolve, reject) => {
         try {
             const result = await multiApi('tx', { txid });
-            if (!result.hasOwnProperty('confirmations'))
-                result.confirmations = await getLatestBlock() - result.block_height;
             resolve({
+                confirmations: result.confirmations,
                 block: result.block_height,
                 txid: result.hash,
                 time: result.time,
