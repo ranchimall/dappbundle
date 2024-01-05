@@ -29,15 +29,44 @@
     <script src="scripts/messengerEthereum.js"></script>
     <script src="scripts/messenger.min.js"></script>
     <script id="onLoadStartUp">
-        function onLoadStartUp() {
+        function canConnectToCloud() {
+            const nodes = Object.values(floCloudAPI.nodes);
+            // check if any node is online with websocket
+            return new Promise((resolve, reject) => {
+                let online = false;
+                let promises = [];
+                nodes.forEach(node => {
+                    promises.push(new Promise((resolve, reject) => {
+                        let ws = new WebSocket('wss://' + node.uri);
+                        ws.onopen = () => {
+                            online = true;
+                            resolve(true);
+                            ws.close();
+                        }
+                        ws.onerror = () => {
+                            resolve(false);
+                        }
+                    }))
+                })
+                Promise.all(promises).then(results => {
+                    resolve(online);
+                })
+            })
+        }
+        async function onLoadStartUp() {
             routeTo('loading')
             document.body.classList.remove('hidden')
 
             floDapps.setCustomPrivKeyInput(getSignedIn)
             getRef('emoji_picker').shadowRoot.append(style);
             //invoke the startup functions
-            floDapps.launchStartUp().then(result => {
+            try {
+                const result = await floDapps.launchStartUp();
                 console.log(result)
+                if (!await canConnectToCloud()) {
+                    document.body.prepend(document.createElement('adblocker-warning'))
+                    return
+                }
                 floGlobals.myFloID = floCrypto.getFloID(floDapps.user.public);
                 floGlobals.myBtcID = btcOperator.convert.legacy2bech(floGlobals.myFloID)
                 floGlobals.myEthID = floEthereum.ethAddressFromCompressedPublicKey(floDapps.user.public)
@@ -68,7 +97,9 @@
                         notify(error, "error")
                     }
                 })
-            }).catch(error => notify(error, "error"))
+            } catch (e) {
+                notify(error, "error")
+            }
         }
     </script>
 </head>
