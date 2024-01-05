@@ -22,6 +22,7 @@
         try {
             const response = await fetch(url, {
                 method: 'POST',
+                cors: 'no-cors',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -195,6 +196,43 @@
                 } catch (e) {
 
                 }
+            }
+        },
+        {
+            url: 'https://coinb.in/api/?uid=1&key=12345678901234567890123456789012&setmodule=bitcoin&request=sendrawtransaction',
+            name: 'Coinb.in',
+            broadcast({ rawTxHex }) {
+                return new Promise((resolve, reject) => {
+                    fetch(this.url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: "rawtx=" + rawTxHex
+                    }).then(response => {
+                        console.log(response)
+                        response.text().then(resultText => {
+                            let r = resultText.match(/<result>.*<\/result>/);
+                            if (!r)
+                                reject(resultText);
+                            else {
+                                r = r.pop().replace('<result>', '').replace('</result>', '');
+                                if (r == '1') {
+                                    let txid = resultText.match(/<txid>.*<\/txid>/).pop().replace('<txid>', '').replace('</txid>', '');
+                                    resolve(txid);
+                                } else if (r == '0') {
+                                    let error
+                                    if (resultText.includes('<message>')) {
+                                        error = resultText.match(/<message>.*<\/message>/).pop().replace('<message>', '').replace('</message>', '');
+                                    } else {
+                                        error = resultText.match(/<response>.*<\/response>/).pop().replace('<response>', '').replace('</response>', '');
+                                    }
+                                    reject(decodeURIComponent(error.replace(/\+/g, " ")));
+                                } else reject(resultText);
+                            }
+                        }).catch(error => reject(error))
+                    }).catch(error => reject(error))
+                });
             }
         }
     ]
