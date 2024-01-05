@@ -4635,8 +4635,11 @@
         })
 
         getRef('select_bg_image').addEventListener('change', function (e) {
-            Promise.all([compactIDB.writeData('userSettings', true, 'hasSelectedBg'),
-            compactIDB.writeData('userSettings', this.files[0], 'bgImage')])
+            if (!this.files.length) return
+            Promise.all([
+                compactIDB.writeData('userSettings', true, 'hasSelectedBg'),
+                compactIDB.writeData('userSettings', this.files[0], 'bgImage')
+            ])
                 .then(async res => {
                     setBgImage()
                     notify('Background applied', 'success')
