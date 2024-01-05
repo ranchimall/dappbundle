@@ -1,4 +1,4 @@
-(function (EXPORTS) { //btcOperator v1.2.7
+(function (EXPORTS) { //btcOperator v1.2.8
     /* BTC Crypto and API Operator */
     const btcOperator = EXPORTS;
     const SATOSHI_IN_BTC = 1e8;
@@ -22,7 +22,7 @@
         try {
             const response = await fetch(url, {
                 method: 'POST',
-                cors: 'no-cors',
+                mode: 'no-cors',
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -57,7 +57,7 @@
             },
             async broadcast({ rawTxHex, url }) {
                 try {
-                    const result = await post(`${url || this.url}txs/push`, { tx: rawTxHex })
+                    const result = await post(`${url || this.url}pushtx`, { tx: rawTxHex })
                     return result.hash
                 } catch (e) {
                     throw e
@@ -79,16 +79,16 @@
             latestBlock() {
                 return fetch_api(`blocks/tip/height`, { url: this.url })
             },
-            // tx({ txid, url }) {
-            //     return fetch_api(`tx/${txid}`, { url: url || this.url })
-            //         .then(result => formatTx(result))
-            // },
-            // txHex({ txid, url }) {
-            //     return fetch_api(`tx/${txid}/hex`, { url: url || this.url, asText: true })
-            // },
-            // txs({ addr, before, after, url }) {
-            //     return fetch_api(`address/${addr}/txs${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: url || this.url })
-            // },
+            tx({ txid, url }) {
+                return fetch_api(`tx/${txid}`, { url: url || this.url })
+                    .then(result => formatTx(result))
+            },
+            txHex({ txid, url }) {
+                return fetch_api(`tx/${txid}/hex`, { url: url || this.url, asText: true })
+            },
+            txs({ addr, before, after, url }) {
+                return fetch_api(`address/${addr}/txs${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: url || this.url })
+            },
             async block({ id, url }) {
                 // if id is hex string then it is block hash
                 try {
@@ -115,17 +115,17 @@
             latestBlock() {
                 return fetch_api(`blocks/tip/height`, { url: this.url })
             },
-            // tx({ txid }) {
-            //     return fetch_api(`tx/${txid}`, { url: this.url })
-            //         .then(result => formatTx(result))
+            tx({ txid }) {
+                return fetch_api(`tx/${txid}`, { url: this.url })
+                    .then(result => formatTx(result))
 
-            // },
-            // txHex({ txid }) {
-            //     return fetch_api(`tx/${txid}/hex`, { url: this.url, asText: true })
-            // },
-            // txs({ addr, before, after }) {
-            //     return fetch_api(`address/${addr}/txs${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: this.url })
-            // },
+            },
+            txHex({ txid }) {
+                return fetch_api(`tx/${txid}/hex`, { url: this.url, asText: true })
+            },
+            txs({ addr, before, after }) {
+                return fetch_api(`address/${addr}/txs${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: this.url })
+            },
             async block({ id }) {
                 // if id is hex string then it is block hash
                 try {
