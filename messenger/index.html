@@ -4414,7 +4414,10 @@
             }
         }
         function handleGroupDescriptionChange(e) {
-            rmMessenger.changeGroupDescription(floGlobals.viewingDetailsOfAddress, e.detail.value.trim())
+            const description = e.detail.value.trim();
+            if (description === '') return notify('Description cannot be empty', 'error')
+            if (description.length > 100) return notify('Description cannot be more than 100 characters', 'error')
+            rmMessenger.changeGroupDescription(floGlobals.viewingDetailsOfAddress, description)
                 .then(res => {
                     notify('Changed group description', 'success')
                 })
@@ -4631,9 +4634,9 @@
             document.body.style.setProperty('--accent-color', color);
         })
 
-        getRef('select_bg_image').addEventListener('change', async function (e) {
-            await compactIDB.writeData('userSettings', true, 'hasSelectedBg')
-            compactIDB.writeData('userSettings', this.files[0], 'bgImage')
+        getRef('select_bg_image').addEventListener('change', function (e) {
+            Promise.all([compactIDB.writeData('userSettings', true, 'hasSelectedBg'),
+            compactIDB.writeData('userSettings', this.files[0], 'bgImage')])
                 .then(async res => {
                     setBgImage()
                     notify('Background applied', 'success')
@@ -4657,12 +4660,12 @@
         })
         async function setBgImage() {
             try {
-                const hasSelectedBg = await compactIDB.readData('userSettings', 'hasSelectedBg')
-                const image = await compactIDB.readData('userSettings', 'bgImage')
-                if (image) {
-                    const url = URL.createObjectURL(image)
+                const { hasSelectedBg = false, bgImage, bgOpacity, bgBlur } = await compactIDB.readAllData('userSettings')
+                if (bgImage) {
+                    const url = URL.createObjectURL(bgImage)
                     if (hasSelectedBg) {
                         getRef('background_image').src = url
+                        getRef('selected_bg_preview').click()
                         addClass(['#chat_view', '#mail', '#chat_preview'], 'has-bg-image')
                         getRef('select_bg_button').textContent = 'Change background'
                         getRef('selected_bg_preview').classList.add('bg-preview--selected')
@@ -4674,7 +4677,6 @@
                     getRef('selected_bg_preview').classList.remove('hidden')
                     getRef('selected_bg_preview').querySelector('img').src = url
                 }
-                const [bgOpacity, bgBlur] = await Promise.all([compactIDB.readData('userSettings', 'bgOpacity'), compactIDB.readData('userSettings', 'bgBlur')])
                 if (bgOpacity !== undefined) {
                     getRef('backdrop_opacity').value = bgOpacity * 100
                     getRef('backdrop_opacity_value').value = `${parseInt(bgOpacity * 100)}%`
@@ -4685,7 +4687,6 @@
                     getRef('backdrop_blur_value').value = `${parseInt(bgBlur * 100)}%`
                     getRef('background_image').style.setProperty('--blur', `${bgBlur}rem`)
                     getRef('background_image').style.setProperty('--scale', bgBlur)
-
                 }
             }
             catch (err) {

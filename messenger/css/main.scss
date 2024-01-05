@@ -973,10 +973,9 @@ ol {
 
 #background_image {
   z-index: -2;
-  object-fit: cover;
+  object-fit:fill;
   filter: blur(var(--blur, 1rem));
   transform: scale(calc(1 + (var(--scale, 1.1) / 10)));
-
   &[src=""],
   &:not([src]) {
     display: none;
@@ -2206,11 +2205,6 @@ sm-chip {
 }
 
 .has-bg-image {
-  .received::after {
-    border-color: transparent rgba(var(--foreground-color), 0.6) transparent
-      transparent;
-  }
-
   #emoji_picker {
     --background: rgba(var(--foreground-color), 0.6);
   }
