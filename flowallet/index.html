@@ -17,8 +17,7 @@
         /* Constants for FLO blockchain operations !!Make sure to add this at beginning!! */
         const floGlobals = {
             blockchain: "FLO",
-            tokenApiUrl: 'https://ranchimallflo.duckdns.org',
-            tokenURL: 'https://ranchimallflo.duckdns.org/',
+            tokenURL: 'https://ranchimallflo.ranchimall.net/',
             expirationDays: 60,
         }
     </script>
@@ -42,7 +41,7 @@
             compactIDB.initDB("FLOwebWallet", IDBObjects).then(async result => {
                 render.savedIds();
                 if (!floGlobals.tokens || !floGlobals.smartContracts) {
-                    fetchJson(`${floGlobals.tokenApiUrl}/api/v2/tokenSmartContractList`).then(({ tokens, smartContracts }) => {
+                    fetchJson(`${floGlobals.tokenURL}api/v2/tokenSmartContractList`).then(({ tokens, smartContracts }) => {
                         floGlobals.scMap = new Map()
                         floGlobals.tokens = tokens.sort((a, b) => a.localeCompare(b))
                         floGlobals.smartContracts = smartContracts
@@ -2265,7 +2264,7 @@
             const senderFloAddr = floCrypto.getFloID(senderPrivateKey)
             Promise.all([
                 floWebWallet.getBalance(senderFloAddr),
-                fetchJson(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${senderFloAddr}`)
+                fetchJson(`${floGlobals.tokenURL}api/v2/floAddressBalance/${senderFloAddr}`)
             ]).then(([retrievedBal, { floAddressBalances }]) => {
                 renderBalance({ balance: parseFloat(retrievedBal), address: senderFloAddr })
                 let ownedTokens = []
@@ -2483,7 +2482,7 @@
                 getRef('flo_balance').innerHTML = `<sm-spinner></sm-spinner>`;
                 const [floBalance, tokenBalances] = await Promise.all([
                     floWebWallet.getBalance(queriedFloId),
-                    fetchJson(`${floGlobals.tokenApiUrl}/api/v2/floAddressBalance/${queriedFloId}`).then(({ floAddressBalances }) => floAddressBalances)
+                    fetchJson(`${floGlobals.tokenURL}api/v2/floAddressBalance/${queriedFloId}`).then(({ floAddressBalances }) => floAddressBalances)
                 ])
                 let ownedTokens = []
                 for (const token in tokenBalances) {
@@ -2509,7 +2508,7 @@
                     //console.log('data entered is a FLO address');
                     resolve('address')
                 } else if (text.length == 64 && returnHexNumber(text)) {
-                    fetchJson(`${floGlobals.tokenApiUrl}/api/v2/categoriseString/` + text)
+                    fetchJson(`${floGlobals.tokenURL}api/v2/categoriseString/` + text)
                         .then(function (myJson) {
                             resolve(myJson['type'])
                         }).catch(err => {
@@ -2788,7 +2787,7 @@
                     name = floGlobals.smartContracts[0].contractName
                     address = floGlobals.smartContracts[0].contractAddress
                 }
-                fetchJson(`${floGlobals.tokenApiUrl}/api/v2/smartContractInfo?contractName=${name}&contractAddress=${address}`)
+                fetchJson(`${floGlobals.tokenURL}api/v2/smartContractInfo?contractName=${name}&contractAddress=${address}`)
                     .then(info => {
                         console.log(info)
                         const {

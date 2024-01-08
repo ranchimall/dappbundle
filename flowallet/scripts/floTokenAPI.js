@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floTokenAPI v1.0.4a
+(function (EXPORTS) { //floTokenAPI v1.1.0
     /* Token Operator to send/receive tokens via blockchain using API calls*/
     'use strict';
     const tokenAPI = EXPORTS;
@@ -67,15 +67,15 @@
 
     const getBalance = tokenAPI.getBalance = function (floID, token = DEFAULT.currency) {
         return new Promise((resolve, reject) => {
-            fetch_api(`api/v1.0/getFloAddressBalance?token=${token}&floAddress=${floID}`)
-                .then(result => resolve(result.balance || 0))
+            fetch_api(`api/v2/floAddressInfo/${floID}`)
+                .then(result => resolve(result.floAddressBalances[token]?.balance || 0))
                 .catch(error => reject(error))
         })
     }
 
     tokenAPI.getTx = function (txID) {
         return new Promise((resolve, reject) => {
-            fetch_api(`api/v1.0/getTransactionDetails/${txID}`).then(res => {
+            fetch_api(`api/v2/transactionDetails/${txID}`).then(res => {
                 if (res.result === "error")
                     reject(res.description);
                 else if (!res.parsedFloData)
@@ -169,7 +169,7 @@
 
     tokenAPI.getAllTxs = function (floID, token = DEFAULT.currency) {
         return new Promise((resolve, reject) => {
-            fetch_api(`api/v1.0/getFloAddressTransactions?token=${token}&floAddress=${floID}`)
+            fetch_api(`api/v2/floAddressTransactions/${floID}${token ? `?token=${token}` : ''}`)
                 .then(result => resolve(result))
                 .catch(error => reject(error))
         })
