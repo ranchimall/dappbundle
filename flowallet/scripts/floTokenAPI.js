@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floTokenAPI v1.1.0
+(function (EXPORTS) { //floTokenAPI v1.1.0a
     /* Token Operator to send/receive tokens via blockchain using API calls*/
     'use strict';
     const tokenAPI = EXPORTS;
@@ -21,7 +21,7 @@
     checkIfTor().then(result => {
         isTor = result
         if (isTor) {
-            DEFAULT.apiURL = ['http://omwkzk6bd6zuragdqsrhdyzgxzre7yx4vzrou4vzftintzc2dmagp6qd.onion:5017/']
+            DEFAULT.apiURL.push('http://omwkzk6bd6zuragdqsrhdyzgxzre7yx4vzrou4vzftintzc2dmagp6qd.onion:5017/')
         }
     });
 
