@@ -17,7 +17,7 @@
 
     const SATOSHI_IN_BTC = 1e8;
     const isUndefined = val => typeof val === 'undefined';
-    const checkIfTor = btcOperator.checkIfTor = () => {
+    const checkIfTor = floBlockchainAPI.checkIfTor = () => {
         return fetch('https://check.torproject.org/api/ip', {
             mode: 'no-cors'
         })
