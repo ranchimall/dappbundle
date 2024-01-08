@@ -86,8 +86,11 @@
             txHex({ txid, url }) {
                 return fetch_api(`tx/${txid}/hex`, { url: url || this.url, asText: true })
             },
-            txs({ addr, before, after, url }) {
-                return fetch_api(`address/${addr}/txs${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: url || this.url })
+            txs({ addr, url, ...args }) {
+                let queryParams = Object.entries(args).map(([key, value]) => `${key}=${value}`).join('&')
+                if (queryParams)
+                    queryParams = '?' + queryParams
+                return fetch_api(`address/${addr}/txs${queryParams}`, { url: url || this.url })
             },
             async block({ id, url }) {
                 // if id is hex string then it is block hash
@@ -123,8 +126,11 @@
             txHex({ txid }) {
                 return fetch_api(`tx/${txid}/hex`, { url: this.url, asText: true })
             },
-            txs({ addr, before, after }) {
-                return fetch_api(`address/${addr}/txs${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: this.url })
+            txs({ addr, ...args }) {
+                let queryParams = Object.entries(args).map(([key, value]) => `${key}=${value}`).join('&')
+                if (queryParams)
+                    queryParams = '?' + queryParams
+                return fetch_api(`address/${addr}/txs${queryParams}`, { url: this.url })
             },
             async block({ id }) {
                 // if id is hex string then it is block hash
@@ -160,8 +166,11 @@
             txHex({ txid }) {
                 return fetch_api(`rawtx/${txid}?format=hex`, { url: this.url, asText: true })
             },
-            txs({ addr, before, after }) {
-                return fetch_api(`rawaddr/${addr}${before ? `?before=${before}` : ''}${after ? `?after=${after}` : ''}`, { url: this.url })
+            txs({ addr, ...args }) {
+                let queryParams = Object.entries(args).map(([key, value]) => `${key}=${value}`).join('&')
+                if (queryParams)
+                    queryParams = '?' + queryParams
+                return fetch_api(`rawaddr/${addr}${queryParams}`, { url: this.url })
                     .then(result => result.txs)
             },
             latestBlock() {
@@ -347,10 +356,6 @@
             console.error(error)
             APIs[index].coolDownTime = new Date().getTime() + 1000 * 60 * 10; // 10 minutes
             return multiApi(fnName, { index: index + 1, ...args });
-            if (error.code && [301, 429, 404].includes(error.code)) {
-            } else {
-                throw error.message || error;
-            }
         }
     };
 
