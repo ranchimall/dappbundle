@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floBlockchainAPI v3.1.0
+(function (EXPORTS) { //floBlockchainAPI v3.1.1
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls via FLO Blockbook*/
     'use strict';
     const floBlockchainAPI = EXPORTS;

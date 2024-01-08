@@ -4,13 +4,30 @@
     const tokenAPI = EXPORTS;
 
     const DEFAULT = {
-        apiURL: floGlobals.tokenURL || "https://ranchimallflo.duckdns.org/",
+        apiURL: [floGlobals.tokenURL || "https://ranchimallflo.ranchimall.net/"],
         currency: floGlobals.currency || "rupee"
     }
 
+
+    const checkIfTor = tokenAPI.checkIfTor = () => {
+        return fetch('https://check.torproject.org/api/ip', {
+            mode: 'no-cors'
+        })
+            .then(response => response.json())
+            .then(result => result.IsTor)
+            .catch(error => false)
+    }
+    let isTor = false;
+    checkIfTor().then(result => {
+        isTor = result
+        if (isTor) {
+            DEFAULT.apiURL = ['http://omwkzk6bd6zuragdqsrhdyzgxzre7yx4vzrou4vzftintzc2dmagp6qd.onion:5017/']
+        }
+    });
+
     Object.defineProperties(tokenAPI, {
         URL: {
-            get: () => DEFAULT.apiURL
+            get: () => DEFAULT.apiURL[0],
         },
         currency: {
             get: () => DEFAULT.currency,
@@ -27,16 +44,25 @@
         }
     });
 
-    const fetch_api = tokenAPI.fetch = function (apicall) {
+    const fetch_api = tokenAPI.fetch = function (apicall, apiURLs = DEFAULT.apiURL) {
         return new Promise((resolve, reject) => {
-            console.debug(DEFAULT.apiURL + apicall);
-            fetch(DEFAULT.apiURL + apicall).then(response => {
+            if (apiURLs.length === 0) {
+                reject("No API URLs available");
+                return;
+            }
+            const currentURL = apiURLs[0];
+            console.debug(currentURL + apicall);
+            fetch(currentURL + apicall).then(response => {
                 if (response.ok)
                     response.json().then(data => resolve(data));
                 else
-                    reject(response)
-            }).catch(error => reject(error))
-        })
+                    reject(response);
+            }).catch(error => {
+                console.error(`Failed to fetch from ${currentURL}: ${error}`);
+                // Try the next API URL recursively
+                fetch_api(apicall, apiURLs.slice(1)).then(resolve).catch(reject);
+            });
+        });
     }
 
     const getBalance = tokenAPI.getBalance = function (floID, token = DEFAULT.currency) {
