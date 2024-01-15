@@ -27,7 +27,6 @@ body {
   scrollbar-gutter: stable;
   color: rgba(var(--text-color), 1);
   background-color: rgba(var(--background-color), 1);
-  transition: background-color 0.3s;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -658,7 +657,7 @@ ol li::before {
 }
 
 #main_header {
-  padding: 1.5rem max(1rem, 4vw);
+  padding: 1rem max(1rem, 4vw);
 }
 
 .app-brand {
@@ -683,7 +682,6 @@ ol li::before {
   grid-template-rows: auto 1fr;
   height: 100%;
   width: 100%;
-  transition: background-color 0.3s;
   background-color: rgba(var(--foreground-color), 1);
 }
 
@@ -823,6 +821,10 @@ ol li::before {
   margin-bottom: 0.3rem;
 }
 
+#search_query_input {
+  font-weight: 500;
+}
+
 #address_balance_card {
   padding: 1.5rem;
   border-radius: 0.5rem;
@@ -835,6 +837,13 @@ ol li::before {
   font-size: 1.2rem;
   font-weight: 700;
   color: var(--accent-color);
+}
+
+#filter_selector {
+  --padding: 0.3rem 0.5rem;
+}
+#filter_selector sm-chip {
+  font-weight: 500;
 }
 
 .card {
@@ -871,21 +880,55 @@ ol li::before {
   border-bottom: thin solid rgba(var(--text-color), 0.3);
 }
 
+#tx_details__header:has(#tx_status) time {
+  text-align: left;
+  margin-right: auto;
+}
+#tx_details__header:has(:not(#tx_status)) time {
+  text-align: right;
+  margin-left: auto;
+}
+
 #transactions_list {
   display: grid;
   gap: 2rem;
   padding-bottom: 4rem;
+  padding-top: 2rem;
+}
+
+transaction-card {
+  position: relative;
+}
+transaction-card:not(:last-of-type) {
+  padding-bottom: 2rem;
+}
+transaction-card:not(:last-of-type)::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 1px;
+  width: calc(100% - 3.5rem);
+  background-color: rgba(var(--text-color), 0.2);
 }
 
 .transaction {
+  position: relative;
   grid-template-columns: auto 1fr;
   gap: 0.5rem 1rem;
   align-items: center;
-  content-visibility: auto;
-  contain-intrinsic-height: 8rem;
 }
-.transaction:not(:last-of-type) {
-  padding-bottom: 2rem;
+.transaction.in .transaction__amount {
+  color: var(--green);
+}
+.transaction.in .transaction__amount::before {
+  content: "+";
+}
+.transaction.out .transaction__amount {
+  color: var(--danger-color);
+}
+.transaction.out .transaction__amount::before {
+  content: "-";
 }
 .transaction__amount {
   white-space: nowrap;
@@ -893,20 +936,8 @@ ol li::before {
 .transaction.out .transaction__icon .icon {
   fill: var(--danger-color);
 }
-.transaction.out .transaction__amount {
-  color: var(--danger-color);
-}
-.transaction.out .transaction__amount::before {
-  content: "- ";
-}
 .transaction.in .transaction__icon .icon {
   fill: var(--green);
-}
-.transaction.in .transaction__amount {
-  color: var(--green);
-}
-.transaction.in .transaction__amount::before {
-  content: "+ ";
 }
 .transaction.unconfirmed-tx .transaction__icon .icon {
   fill: var(--yellow);
@@ -928,6 +959,7 @@ ol li::before {
 .transaction__time {
   font-size: 0.9rem;
   color: rgba(var(--text-color), 0.8);
+  text-wrap: balance;
 }
 .transaction__amount {
   font-size: 1rem;
@@ -954,6 +986,15 @@ ol li::before {
   content: ",";
 }
 
+#tx_details time {
+  padding: 0.3rem 0.8rem;
+  border-radius: 5rem;
+  background-color: rgba(var(--text-color), 0.06);
+  font-weight: 500;
+  font-size: 0.9rem;
+  text-wrap: balance;
+}
+
 #tx_status {
   display: flex;
   align-items: center;
@@ -962,9 +1003,18 @@ ol li::before {
   border-radius: 0.5rem;
   background-color: rgba(var(--text-color), 0.03);
   color: var(--danger-color);
+  width: -webkit-fit-content;
+  width: -moz-fit-content;
+  width: fit-content;
 }
 #tx_status .icon {
   fill: var(--danger-color);
+}
+
+#tx_amount {
+  font-size: max(2rem, 4vw);
+  font-weight: 700;
+  text-wrap: balance;
 }
 
 #tx_technicals .tx-detail:first-of-type {
@@ -1197,6 +1247,7 @@ ol li::before {
   }
   #main_header {
     grid-area: header;
+    padding: 1.5rem max(1rem, 4vw);
   }
   #main_navbar {
     grid-area: nav;

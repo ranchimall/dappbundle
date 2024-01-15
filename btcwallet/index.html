@@ -105,14 +105,22 @@
                             </div>
                             <output id="address_balance" class="amount-shown"></output>
                         </div>
-                        <div class="flex align-center space-between margin-bottom-1 sticky top-0"
+                        <div class="flex flex-direction-column margin-bottom-1 sticky top-0 gap-0-5"
                             style="background-color: rgba(var(--foreground-color), 1); z-index: 2">
-                            <h5>Transactions</h5>
-                            <sm-chips id="filter_selector">
-                                <sm-chip value="all" selected>All</sm-chip>
-                                <sm-chip value="sent">Sent</sm-chip>
-                                <sm-chip value="received">Received</sm-chip>
-                            </sm-chips>
+                            <div class="flex align-center gap-0-5 space-between">
+                                <h4>Transactions</h4>
+                                <sm-chips id="filter_selector">
+                                    <sm-chip value="all" selected>All</sm-chip>
+                                    <sm-chip value="sent">Sent</sm-chip>
+                                    <sm-chip value="received">Received</sm-chip>
+                                </sm-chips>
+                            </div>
+                            <sm-switch id="show_current_value" class="margin-left-auto hidden"
+                                onchange="handleValuationTypeChange(event)">
+                                <p slot="left" class="margin-right-0-5">
+                                    Show current value
+                                </p>
+                            </sm-switch>
                         </div>
                         <ul id="transactions_list" class="observe-empty-state"></ul>
                         <div class="empty-state align-self-center text-center">Balance and transactions will appear here
@@ -566,7 +574,7 @@
                         else
                             return relativeTime.from(timestamp)
                     default:
-                        return `${month} ${date}, ${year} at ${finalHours}`;
+                        return `${month} ${date} ${year}, ${finalHours}`;
                 }
             } catch (e) {
                 console.error(e);
@@ -591,7 +599,11 @@
             return M.join(' ');
         }
         window.addEventListener('hashchange', e => routeTo(window.location.hash))
-        let selectedCurrency = 'btc'
+        let selectedCurrency = 'btc';
+        let historicPriceApis = {
+            active: 0,
+            list: ['https://utility-api.ranchimall.net']
+        };
         window.addEventListener("load", () => {
             const [browserName, browserVersion] = detectBrowser().split(' ');
             const supportedVersions = {
@@ -620,15 +632,24 @@
                     createRipple(e, e.target.closest("button, .interactive"));
                 }
             });
+            btcOperator.checkIfTor()
+                .then(isTor => {
+                    if (isTor)
+                        historicPriceApis.list.push('http://omwkzk6bd6zuragdqsrhdyzgxzre7yx4vzrou4vzftintzc2dmagp6qd.onion:8257')
+                })
             getExchangeRate()
                 .then(() => {
-                    selectedCurrency = localStorage.getItem('btc-wallet-currency') || 'btc'
+                    selectedCurrency = localStorage.getItem('btc-wallet-currency') || 'btc';
+                    showCurrentValue = localStorage.getItem('btc-wallet-show-current-value') === 'true' || false;
                     setTimeout(() => {
-                        document.getElementById('currency_selector').value = selectedCurrency
+                        document.getElementById('currency_selector').value = selectedCurrency;
+                        document.getElementById('show_current_value').checked = showCurrentValue;
+                        getRef('show_current_value').classList.toggle('hidden', selectedCurrency === 'btc')
                     }, 100)
                 })
                 .catch(e => {
-                    selectedCurrency = 'btc'
+                    selectedCurrency = 'btc';
+                    showCurrentValue = false;
                     // console.error(e)
                     getRef('currency_selector').classList.add('hidden')
                 }).finally(() => {
@@ -812,6 +833,7 @@
                 }
             }
             if (pagesData.lastPage !== pageId) {
+                closePopup()
                 document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'))
                 getRef(pageId).classList.remove('hidden')
                 getRef(pageId).animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, fill: 'forwards', easing: 'ease' })
@@ -1155,17 +1177,27 @@
                         }
                         return {
                             isValid: parseFloat(value) >= minValidAmount[selectedCurrency],
-                            errorText: `Amount must be greater than ${getConvertedAmount(minValidAmount.btc, true)} ${selectedCurrency.toUpperCase()}`
+                            errorText: `Amount must be greater than ${getConvertedAmount(minValidAmount.btc, { shouldFormatAmount: true })} ${selectedCurrency.toUpperCase()}`
                         }
                     }
                 }
             ]
         }
-        let transactionsLazyLoader
-        let txDetailsAbortController
-        const render = {
-            transactionCard(transactionDetails) {
-                let { address, amount, time, txid, sender, receiver, type, block } = transactionDetails;
+        function toYDM(timestamp) {
+            const date = new Date(timestamp)
+            return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
+        }
+        let showCurrentValue = false
+        function handleValuationTypeChange(e) {
+            showCurrentValue = e.target.checked;
+            document.querySelectorAll('transaction-card').forEach(transactionCard => transactionCard.render())
+            localStorage.setItem('btc-wallet-show-current-value', showCurrentValue)
+        }
+        class TransactionCard extends HTMLElement {
+            render = (transactionDetails) => {
+                if (transactionDetails)
+                    this.transactionDetails = transactionDetails
+                let { address, amount, time, txid, sender, receiver, type, block, historicPrice } = this.transactionDetails;
                 let transactionReceiver
                 let icon
                 const transactingAddresses = (receiver || sender || [])
@@ -1188,16 +1220,21 @@
                 }
                 const queriedAddress = pagesData.params?.query || getRef('search_query_input').value.trim()
                 const isSender = type === 'out' || type === 'self'
-                const className = `transaction grid ${type} ${isUnconfirmed ? 'unconfirmed-tx' : ''}`
-                return html.node/*html*/`
-                    <li class="${className}" data-txid="${txid}" data-transacting-addresses=${transactingAddresses.slice(2)}>
+                const className = `transaction grid ${type} ${isUnconfirmed ? 'unconfirmed-tx' : ''}`;
+                const valuationDelta = historicPrice && historicPrice[selectedCurrency] ? getConvertedAmount(amount) - getConvertedAmount(amount, { onDate: time }) : 0;
+                const amountOptions = { shouldFormatAmount: true }
+                if (selectedCurrency !== 'btc' && !showCurrentValue && historicPrice && historicPrice[selectedCurrency]) {
+                    amountOptions.onDate = time;
+                }
+                renderElem(this, html`
+                    <li class="${className}" .dataset=${{ txid, transactingAddresses: transactingAddresses.slice(2), currency: selectedCurrency }}>
                         <div class="transaction__icon">${icon}</div>
                         <div class="grid gap-0-5">
-                            <div class="flex gap-0-5 space-between align-center flex-wrap">
+                            <div class="flex gap-1 space-between">
                                 ${time ? html`
                                     <time class="transaction__time">${getFormattedTime(time)}</time>
                                 ` : ''}
-                                <div class="transaction__amount amount-shown" data-btc-amount="${amount}">${getConvertedAmount(amount, true)}</div>
+                                <div class="transaction__amount">${getConvertedAmount(amount, amountOptions)}</div>
                             </div>
                             <div class="transaction__receiver">
                                 ${transactionReceiver}
@@ -1229,42 +1266,87 @@
                             ` : ''}
                         </div>
                     </li>
-                    `;
+                `);
+            }
+        }
+        window.customElements.define('transaction-card', TransactionCard);
+        async function getHistoricPrice(dates = []) {
+            try {
+                if (!dates.length) return [];
+                if (!Array.isArray(dates)) dates = [dates];
+                const datesToFetch = dates.filter(date => !mappedHistoricPrices.has(date));
+                if (datesToFetch.length) {
+                    const historicPrices = await fetch(`${historicPriceApis.list[historicPriceApis.active]}/price-history?dates=${dates.join()}`).then(res => res.json())
+                    historicPrices.forEach(price => {
+                        // map historic price to txs
+                        // historic price is per day, so we need to find the price for the day of the tx
+                        mappedHistoricPrices.set(toYDM(price.date), {
+                            usd: price.usd,
+                            inr: price.inr
+                        })
+                    })
+                }
+                return dates.map(date => mappedHistoricPrices.get(date))
+            } catch (err) {
+                if (historicPriceApis.active < historicPriceApis.list.length - 1) {
+                    historicPriceApis.active++
+                    return getHistoricPrice(dates)
+                } else {
+                    throw err
+                }
+            }
+        }
+
+        let transactionsLazyLoader
+        let txDetailsAbortController
+        const mappedHistoricPrices = new Map()
+        const render = {
+            transactionCard(transactionDetails) {
+                const transactionCard = document.createElement('transaction-card')
+                transactionCard.render(transactionDetails)
+                return transactionCard
             },
             async transactions(address) {
                 try {
                     getRef('address_details').classList.remove('hidden')
                     getRef('transactions_list').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
                     getRef('address_balance').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
-                    btcOperator.getAddressData(address).then(result => {
-                        getRef('address_balance').value = getConvertedAmount(result.balance, true);
-                        getRef('address_balance').dataset.btcAmount = result.balance;
-                        getRef('address_balance').parentElement.classList.remove('hidden')
-                        getRef('filter_selector').classList.remove('hidden')
-                        // render transactions
-                        if (result.txs.length) {
-                            let allTransactions = result.txs;
-                            const filter = getRef('filter_selector').value;
-                            if (filter !== 'all') {
-                                allTransactions = allTransactions.filter(t => filter === 'sent' ? t.type === 'out' : t.type === 'in')
+                    const { txs, balance } = await btcOperator.getAddressData(address)
+                    getRef('address_balance').value = getConvertedAmount(balance, { shouldFormatAmount: true });
+                    getRef('address_balance').dataset.btcAmount = balance;
+                    getRef('address_balance').parentElement.classList.remove('hidden')
+                    getRef('filter_selector').classList.remove('hidden')
+                    // render transactions
+                    if (txs.length) {
+                        const dates = txs.map(tx => toYDM(tx.time))
+                        await getHistoricPrice(dates)
+                        txs.forEach(tx => {
+                            const historicPrice = mappedHistoricPrices.get(toYDM(tx.time))
+                            if (historicPrice) {
+                                tx.historicPrice = historicPrice
                             }
-                            if (transactionsLazyLoader) {
-                                transactionsLazyLoader.update(allTransactions)
-                            } else {
-                                transactionsLazyLoader = new LazyLoader('#transactions_list', allTransactions, render.transactionCard)
-                            }
-                            transactionsLazyLoader.init()
-                            getRef('transactions_list').previousElementSibling.classList.remove('hidden');
-                        } else {
-                            getRef('transactions_list').textContent = 'No transactions found';
+                        })
+                        let allTransactions = txs;
+                        const filter = getRef('filter_selector').value;
+                        if (filter !== 'all') {
+                            allTransactions = allTransactions.filter(t => filter === 'sent' ? t.type === 'out' : t.type === 'in')
                         }
-                    }).catch(error => {
-                        console.error(error)
-                        getRef('filter_selector').classList.add('hidden')
-                        getRef('transactions_list').textContent = `The data service is temporarily unavailable due to over-usage. Please try again in an hour.`;
-                    }).finally(_ => getRef('check_address_button').disabled = false)
+                        if (transactionsLazyLoader) {
+                            transactionsLazyLoader.update(allTransactions)
+                        } else {
+                            transactionsLazyLoader = new LazyLoader('#transactions_list', allTransactions, render.transactionCard)
+                        }
+                        transactionsLazyLoader.init()
+                        getRef('transactions_list').previousElementSibling.classList.remove('hidden');
+                    } else {
+                        getRef('transactions_list').textContent = 'No transactions found';
+                    }
                 } catch (err) {
                     notify(err, 'error');
+                    getRef('filter_selector').classList.add('hidden')
+                    getRef('transactions_list').textContent = `The data service is temporarily unavailable due to over-usage. Please try again in an hour.`;
+                } finally {
+                    getRef('check_address_button').disabled = false
                 }
             },
             addressDetails(address) {
@@ -1278,19 +1360,44 @@
                     txDetailsAbortController.abort()
                 }
                 txDetailsAbortController = new AbortController();
-                btcOperator.getTx(txid).then(result => {
+                btcOperator.getTx(txid).then(async result => {
                     const { block, time, size, fee, inputs, outputs, confirmations = 0, total_input_value, total_output_value } = result;
-                    const isUnconfirmed = block < 0 || block === null || block === undefined
+                    const isUnconfirmed = block < 0 || block === null || block === undefined;
+                    let transactionAmount = 0;
+                    if (outputs.length > 1) {
+                        transactionAmount = outputs.reduce((acc, { address, value }) => {
+                            if (inputs.find(input => input.address === address)) return acc;
+                            return acc + value;
+                        }, 0);
+                    } else {
+                        transactionAmount = outputs[0].value;
+                    }
+                    let amountOptions = { shouldFormatAmount: true }
+                    let dataset = {}
+                    if (selectedCurrency !== 'btc') {
+                        if (!mappedHistoricPrices.get(toYDM(time)))
+                            await getHistoricPrice(toYDM(time))
+                        if (!showCurrentValue && selectedCurrency !== 'btc' && mappedHistoricPrices.has(toYDM(time))) {
+                            amountOptions.onDate = time;
+                            dataset.onDate = time
+                        }
+                    }
                     renderElem(getRef('tx_details'), html`
-                            <h3>Transaction Details</h3>
-                            <div class="flex align-center gap-1 space-between flex-wrap">
-                                ${time ? html`
-                                    <time>${getFormattedTime(time)}</time>
-                                `: ''}
-                                ${isUnconfirmed ? html` <h4 id="tx_status">
-                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                                    Unconfirmed
-                                </h4> ` : ''}
+                            <div id="tx_details__header" class="flex align-center gap-1 flex-wrap">
+                                <h3>Transaction Details</h3>
+                                <div class="flex align-center gap-1 space-between flex-1">
+                                    ${time ? html`
+                                        <time>${getFormattedTime(time)}</time>
+                                    `: ''}
+                                    ${isUnconfirmed ? html` <h4 id="tx_status">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                                        Unconfirmed
+                                    </h4> ` : ''}
+                                </div>
+                            </div>
+                            <div class="flex flex-direction-column">
+                                <p>Amount</p>
+                                <div id="tx_amount" class="amount-shown" .dataset=${{ btcAmount: transactionAmount, ...dataset }}>${getConvertedAmount(transactionAmount, amountOptions)}</div>
                             </div>
                             ${isUnconfirmed ? html`
                                 <div class="flex flex-direction-column gap-0-5" style="padding: 1rem;border-radius:0.5rem; border: solid thin rgba(var(--text-color),0.3); background-color: rgba(var(--text-color),0.02)">
@@ -1330,7 +1437,7 @@
                                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15 4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zM3 12c0-2.61 1.67-4.83 4-5.65V4.26C3.55 5.15 1 8.27 1 12s2.55 6.85 6 7.74v-2.09c-2.33-.82-4-3.04-4-5.65z"/></svg>
                                         <div>Fee</div>
                                     </div>
-                                    <div class="amount-shown" data-btc-amount="${fee}">${getConvertedAmount(fee, true)}</div>
+                                    <div class="amount-shown" .dataset=${{ btcAmount: fee, ...dataset }}>${getConvertedAmount(fee, amountOptions)}</div>
                                 </div>
                             </div>
                             <details class="margin-bottom-1-5 justify-self-center w-100">
@@ -1344,14 +1451,14 @@
                                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>
                                             <div>Total Inputs</div>
                                         </div>
-                                        <div class="amount-shown" data-btc-amount="${total_input_value}">${getConvertedAmount(total_input_value, true)}</div>
+                                        <div class="amount-shown" .dataset=${{ btcAmount: total_input_value, ...dataset }}>${getConvertedAmount(total_input_value, amountOptions)}</div>
                                     </div>
                                     <div class="tx-detail">
                                         <div class="flex align-center gap-0-3">
                                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
                                             <div>Total Outputs</div>
                                         </div>
-                                        <div class="amount-shown" data-btc-amount="${total_output_value}">${getConvertedAmount(total_output_value, true)}</div>
+                                        <div class="amount-shown" .dataset=${{ btcAmount: total_output_value, ...dataset }}>${getConvertedAmount(total_output_value, amountOptions)}</div>
                                     </div>
                                     <div class="tx-detail">
                                         <div class="flex align-center gap-0-3">
@@ -1372,7 +1479,7 @@
                                         ${inputs.map(input => html`
                                             <li class="in-out-card">
                                                 <a href="${`#/check_details?query=${input.address}`}" class="input-address wrap-around">${input.address}</a>
-                                                <div class="input-value amount-shown" data-btc-amount="${input.value}">${getConvertedAmount(input.value, true)}</div>
+                                                <div class="input-value amount-shown" .dataset=${{ btcAmount: input.value, ...dataset }}>${getConvertedAmount(input.value, amountOptions)}</div>
                                             </li>
                                         `)}
                                     </ul>
@@ -1386,7 +1493,7 @@
                                         ${outputs.map(output => html`
                                             <li class="in-out-card">
                                                 <a href="${`#/check_details?query=${output.address}`}" class="output-address wrap-around">${output.address}</a>
-                                                <div class="output-value amount-shown" data-btc-amount="${output.value}">${getConvertedAmount(output.value, true)}</div>
+                                                <div class="output-value amount-shown" .dataset=${{ btcAmount: output.value, ...dataset }}>${getConvertedAmount(output.value, amountOptions)}</div>
                                             </li>
                                         `)}
                                     </ul>
@@ -1426,14 +1533,14 @@
             usd: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>`,
             inr: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z"/></g></g></svg>`
         }
-        function formatAmount(amount = 0) {
+        function formatAmount(amount = 0, currency = selectedCurrency) {
             // check if amount is a string and convert it to a number
             if (typeof amount === 'string') {
                 amount = parseFloat(amount)
             }
             if (!amount)
                 return '0';
-            return amount.toLocaleString(undefined, { style: 'currency', currency: selectedCurrency, minimumFractionDigits: 0, maximumFractionDigits: selectedCurrency === 'btc' ? 8 : 2 })
+            return amount.toLocaleString(undefined, { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: selectedCurrency === 'btc' ? 8 : 2 })
         }
         let globalExchangeRate = {}
         async function getExchangeRate() {
@@ -1449,13 +1556,20 @@
                 }).catch(err => reject(err))
             })
         }
-        function getConvertedAmount(amount, shouldFormatAmount = false) {
+        function getConvertedAmount(amount, { shouldFormatAmount = false, onDate } = {}) {
             // check if amount is a string and convert it to a number
             if (typeof amount === 'string') {
                 amount = parseFloat(amount)
             }
             let convertedAmount = amount;
-            if (globalExchangeRate[selectedCurrency])
+            if (onDate && selectedCurrency !== 'btc') {
+                const historicPrice = mappedHistoricPrices.get(toYDM(onDate));
+                if (historicPrice) {
+                    convertedAmount = parseFloat((amount * historicPrice[selectedCurrency]).toFixed(8))
+                } else {
+                    convertedAmount = parseFloat((amount * globalExchangeRate[selectedCurrency]).toFixed(8))
+                }
+            } else if (globalExchangeRate[selectedCurrency])
                 convertedAmount = parseFloat((amount * globalExchangeRate[selectedCurrency]).toFixed(8))
             if (shouldFormatAmount)
                 convertedAmount = formatAmount(convertedAmount)
@@ -1467,8 +1581,10 @@
         let previouslySelectedCurrency = localStorage.getItem('btc-wallet-currency') || 'btc';
         getRef('currency_selector').addEventListener('change', e => {
             selectedCurrency = e.target.value;
+            getRef('show_current_value').classList.toggle('hidden', selectedCurrency === 'btc')
             localStorage.setItem('btc-wallet-currency', selectedCurrency);
             document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency])
+            document.querySelectorAll('transaction-card').forEach(el => el.render())
             document.querySelectorAll('.amount-shown').forEach(el => {
                 if (el.tagName.includes('SM-')) {
                     const originalAmount = parseFloat(el.value.trim());
@@ -1494,8 +1610,8 @@
                     el.value = convertedAmount
                     el.isValid // trigger validation
                 } else {
-                    if (el.dataset.btcAmount === undefined) return
-                    el.textContent = getConvertedAmount(el.dataset.btcAmount, true)
+                    if (el.dataset.btcAmount === undefined) return;
+                    el.textContent = getConvertedAmount(el.dataset.btcAmount, { shouldFormatAmount: true, onDate: parseInt(el.dataset.onDate) })
                 }
             })
             previouslySelectedCurrency = selectedCurrency
@@ -1761,11 +1877,11 @@
             senderBalances.forEach(el => el.innerHTML = '<sm-spinner></sm-spinner>');
             Promise.all(addresses.map((addr, index) => btcOperator.getBalance(addr))).then(balances => {
                 balances.forEach((balance, index) => {
-                    senderBalances[index].textContent = getConvertedAmount(balance, true);
+                    senderBalances[index].textContent = getConvertedAmount(balance, { shouldFormatAmount: true });
                     senderBalances[index].dataset.btcAmount = balance;
                     totalBalance += balance;
                 })
-                getRef("total_balance").textContent = `${getConvertedAmount(totalBalance, true)}`;
+                getRef("total_balance").textContent = `${getConvertedAmount(totalBalance, { shouldFormatAmount: true })}`;
                 getRef("total_balance").dataset.btcAmount = totalBalance;
             }).catch(err => {
                 console.error(err);
@@ -1814,7 +1930,7 @@
                             renderElem(getRef('fees_wrapper'), html`
                             <div class="grid gap-0-3">
                                 <div>
-                                    Approximate fee: <b id="recommended_fee" class="amount-shown" data-btc-amount=${fees}>${getConvertedAmount(fees, true)}</b>
+                                    Approximate fee: <b id="recommended_fee" class="amount-shown" data-btc-amount=${fees}>${getConvertedAmount(fees, { shouldFormatAmount: true })}</b>
                                 </div>
                                 <p style="opacity: 0.8;">*Exact fee will be calculated after you fill all the required fields</p>
                             </div>
@@ -1862,7 +1978,7 @@
                 renderElem(getRef('fees_wrapper'), html`<sm-spinner></sm-spinner>`)
                 const [senders, privKeys, receivers, amounts] = getTransactionInputs();
                 btcOperator.createTx(senders, receivers, amounts).then(({ fee }) => {
-                    renderElem(getRef('fees_wrapper'), html` <b id="recommended_fee" class="amount-shown" data-btc-amount=${fee}>${getConvertedAmount(fee, true)}</b> `)
+                    renderElem(getRef('fees_wrapper'), html` <b id="recommended_fee" class="amount-shown" data-btc-amount=${fee}>${getConvertedAmount(fee, { shouldFormatAmount: true })}</b> `)
                     getRef('send_transaction').disabled = false;
                     getRef('fees_section').classList.remove('hidden')
                     getRef('error_section').classList.add('hidden')
@@ -1921,7 +2037,7 @@
                             <span class="label">Transaction ID</span>
                             <sm-copy value=${txid}></sm-copy>
                         </div>
-                        <a class="button button--primary" href=${`https://ranchimall.github.io/btcwallet/#/check_details?query=${txid}`}>Check transaction status</a>
+                        <a class="button button--primary" href=${`#/check_details?query=${txid}`}>Check transaction status</a>
                     `)
                     break;
             }
@@ -1954,14 +2070,14 @@
                             <h5>Receivers</h5>
                             <ul class="flex flex-direction-column gap-0-5">
                                 ${receivers.map((receiver, index) => html`<li class="wrap-around flex flex-direction-column gap-0-5" style="padding:0.5rem;border:solid thin rgba(var(--text-color),0.3);border-radius: 0.3rem;">
-                                    ${receiver} <span class="amount-shown">${getConvertedAmount(amounts[index], true)}</span>
+                                    ${receiver} <span class="amount-shown">${getConvertedAmount(amounts[index], { shouldFormatAmount: true })}</span>
                                 </li>`)}
                             </ul>
                         </div>
                         <div class="grid gap-0-5">
                             <h5>Fee</h5>
                             <div class="flex wrap-around gap-0-5">
-                                <span class="amount-shown">${getConvertedAmount(fee, true)}</span>
+                                <span class="amount-shown">${getConvertedAmount(fee, { shouldFormatAmount: true })}</span>
                             </div>
                         </div>
                     </div>`,
@@ -2099,16 +2215,16 @@
                                     </div>
                                     <div>
                                         <div class="label">Amount</div>
-                                        <b>${getConvertedAmount(value, true)}</b>
+                                        <b>${getConvertedAmount(value, { shouldFormatAmount: true })}</b>
                                     </div>
                                 </li>`)}
                             </ul>
                         </div>
                         <div class="grid gap-0-5">
                             <p>
-                                Previous fee: <b>${getConvertedAmount(previousFee, true)}</b> ${recommendedFee ? html`| Recommended fee: <b>${getConvertedAmount(recommendedFee, true)}</b>` : ''}
+                                Previous fee: <b>${getConvertedAmount(previousFee, { shouldFormatAmount: true })}</b> ${recommendedFee ? html`| Recommended fee: <b>${getConvertedAmount(recommendedFee, { shouldFormatAmount: true })}</b>` : ''}
                             </p>
-                            <sm-input id="new_fee" placeholder="New fee" type="number" min=${getConvertedAmount(previousFee)} step="0.00000001" error-text=${`New fee should be greater than ${getConvertedAmount(previousFee, true)}`} animate required>
+                            <sm-input id="new_fee" placeholder="New fee" type="number" min=${getConvertedAmount(previousFee)} step="0.00000001" error-text=${`New fee should be greater than ${getConvertedAmount(previousFee, { shouldFormatAmount: true })}`} animate required>
                                 <div class="currency-symbol flex" slot="icon"> </div>
                             </sm-input>
                         </div>
