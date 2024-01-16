@@ -634,6 +634,7 @@
             });
             btcOperator.checkIfTor()
                 .then(isTor => {
+                    console.log(isTor)
                     if (isTor)
                         historicPriceApis.list.push('http://omwkzk6bd6zuragdqsrhdyzgxzre7yx4vzrou4vzftintzc2dmagp6qd.onion:8257')
                 })
