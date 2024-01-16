@@ -634,7 +634,6 @@
             });
             btcOperator.checkIfTor()
                 .then(isTor => {
-                    console.log(isTor)
                     if (isTor)
                         historicPriceApis.list.push('http://omwkzk6bd6zuragdqsrhdyzgxzre7yx4vzrou4vzftintzc2dmagp6qd.onion:8257')
                 })
@@ -1293,7 +1292,11 @@
                     historicPriceApis.active++
                     return getHistoricPrice(dates)
                 } else {
-                    throw err
+                    selectedCurrency = 'btc'
+                    showCurrentValue = false
+                    localStorage.setItem('btc-wallet-currency', selectedCurrency)
+                    localStorage.setItem('btc-wallet-show-current-value', showCurrentValue)
+                    notify('There was an error fetching historic price data. Please try again later.', 'error')
                 }
             }
         }
