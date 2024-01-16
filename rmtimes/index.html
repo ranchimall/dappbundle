@@ -1030,13 +1030,15 @@
                     render.writerPage(params)
                     break;
                 case 'dashboard':
-                    targetPage = 'dashboard'
+                    targetPage = 'dashboard';
+                    getRef('loading').classList.remove('hide')
                     await Promise.all([
                         floCloudAPI.requestObjectData('adminData'),
                         floCloudAPI.requestGeneralData('publishing_requests', {
                             callback: (d, e) => renderDashboard(d)
                         })
                     ])
+                    getRef('loading').classList.add('hide')
                     calculateVotes()
                     break;
             }
