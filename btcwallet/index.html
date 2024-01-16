@@ -1274,9 +1274,19 @@
             try {
                 if (!dates.length) return [];
                 if (!Array.isArray(dates)) dates = [dates];
+                let timeout
                 const datesToFetch = dates.filter(date => !mappedHistoricPrices.has(date));
+                const abortController = new AbortController();
+                const { signal } = abortController;
                 if (datesToFetch.length) {
-                    const historicPrices = await fetch(`${historicPriceApis.list[historicPriceApis.active]}/price-history?dates=${dates.join()}`).then(res => res.json())
+                    timeout = setTimeout(() => {
+                        abortController.abort()
+                        throw new Error(`Historic price data is taking longer than usual to load. Historic prices won't be shown`)
+                    }, 8000)
+                    const historicPrices = await fetch(`${historicPriceApis.list[historicPriceApis.active]}/price-history?dates=${dates.join()}`, {
+                        signal
+                    }).then(res => res.json())
+                    clearTimeout(timeout)
                     historicPrices.forEach(price => {
                         // map historic price to txs
                         // historic price is per day, so we need to find the price for the day of the tx
@@ -1292,11 +1302,11 @@
                     historicPriceApis.active++
                     return getHistoricPrice(dates)
                 } else {
-                    selectedCurrency = 'btc'
-                    showCurrentValue = false
-                    localStorage.setItem('btc-wallet-currency', selectedCurrency)
-                    localStorage.setItem('btc-wallet-show-current-value', showCurrentValue)
-                    notify('There was an error fetching historic price data. Please try again later.', 'error')
+                    showCurrentValue = true;
+                    localStorage.setItem('btc-wallet-show-current-value', showCurrentValue);
+                    document.getElementById('show_current_value').checked = showCurrentValue;
+                    notify('Could not fetch historic price data. Showing current value instead', 'error')
+                    return []
                 }
             }
         }
@@ -1323,7 +1333,7 @@
                     // render transactions
                     if (txs.length) {
                         const dates = txs.map(tx => toYDM(tx.time))
-                        await getHistoricPrice(dates)
+                        await getHistoricPrice(dates);
                         txs.forEach(tx => {
                             const historicPrice = mappedHistoricPrices.get(toYDM(tx.time))
                             if (historicPrice) {
