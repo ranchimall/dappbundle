@@ -237,11 +237,7 @@ h6 {
 .breakable {
   overflow-wrap: break-word;
   word-wrap: break-word;
-  -ms-word-break: break-all;
   word-break: break-word;
-  -ms-hyphens: auto;
-  -moz-hyphens: auto;
-  -webkit-hyphens: auto;
   hyphens: auto;
 }
 
@@ -1001,11 +997,9 @@ theme-toggle {
   }
 
   &:active {
-    -webkit-transform: none;
     transform: none;
 
     .icon {
-      -webkit-transform: scale(0.7);
       transform: scale(0.7);
     }
   }
@@ -1018,10 +1012,7 @@ theme-toggle {
   & .icon {
     grid-area: 1/1;
     fill: var(--like-color);
-    -webkit-transition: -webkit-transform 0.2s;
-    transition: -webkit-transform 0.2s;
     transition: transform 0.2s;
-    transition: transform 0.2s, -webkit-transform 0.2s;
   }
 }
 
@@ -1107,6 +1098,7 @@ theme-toggle {
   p {
     font-size: 1.05rem;
     line-height: 1.7;
+    white-space: pre-line;
 
     * {
       line-height: inherit;
