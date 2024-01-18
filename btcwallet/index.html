@@ -639,20 +639,21 @@
                 })
             getExchangeRate()
                 .then(() => {
-                    selectedCurrency = localStorage.getItem('btc-wallet-currency') || 'btc';
-                    showCurrentValue = localStorage.getItem('btc-wallet-show-current-value') === 'true' || false;
                     setTimeout(() => {
                         document.getElementById('currency_selector').value = selectedCurrency;
-                        document.getElementById('show_current_value').checked = showCurrentValue;
-                        getRef('show_current_value').classList.toggle('hidden', selectedCurrency === 'btc')
+                        if (getRef('show_current_value')) {
+                            document.getElementById('show_current_value').checked = showCurrentValue;
+                            getRef('show_current_value').classList.toggle('hidden', selectedCurrency === 'btc')
+                        }
                     }, 100)
+                    showCurrentValue = localStorage.getItem('btc-wallet-show-current-value') === 'true' || false;
                 })
                 .catch(e => {
-                    selectedCurrency = 'btc';
+                    console.error(e);
+                    getRef('show_current_value').remove();
                     showCurrentValue = false;
-                    // console.error(e)
-                    getRef('currency_selector').classList.add('hidden')
                 }).finally(() => {
+                    selectedCurrency = localStorage.getItem('btc-wallet-currency') || 'btc';
                     routeTo(window.location.hash)
                     setTimeout(() => {
                         getRef('loading_page').animate([
@@ -737,6 +738,16 @@
                         if (params.query !== query)
                             getRef('search_query_input').value = params.query;
                         render.queryResult(params.query)
+                        if (!params.currency && selectedCurrency !== 'btc' && !location.hash.includes(selectedCurrency)) {
+                            history.replaceState(null, null, `${location.hash}&currency=${selectedCurrency}`)
+                        }
+                        if (params.currency && params.currency !== selectedCurrency) {
+                            selectedCurrency = params.currency
+                            document.getElementById('currency_selector').value = selectedCurrency;
+                            document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency])
+                            if (getRef('show_current_value'))
+                                getRef('show_current_value').classList.toggle('hidden', selectedCurrency === 'btc')
+                        }
                     }
                     break;
                 case 'convert':
@@ -1304,7 +1315,8 @@
                 } else {
                     showCurrentValue = true;
                     localStorage.setItem('btc-wallet-show-current-value', showCurrentValue);
-                    document.getElementById('show_current_value').checked = showCurrentValue;
+                    if (getRef('show_current_value'))
+                        getRef('show_current_value').checked = showCurrentValue;
                     notify('Could not fetch historic price data. Showing current value instead', 'error')
                     return []
                 }
@@ -1379,8 +1391,9 @@
                     const isUnconfirmed = block < 0 || block === null || block === undefined;
                     let transactionAmount = 0;
                     if (outputs.length > 1) {
+                        let isSelfTransaction = outputs.length === 2 && outputs[0].address === outputs[1].address;
                         transactionAmount = outputs.reduce((acc, { address, value }) => {
-                            if (inputs.find(input => input.address === address)) return acc;
+                            if (!isSelfTransaction && inputs.find(input => input.address === address)) return acc;
                             return acc + value;
                         }, 0);
                     } else {
@@ -1595,7 +1608,15 @@
         let previouslySelectedCurrency = localStorage.getItem('btc-wallet-currency') || 'btc';
         getRef('currency_selector').addEventListener('change', e => {
             selectedCurrency = e.target.value;
-            getRef('show_current_value').classList.toggle('hidden', selectedCurrency === 'btc')
+            if (pagesData.lastPage === 'check_details') {
+                if (location.hash.includes('currency')) {
+                    history.replaceState(null, null, `${location.hash.split('&')[0]}&currency=${selectedCurrency}`)
+                } else {
+                    history.replaceState(null, null, `${location.hash}&currency=${selectedCurrency}`)
+                }
+            }
+            if (getRef('show_current_value'))
+                getRef('show_current_value').classList.toggle('hidden', selectedCurrency === 'btc')
             localStorage.setItem('btc-wallet-currency', selectedCurrency);
             document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency])
             document.querySelectorAll('transaction-card').forEach(el => el.render())
@@ -2290,6 +2311,7 @@
                 buttonLoader(document.getElementById('increase_fee'), false)
             }
         }
+        // current exchange rate is not available then switch to historic price        
     </script>
 </body>
 
