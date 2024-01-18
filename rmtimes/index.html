@@ -921,8 +921,20 @@
         window.addEventListener('hashchange', e => showPage(window.location.hash))
         window.addEventListener("load", () => {
             document.body.classList.remove('hide')
-            document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = floCrypto.validateAddr)
-            document.querySelectorAll('sm-input[data-private-key]').forEach(input => input.customValidation = floCrypto.getPubKeyHex)
+            document.querySelectorAll('sm-input[data-flo-id]').forEach(input => input.customValidation = (value) => {
+                if (!value) return { isValid: false, errorText: 'Please enter a FLO address' }
+                return {
+                    isValid: floCrypto.validateFloID(value),
+                    errorText: `Invalid FLO address.<br> It usually starts with "F"`
+                }
+            })
+            document.querySelectorAll('sm-input[data-private-key]').forEach(input => input.customValidation = (value) => {
+                if (!value) return { isValid: false, errorText: 'Please enter a private key' }
+                return {
+                    isValid: floCrypto.getPubKeyHex(value),
+                    errorText: `Invalid private key.<br> It's a long string of random characters usually starting with 'R'.`
+                }
+            })
             document.addEventListener('keyup', (e) => {
                 if (e.key === 'Escape') {
                     closePopup()
