@@ -923,11 +923,16 @@
             switch (status) {
                 case 'pending':
                     renderElem(getRef('transaction_result_popup__content'), html`
-                        <svg class="icon user-action-result__icon pending" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
-                        <div class="grid gap-0-5 justify-center text-center">
-                            <h4>Transaction sent</h4>
-                            <p>Waiting for confirmation from blockchain</p>
-                        </div>
+                        <ul>
+                            <li class="transaction__phase">
+                                <svg class="icon confirmed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /> </svg>
+                                <h4>Transaction sent</h4>
+                            </li>
+                            <li class="transaction__phase">
+                                <sm-spinner></sm-spinner>
+                                <p>Waiting for transaction to be confirmed</p>
+                            </li>
+                        </ul>
                         <div class="grid">
                             <span class="label">Transaction ID</span>
                             <sm-copy value=${txHash}></sm-copy>

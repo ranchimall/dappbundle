@@ -969,6 +969,35 @@ aside h4 {
   margin-bottom: 2rem;
 }
 
+.transaction__phase {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.transaction__phase:not(:last-of-type) {
+  position: relative;
+  margin-bottom: 2rem;
+}
+.transaction__phase:not(:last-of-type)::after {
+  content: "";
+  position: absolute;
+  width: 0.1rem;
+  height: 100%;
+  left: 0.3rem;
+  border-right: dashed 0.1rem rgba(var(--text-color), 0.5);
+  top: calc(100% + 0.4rem);
+}
+.transaction__phase .icon {
+  height: 1rem;
+  width: 1rem;
+}
+.transaction__phase sm-spinner {
+  --size: 1rem;
+}
+.transaction__phase .confirmed {
+  fill: var(--green);
+}
+
 .user-action-result__icon {
   justify-self: center;
   height: 4rem;
