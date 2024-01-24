@@ -406,6 +406,10 @@ ol {
   align-items: flex-start;
 }
 
+.align-self-start {
+  align-self: flex-start;
+}
+
 .align-center {
   align-items: center;
 }
@@ -1105,6 +1109,10 @@ transaction-card {
   font-size: max(2rem, 4vw);
   font-weight: 700;
   text-wrap: balance;
+
+  &:has(+ *) {
+    margin-bottom: 0.5rem;
+  }
 }
 
 #tx_technicals {

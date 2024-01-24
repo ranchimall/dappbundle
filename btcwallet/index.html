@@ -419,9 +419,13 @@
     <script type="text/javascript" src="scripts/btcOperator.js"></script>
     <script src="scripts/keccak.js"></script>
     <script src="scripts/floEthereum.js"></script>
+    <script>
+        !function (i, t) { "object" == typeof exports && "undefined" != typeof module ? t(exports) : "function" == typeof define && define.amd ? define(["exports"], t) : t((i || self).preactSignalsCore = {}) }(this, function (i) { function t() { throw new Error("Cycle detected") } var n = Symbol.for("preact-signals"); function o() { if (!(s > 1)) { var i, t = !1; while (void 0 !== h) { var n = h; h = void 0; e++; while (void 0 !== n) { var o = n.o; n.o = void 0; n.f &= -3; if (!(8 & n.f) && c(n)) try { n.c() } catch (n) { if (!t) { i = n; t = !0 } } n = o } } e = 0; s--; if (t) throw i } else s-- } var r = void 0, f = 0, h = void 0, s = 0, e = 0, v = 0; function u(i) { if (void 0 !== r) { var t = i.n; if (void 0 === t || t.t !== r) { t = { i: 0, S: i, p: r.s, n: void 0, t: r, e: void 0, x: void 0, r: t }; if (void 0 !== r.s) r.s.n = t; r.s = t; i.n = t; if (32 & r.f) i.S(t); return t } else if (-1 === t.i) { t.i = 0; if (void 0 !== t.n) { t.n.p = t.p; if (void 0 !== t.p) t.p.n = t.n; t.p = r.s; t.n = void 0; r.s.n = t; r.s = t } return t } } } function d(i) { this.v = i; this.i = 0; this.n = void 0; this.t = void 0 } d.prototype.brand = n; d.prototype.h = function () { return !0 }; d.prototype.S = function (i) { if (this.t !== i && void 0 === i.e) { i.x = this.t; if (void 0 !== this.t) this.t.e = i; this.t = i } }; d.prototype.U = function (i) { if (void 0 !== this.t) { var t = i.e, n = i.x; if (void 0 !== t) { t.x = n; i.e = void 0 } if (void 0 !== n) { n.e = t; i.x = void 0 } if (i === this.t) this.t = n } }; d.prototype.subscribe = function (i) { var t = this; return _(function () { var n = t.value, o = 32 & this.f; this.f &= -33; try { i(n) } finally { this.f |= o } }) }; d.prototype.valueOf = function () { return this.value }; d.prototype.toString = function () { return this.value + "" }; d.prototype.toJSON = function () { return this.value }; d.prototype.peek = function () { return this.v }; Object.defineProperty(d.prototype, "value", { get: function () { var i = u(this); if (void 0 !== i) i.i = this.i; return this.v }, set: function (i) { if (r instanceof y) !function () { throw new Error("Computed cannot have side-effects") }(); if (i !== this.v) { if (e > 100) t(); this.v = i; this.i++; v++; s++; try { for (var n = this.t; void 0 !== n; n = n.x)n.t.N() } finally { o() } } } }); function c(i) { for (var t = i.s; void 0 !== t; t = t.n)if (t.S.i !== t.i || !t.S.h() || t.S.i !== t.i) return !0; return !1 } function a(i) { for (var t = i.s; void 0 !== t; t = t.n) { var n = t.S.n; if (void 0 !== n) t.r = n; t.S.n = t; t.i = -1; if (void 0 === t.n) { i.s = t; break } } } function l(i) { var t = i.s, n = void 0; while (void 0 !== t) { var o = t.p; if (-1 === t.i) { t.S.U(t); if (void 0 !== o) o.n = t.n; if (void 0 !== t.n) t.n.p = o } else n = t; t.S.n = t.r; if (void 0 !== t.r) t.r = void 0; t = o } i.s = n } function y(i) { d.call(this, void 0); this.x = i; this.s = void 0; this.g = v - 1; this.f = 4 } (y.prototype = new d).h = function () { this.f &= -3; if (1 & this.f) return !1; if (32 == (36 & this.f)) return !0; this.f &= -5; if (this.g === v) return !0; this.g = v; this.f |= 1; if (this.i > 0 && !c(this)) { this.f &= -2; return !0 } var i = r; try { a(this); r = this; var t = this.x(); if (16 & this.f || this.v !== t || 0 === this.i) { this.v = t; this.f &= -17; this.i++ } } catch (i) { this.v = i; this.f |= 16; this.i++ } r = i; l(this); this.f &= -2; return !0 }; y.prototype.S = function (i) { if (void 0 === this.t) { this.f |= 36; for (var t = this.s; void 0 !== t; t = t.n)t.S.S(t) } d.prototype.S.call(this, i) }; y.prototype.U = function (i) { if (void 0 !== this.t) { d.prototype.U.call(this, i); if (void 0 === this.t) { this.f &= -33; for (var t = this.s; void 0 !== t; t = t.n)t.S.U(t) } } }; y.prototype.N = function () { if (!(2 & this.f)) { this.f |= 6; for (var i = this.t; void 0 !== i; i = i.x)i.t.N() } }; y.prototype.peek = function () { if (!this.h()) t(); if (16 & this.f) throw this.v; return this.v }; Object.defineProperty(y.prototype, "value", { get: function () { if (1 & this.f) t(); var i = u(this); this.h(); if (void 0 !== i) i.i = this.i; if (16 & this.f) throw this.v; return this.v } }); function w(i) { var t = i.u; i.u = void 0; if ("function" == typeof t) { s++; var n = r; r = void 0; try { t() } catch (t) { i.f &= -2; i.f |= 8; p(i); throw t } finally { r = n; o() } } } function p(i) { for (var t = i.s; void 0 !== t; t = t.n)t.S.U(t); i.x = void 0; i.s = void 0; w(i) } function b(i) { if (r !== this) throw new Error("Out-of-order effect"); l(this); r = i; this.f &= -2; if (8 & this.f) p(this); o() } function g(i) { this.x = i; this.u = void 0; this.s = void 0; this.o = void 0; this.f = 32 } g.prototype.c = function () { var i = this.S(); try { if (8 & this.f) return; if (void 0 === this.x) return; var t = this.x(); if ("function" == typeof t) this.u = t } finally { i() } }; g.prototype.S = function () { if (1 & this.f) t(); this.f |= 1; this.f &= -9; w(this); a(this); s++; var i = r; r = this; return b.bind(this, i) }; g.prototype.N = function () { if (!(2 & this.f)) { this.f |= 2; this.o = h; h = this } }; g.prototype.d = function () { this.f |= 8; if (!(1 & this.f)) p(this) }; function _(i) { var t = new g(i); try { t.c() } catch (i) { t.d(); throw i } return t.d.bind(t) } i.Signal = d; i.batch = function (i) { if (s > 0) return i(); s++; try { return i() } finally { o() } }; i.computed = function (i) { return new y(i) }; i.effect = _; i.signal = function (i) { return new d(i) }; i.untracked = function (i) { if (f > 0) return i(); var t = r; r = void 0; f++; try { return i() } finally { f--; r = t } } });//# sourceMappingURL=signals-core.min.js.map
+    </script>
     <script id="ui_utils">
         const uiGlobals = {}
         const { html, svg, render: renderElem } = uhtml;
+        const { signal, computed, effect } = preactSignalsCore;
         uiGlobals.connectionErrorNotification = []
         //Checks for internet connection status
         if (!navigator.onLine)
@@ -599,11 +603,12 @@
             return M.join(' ');
         }
         window.addEventListener('hashchange', e => routeTo(window.location.hash))
-        let selectedCurrency = 'btc';
+        let selectedCurrency = signal('btc');
         let historicPriceApis = {
             active: 0,
             list: ['https://utility-api.ranchimall.net']
         };
+        let isHistoricApiAvailable = false;
         window.addEventListener("load", () => {
             const [browserName, browserVersion] = detectBrowser().split(' ');
             const supportedVersions = {
@@ -639,21 +644,23 @@
                 })
             getExchangeRate()
                 .then(() => {
+                    isHistoricApiAvailable = true;
                     setTimeout(() => {
-                        document.getElementById('currency_selector').value = selectedCurrency;
+                        document.getElementById('currency_selector').value = selectedCurrency.value;
                         if (getRef('show_current_value')) {
-                            document.getElementById('show_current_value').checked = showCurrentValue;
-                            getRef('show_current_value').classList.toggle('hidden', selectedCurrency === 'btc')
+                            document.getElementById('show_current_value').checked = showCurrentValue.value;
+                            getRef('show_current_value').classList.toggle('hidden', selectedCurrency.value === 'btc')
                         }
                     }, 100)
-                    showCurrentValue = localStorage.getItem('btc-wallet-show-current-value') === 'true' || false;
+                    showCurrentValue.value = localStorage.getItem('btc-wallet-show-current-value') === 'true' || false;
                 })
                 .catch(e => {
                     console.error(e);
                     getRef('show_current_value').remove();
-                    showCurrentValue = false;
+                    showCurrentValue.value = false;
+                    isHistoricApiAvailable = false;
                 }).finally(() => {
-                    selectedCurrency = localStorage.getItem('btc-wallet-currency') || 'btc';
+                    selectedCurrency.value = localStorage.getItem('btc-wallet-currency') || 'btc';
                     routeTo(window.location.hash)
                     setTimeout(() => {
                         getRef('loading_page').animate([
@@ -669,7 +676,7 @@
                     }, 500);
                     addSenderInput()
                     addReceiverInput()
-                    document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency])
+                    document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency.value])
                 })
         });
         function createRipple(event, target) {
@@ -738,15 +745,15 @@
                         if (params.query !== query)
                             getRef('search_query_input').value = params.query;
                         render.queryResult(params.query)
-                        if (!params.currency && selectedCurrency !== 'btc' && !location.hash.includes(selectedCurrency)) {
-                            history.replaceState(null, null, `${location.hash}&currency=${selectedCurrency}`)
+                        if (!params.currency && selectedCurrency.value !== 'btc' && !location.hash.includes(selectedCurrency.value)) {
+                            history.replaceState(null, null, `${location.hash}&currency=${selectedCurrency.value}`)
                         }
-                        if (params.currency && params.currency !== selectedCurrency) {
-                            selectedCurrency = params.currency
-                            document.getElementById('currency_selector').value = selectedCurrency;
-                            document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency])
+                        if (params.currency && params.currency !== selectedCurrency.value) {
+                            selectedCurrency.value = params.currency
+                            document.getElementById('currency_selector').value = selectedCurrency.value;
+                            document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency.value])
                             if (getRef('show_current_value'))
-                                getRef('show_current_value').classList.toggle('hidden', selectedCurrency === 'btc')
+                                getRef('show_current_value').classList.toggle('hidden', selectedCurrency.value === 'btc')
                         }
                     }
                     break;
@@ -1187,8 +1194,8 @@
                             usd: roundUp(0.000006 * globalExchangeRate.usd, 2),
                         }
                         return {
-                            isValid: parseFloat(value) >= minValidAmount[selectedCurrency],
-                            errorText: `Amount must be greater than ${getConvertedAmount(minValidAmount.btc, { shouldFormatAmount: true })} ${selectedCurrency.toUpperCase()}`
+                            isValid: parseFloat(value) >= minValidAmount[selectedCurrency.value],
+                            errorText: `Amount must be greater than ${getConvertedAmount(minValidAmount.btc, { shouldFormatAmount: true })} ${selectedCurrency.value.toUpperCase()}`
                         }
                     }
                 }
@@ -1198,11 +1205,11 @@
             const date = new Date(timestamp)
             return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
         }
-        let showCurrentValue = false
+        let showCurrentValue = signal(false)
         function handleValuationTypeChange(e) {
-            showCurrentValue = e.target.checked;
+            showCurrentValue.value = e.target.checked;
             document.querySelectorAll('transaction-card').forEach(transactionCard => transactionCard.render())
-            localStorage.setItem('btc-wallet-show-current-value', showCurrentValue)
+            localStorage.setItem('btc-wallet-show-current-value', showCurrentValue.value)
         }
         class TransactionCard extends HTMLElement {
             render = (transactionDetails) => {
@@ -1232,13 +1239,13 @@
                 const queriedAddress = pagesData.params?.query || getRef('search_query_input').value.trim()
                 const isSender = type === 'out' || type === 'self'
                 const className = `transaction grid ${type} ${isUnconfirmed ? 'unconfirmed-tx' : ''}`;
-                const valuationDelta = historicPrice && historicPrice[selectedCurrency] ? getConvertedAmount(amount) - getConvertedAmount(amount, { onDate: time }) : 0;
+                const valuationDelta = historicPrice && historicPrice[selectedCurrency.value] ? getConvertedAmount(amount) - getConvertedAmount(amount, { onDate: time }) : 0;
                 const amountOptions = { shouldFormatAmount: true }
-                if (selectedCurrency !== 'btc' && !showCurrentValue && historicPrice && historicPrice[selectedCurrency]) {
+                if (selectedCurrency.value !== 'btc' && !showCurrentValue.value && historicPrice && historicPrice[selectedCurrency.value]) {
                     amountOptions.onDate = time;
                 }
                 renderElem(this, html`
-                    <li class="${className}" .dataset=${{ txid, transactingAddresses: transactingAddresses.slice(2), currency: selectedCurrency }}>
+                    <li class="${className}" .dataset=${{ txid, transactingAddresses: transactingAddresses.slice(2), currency: selectedCurrency.value }}>
                         <div class="transaction__icon">${icon}</div>
                         <div class="grid gap-0-5">
                             <div class="flex gap-1 space-between">
@@ -1313,10 +1320,10 @@
                     historicPriceApis.active++
                     return getHistoricPrice(dates)
                 } else {
-                    showCurrentValue = true;
-                    localStorage.setItem('btc-wallet-show-current-value', showCurrentValue);
+                    showCurrentValue.value = true;
+                    localStorage.setItem('btc-wallet-show-current-value', showCurrentValue.value);
                     if (getRef('show_current_value'))
-                        getRef('show_current_value').checked = showCurrentValue;
+                        getRef('show_current_value').checked = showCurrentValue.value;
                     notify('Could not fetch historic price data. Showing current value instead', 'error')
                     return []
                 }
@@ -1401,15 +1408,17 @@
                     }
                     let amountOptions = { shouldFormatAmount: true }
                     let dataset = {}
-                    if (selectedCurrency !== 'btc') {
-                        if (!mappedHistoricPrices.get(toYDM(time)))
-                            await getHistoricPrice(toYDM(time))
-                        if (!showCurrentValue && selectedCurrency !== 'btc' && mappedHistoricPrices.has(toYDM(time))) {
+                    if (selectedCurrency.value !== 'btc' && !mappedHistoricPrices.get(toYDM(time)))
+                        await getHistoricPrice(toYDM(time))
+                    effect(() => {
+                        if (selectedCurrency.value !== 'btc' && !showCurrentValue.value && mappedHistoricPrices.has(toYDM(time))) {
                             amountOptions.onDate = time;
                             dataset.onDate = time
+                        } else {
+                            dataset.onDate = null
+                            amountOptions.onDate = null
                         }
-                    }
-                    renderElem(getRef('tx_details'), html`
+                        renderElem(getRef('tx_details'), html`
                             <div id="tx_details__header" class="flex align-center gap-1 flex-wrap">
                                 <h3>Transaction Details</h3>
                                 <div class="flex align-center gap-1 space-between flex-1">
@@ -1424,7 +1433,15 @@
                             </div>
                             <div class="flex flex-direction-column">
                                 <p>Amount</p>
-                                <div id="tx_amount" class="amount-shown" .dataset=${{ btcAmount: transactionAmount, ...dataset }}>${getConvertedAmount(transactionAmount, amountOptions)}</div>
+                                <div id="tx_amount" .dataset=${{ btcAmount: transactionAmount, ...dataset }}>${getConvertedAmount(transactionAmount, amountOptions)}</div>
+                                ${selectedCurrency.value !== 'btc' && isHistoricApiAvailable ? html`
+                                    <sm-switch ?checked=${showCurrentValue.value} class="align-self-start"
+                                        onchange=${handleValuationTypeChange}>
+                                        <p slot="left" class="margin-right-0-5">
+                                            Show current value
+                                        </p>
+                                    </sm-switch>
+                                ` : ''}
                             </div>
                             ${isUnconfirmed ? html`
                                 <div class="flex flex-direction-column gap-0-5" style="padding: 1rem;border-radius:0.5rem; border: solid thin rgba(var(--text-color),0.3); background-color: rgba(var(--text-color),0.02)">
@@ -1464,7 +1481,7 @@
                                         <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15 4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zM3 12c0-2.61 1.67-4.83 4-5.65V4.26C3.55 5.15 1 8.27 1 12s2.55 6.85 6 7.74v-2.09c-2.33-.82-4-3.04-4-5.65z"/></svg>
                                         <div>Fee</div>
                                     </div>
-                                    <div class="amount-shown" .dataset=${{ btcAmount: fee, ...dataset }}>${getConvertedAmount(fee, amountOptions)}</div>
+                                    <div .dataset=${{ btcAmount: fee, ...dataset }}>${getConvertedAmount(fee, amountOptions)}</div>
                                 </div>
                             </div>
                             <details class="margin-bottom-1-5 justify-self-center w-100">
@@ -1478,14 +1495,14 @@
                                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>
                                             <div>Total Inputs</div>
                                         </div>
-                                        <div class="amount-shown" .dataset=${{ btcAmount: total_input_value, ...dataset }}>${getConvertedAmount(total_input_value, amountOptions)}</div>
+                                        <div .dataset=${{ btcAmount: total_input_value, ...dataset }}>${getConvertedAmount(total_input_value, amountOptions)}</div>
                                     </div>
                                     <div class="tx-detail">
                                         <div class="flex align-center gap-0-3">
                                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
                                             <div>Total Outputs</div>
                                         </div>
-                                        <div class="amount-shown" .dataset=${{ btcAmount: total_output_value, ...dataset }}>${getConvertedAmount(total_output_value, amountOptions)}</div>
+                                        <div .dataset=${{ btcAmount: total_output_value, ...dataset }}>${getConvertedAmount(total_output_value, amountOptions)}</div>
                                     </div>
                                     <div class="tx-detail">
                                         <div class="flex align-center gap-0-3">
@@ -1506,7 +1523,7 @@
                                         ${inputs.map(input => html`
                                             <li class="in-out-card">
                                                 <a href="${`#/check_details?query=${input.address}`}" class="input-address wrap-around">${input.address}</a>
-                                                <div class="input-value amount-shown" .dataset=${{ btcAmount: input.value, ...dataset }}>${getConvertedAmount(input.value, amountOptions)}</div>
+                                                <div class="input-value" .dataset=${{ btcAmount: input.value, ...dataset }}>${getConvertedAmount(input.value, amountOptions)}</div>
                                             </li>
                                         `)}
                                     </ul>
@@ -1520,15 +1537,17 @@
                                         ${outputs.map(output => html`
                                             <li class="in-out-card">
                                                 <a href="${`#/check_details?query=${output.address}`}" class="output-address wrap-around">${output.address}</a>
-                                                <div class="output-value amount-shown" .dataset=${{ btcAmount: output.value, ...dataset }}>${getConvertedAmount(output.value, amountOptions)}</div>
+                                                <div class="output-value" .dataset=${{ btcAmount: output.value, ...dataset }}>${getConvertedAmount(output.value, amountOptions)}</div>
                                             </li>
                                         `)}
                                     </ul>
                                 </div>
                             </div>
-                            `)
+                        `)
+                    })
                 }).catch(err => {
-                    notify('Invalid transaction ID', 'error')
+                    if (err.name === 'AbortError') return;
+                    notify(err, 'error')
                     renderElem(getRef('tx_details'), html``)
                 })
             },
@@ -1560,14 +1579,14 @@
             usd: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>`,
             inr: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z"/></g></g></svg>`
         }
-        function formatAmount(amount = 0, currency = selectedCurrency) {
+        function formatAmount(amount = 0, currency = selectedCurrency.value) {
             // check if amount is a string and convert it to a number
             if (typeof amount === 'string') {
                 amount = parseFloat(amount)
             }
             if (!amount)
                 return '0';
-            return amount.toLocaleString(undefined, { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: selectedCurrency === 'btc' ? 8 : 2 })
+            return amount.toLocaleString(undefined, { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: selectedCurrency.value === 'btc' ? 8 : 2 })
         }
         let globalExchangeRate = {}
         async function getExchangeRate() {
@@ -1589,15 +1608,15 @@
                 amount = parseFloat(amount)
             }
             let convertedAmount = amount;
-            if (onDate && selectedCurrency !== 'btc') {
+            if (onDate && selectedCurrency.value !== 'btc') {
                 const historicPrice = mappedHistoricPrices.get(toYDM(onDate));
                 if (historicPrice) {
-                    convertedAmount = parseFloat((amount * historicPrice[selectedCurrency]).toFixed(8))
+                    convertedAmount = parseFloat((amount * historicPrice[selectedCurrency.value]).toFixed(8))
                 } else {
-                    convertedAmount = parseFloat((amount * globalExchangeRate[selectedCurrency]).toFixed(8))
+                    convertedAmount = parseFloat((amount * globalExchangeRate[selectedCurrency.value]).toFixed(8))
                 }
-            } else if (globalExchangeRate[selectedCurrency])
-                convertedAmount = parseFloat((amount * globalExchangeRate[selectedCurrency]).toFixed(8))
+            } else if (globalExchangeRate[selectedCurrency.value])
+                convertedAmount = parseFloat((amount * globalExchangeRate[selectedCurrency.value]).toFixed(8))
             if (shouldFormatAmount)
                 convertedAmount = formatAmount(convertedAmount)
             return convertedAmount
@@ -1607,18 +1626,18 @@
         }
         let previouslySelectedCurrency = localStorage.getItem('btc-wallet-currency') || 'btc';
         getRef('currency_selector').addEventListener('change', e => {
-            selectedCurrency = e.target.value;
+            selectedCurrency.value = e.target.value;
             if (pagesData.lastPage === 'check_details') {
                 if (location.hash.includes('currency')) {
-                    history.replaceState(null, null, `${location.hash.split('&')[0]}&currency=${selectedCurrency}`)
+                    history.replaceState(null, null, `${location.hash.split('&')[0]}&currency=${selectedCurrency.value}`)
                 } else {
-                    history.replaceState(null, null, `${location.hash}&currency=${selectedCurrency}`)
+                    history.replaceState(null, null, `${location.hash}&currency=${selectedCurrency.value}`)
                 }
             }
             if (getRef('show_current_value'))
-                getRef('show_current_value').classList.toggle('hidden', selectedCurrency === 'btc')
-            localStorage.setItem('btc-wallet-currency', selectedCurrency);
-            document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency])
+                getRef('show_current_value').classList.toggle('hidden', selectedCurrency.value === 'btc')
+            localStorage.setItem('btc-wallet-currency', selectedCurrency.value);
+            document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency.value])
             document.querySelectorAll('transaction-card').forEach(el => el.render())
             document.querySelectorAll('.amount-shown').forEach(el => {
                 if (el.tagName.includes('SM-')) {
@@ -1627,19 +1646,19 @@
                     const rupeeRate = (globalExchangeRate.inr / globalExchangeRate.usd);
                     switch (previouslySelectedCurrency) {
                         case 'usd':
-                            if (selectedCurrency === 'inr')
+                            if (selectedCurrency.value === 'inr')
                                 convertedAmount = roundUp(originalAmount * rupeeRate)
                             else
                                 convertedAmount = roundUp((originalAmount / globalExchangeRate.usd), 8)
                             break;
                         case 'inr':
-                            if (selectedCurrency === 'usd')
+                            if (selectedCurrency.value === 'usd')
                                 convertedAmount = roundUp((originalAmount / rupeeRate))
                             else
                                 convertedAmount = roundUp((originalAmount / globalExchangeRate.inr), 8)
                             break;
                         case 'btc':
-                            convertedAmount = roundUp(originalAmount * globalExchangeRate[selectedCurrency])
+                            convertedAmount = roundUp(originalAmount * globalExchangeRate[selectedCurrency.value])
                             break;
                     }
                     el.value = convertedAmount
@@ -1649,7 +1668,7 @@
                     el.textContent = getConvertedAmount(el.dataset.btcAmount, { shouldFormatAmount: true, onDate: parseInt(el.dataset.onDate) })
                 }
             })
-            previouslySelectedCurrency = selectedCurrency
+            previouslySelectedCurrency = selectedCurrency.value
         })
         getRef('filter_selector').addEventListener('change', async e => {
             const address = getRef('search_query_input').value;
@@ -1931,7 +1950,7 @@
             if (!getRef('receiver_container').children.length) {
                 receiverCard.querySelector('.remove-card').remove()
             }
-            receiverCard.querySelector('.currency-symbol') ? receiverCard.querySelector('.currency-symbol').innerHTML = currencyIcons[selectedCurrency] : null;
+            receiverCard.querySelector('.currency-symbol') ? receiverCard.querySelector('.currency-symbol').innerHTML = currencyIcons[selectedCurrency.value] : null;
             getRef('receiver_container').appendChild(receiverCard);
             if (address) {
                 getRef('receiver_container').lastElementChild.querySelector('.receiver-input').value = address
@@ -1952,7 +1971,7 @@
                         </sm-input>
                     `)
                     document.getElementById('send_fee').focusIn();
-                    getRef('fees_wrapper').querySelector('.currency-symbol').innerHTML = currencyIcons[selectedCurrency];
+                    getRef('fees_wrapper').querySelector('.currency-symbol').innerHTML = currencyIcons[selectedCurrency.value];
                     getRef('fees_section').classList.remove('hidden')
                     renderElem(getRef('error_section'), html``)
                     break;
@@ -1986,7 +2005,7 @@
             const privKeys = [...getRef('sender_container').querySelectorAll('.priv-key-input')].map(input => input.value.trim());
             const receivers = [...getRef('receiver_container').querySelectorAll('.receiver-input')].map(input => input.value.trim());
             const amounts = [...getRef('receiver_container').querySelectorAll('.amount-input')].map(input => {
-                return parseFloat(input.value.trim()) / (globalExchangeRate[selectedCurrency] || 1)
+                return parseFloat(input.value.trim()) / (globalExchangeRate[selectedCurrency.value] || 1)
             });
             return [senders, privKeys, receivers, amounts]
         }
@@ -2090,7 +2109,7 @@
                     buttonLoader('send_transaction', false)
                     return;
                 }
-                fee = parseFloat((parseFloat(feeInput) / (globalExchangeRate[selectedCurrency] || 1)).toFixed(8));
+                fee = parseFloat((parseFloat(feeInput) / (globalExchangeRate[selectedCurrency.value] || 1)).toFixed(8));
             }
             const confirmation = await getConfirmation('Confirm Transaction', {
                 message: html`
@@ -2268,7 +2287,7 @@
                         </div>
                     </sm-form>
                 `)
-                document.getElementById('new_fee').querySelector('.currency-symbol').innerHTML = currencyIcons[selectedCurrency]
+                document.getElementById('new_fee').querySelector('.currency-symbol').innerHTML = currencyIcons[selectedCurrency.value]
                 openPopup('increase_fee_popup')
             } catch (e) {
                 notify(e.message || e, 'error')
@@ -2278,7 +2297,7 @@
         }
         async function increaseFee(isMultisig = false) {
             buttonLoader(document.getElementById('increase_fee'), true)
-            const newFee = parseFloat((parseFloat(document.getElementById('new_fee').value.trim()) / (globalExchangeRate[selectedCurrency] || 1)).toFixed(8))
+            const newFee = parseFloat((parseFloat(document.getElementById('new_fee').value.trim()) / (globalExchangeRate[selectedCurrency.value] || 1)).toFixed(8))
             const privateKeys = []
             document.querySelectorAll('.increase-fee-sender').forEach(sender => {
                 const address = sender.querySelector('.sender__address').textContent.trim()
