@@ -3622,7 +3622,13 @@
 
         getRef('emoji_picker').addEventListener('emoji-click', e => {
             const clickedEmoji = e.detail.unicode
-            getRef('type_message').value += clickedEmoji
+            // append emoji to input field where cursor was
+            const cursorPosition = getRef('type_message').textarea.selectionStart;
+            const textBeforeCursor = getRef('type_message').value.substring(0, cursorPosition)
+            const textAfterCursor = getRef('type_message').value.substring(cursorPosition)
+            getRef('type_message').value = textBeforeCursor + clickedEmoji + textAfterCursor
+            getRef('type_message').textarea.selectionStart = cursorPosition + clickedEmoji.length
+            getRef('type_message').textarea.selectionEnd = cursorPosition + clickedEmoji.length
             if (!floGlobals.isMobileView) {
                 setTimeout(() => {
                     getRef('type_message').focusIn()
