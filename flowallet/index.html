@@ -2618,8 +2618,8 @@
                     if (tokenReceivers.length) {
                         const consent = await getConfirmation(`Confirm transaction`, {
                             message: `
-                                                Sending ${selectedToken.value} tokens to \n\n ${tokenReceivers.map(r => `${r}: ${bulkTokenReceivers[r]} ${selectedToken.value}`).join('\n')}
-                                            `,
+                                Sending ${selectedToken.value} tokens to \n\n ${tokenReceivers.map(r => `${r}: ${bulkTokenReceivers[r]} ${selectedToken.value}`).join('\n')}
+                            `,
                             confirmText: 'Send',
                         })
                         if (!consent) return;
@@ -2630,19 +2630,19 @@
                             showTransactionResult(true, null, {
                                 title: `Multiple transactions have been initiated`,
                                 description: html`
-                                                    <ul class="grid gap-0-5">
-                                                        ${tokenReceivers.map((receiver, index) => html`
-                                                            <li>
-                                                                <a href=${`${floBlockchainAPI.current_server}tx/${transactionIds[receiver]}`} target="_blank">
-                                                                    Check ${receiver} (${bulkTokenReceivers[receiver]} ${selectedToken.value}) transaction
-                                                                </a>
-                                                            </li>
-                                                        `)}
-                                                    </ul>
-                                                `
+                                    <ul class="grid gap-0-5">
+                                        ${tokenReceivers.map((receiver, index) => html`
+                                            <li>
+                                                <a href=${`${floBlockchainAPI.current_server}tx/${transactionIds[receiver]}`} target="_blank">
+                                                    Check ${receiver} (${bulkTokenReceivers[receiver]} ${selectedToken.value}) transaction
+                                                </a>
+                                            </li>
+                                        `)}
+                                    </ul>
+                                `
                             });
                         } else {
-                            const floData = `send ${bulkTokenReceivers[tokenReceivers[0]]} ${selectedToken.value}#`
+                            const floData = `send ${bulkTokenReceivers[tokenReceivers[0]].toFixed(10)} ${selectedToken.value}#`
                             if (await hasUnconfirmedTransactions(sender)) return
                             transactionId = await floBlockchainAPI.writeData(sender, floData, privKey, tokenReceivers[0])
                             showTransactionResult(true, transactionId);
