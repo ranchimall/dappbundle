@@ -48,146 +48,7 @@
                 <theme-toggle></theme-toggle>
             </div>
         </header>
-        <main id="pages_container" class="grid" data-scrollable>
-            <div id="check_details" class="page hidden" data-sm-containment>
-                <section class="flex gap-0-5 margin-bottom-1-5">
-                    <button id="gen_new_addr_btn" class="button primary-action interact">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
-                            height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                            <g>
-                                <rect fill="none" height="24" width="24" />
-                            </g>
-                            <g>
-                                <g>
-                                    <path
-                                        d="M18.32,4.26C16.84,3.05,15.01,2.25,13,2.05v2.02c1.46,0.18,2.79,0.76,3.9,1.62L18.32,4.26z M19.93,11h2.02 c-0.2-2.01-1-3.84-2.21-5.32L18.31,7.1C19.17,8.21,19.75,9.54,19.93,11z M18.31,16.9l1.43,1.43c1.21-1.48,2.01-3.32,2.21-5.32 h-2.02C19.75,14.46,19.17,15.79,18.31,16.9z M13,19.93v2.02c2.01-0.2,3.84-1,5.32-2.21l-1.43-1.43 C15.79,19.17,14.46,19.75,13,19.93z M13,12V7h-2v5H7l5,5l5-5H13z M11,19.93v2.02c-5.05-0.5-9-4.76-9-9.95s3.95-9.45,9-9.95v2.02 C7.05,4.56,4,7.92,4,12S7.05,19.44,11,19.93z" />
-                                </g>
-                            </g>
-                        </svg>
-                        Generate BTC address
-                    </button>
-                    <button id="retrieve_addr_btn" class="button primary-action interact"
-                        onclick="openPopup('retrieve_btc_addr_popup')">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                            width="24px" fill="#000000">
-                            <path d="M0 0h24v24H0V0z" fill="none" />
-                            <path
-                                d="M14 12c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-2-9c-4.97 0-9 4.03-9 9H0l4 4 4-4H5c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.51 0-2.91-.49-4.06-1.3l-1.42 1.44C8.04 20.3 9.94 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z" />
-                        </svg>
-                        Retrieve BTC address
-                    </button>
-                </section>
-                <section>
-                    <sm-form class="flex margin-bottom-2" style="--gap: 0.5rem;">
-                        <sm-input type="search" id="search_query_input"
-                            placeholder="Search BTC address or transaction ID" required>
-                            <svg slot="icon" class="icon" xmlns="http://www.w3.org/2000/svg" height="24px"
-                                viewBox="0 0 24 24" width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0V0z" fill="none" />
-                                <path
-                                    d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                            </svg>
-                        </sm-input>
-                        <button id="check_address_button" class="button button--primary cta" style="height: 3.2rem;"
-                            type="submit" disabled>Search</button>
-                    </sm-form>
-                    <div id="address_details" class="hidden">
-                        <div id="address_balance_card" class="grid gap-1 hidden">
-                            <div class="flex">
-                                <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px"
-                                    viewBox="0 0 24 24" width="24px" fill="#000000">
-                                    <path d="M0 0h24v24H0V0z" fill="none" />
-                                    <path
-                                        d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z" />
-                                    <circle cx="16" cy="12" r="1.5" />
-                                </svg>
-                                Balance
-                            </div>
-                            <output id="address_balance" class="amount-shown"></output>
-                        </div>
-                        <div class="flex flex-direction-column margin-bottom-1 sticky top-0 gap-0-5"
-                            style="background-color: rgba(var(--foreground-color), 1); z-index: 2">
-                            <div class="flex align-center gap-0-5 space-between">
-                                <h4>Transactions</h4>
-                                <sm-chips id="filter_selector">
-                                    <sm-chip value="all" selected>All</sm-chip>
-                                    <sm-chip value="sent">Sent</sm-chip>
-                                    <sm-chip value="received">Received</sm-chip>
-                                </sm-chips>
-                            </div>
-                            <sm-switch id="show_current_value" class="margin-left-auto hidden"
-                                onchange="handleValuationTypeChange(event)">
-                                <p slot="left" class="margin-right-0-5">
-                                    Show current value
-                                </p>
-                            </sm-switch>
-                        </div>
-                        <ul id="transactions_list" class="observe-empty-state"></ul>
-                        <div class="empty-state align-self-center text-center">Balance and transactions will appear here
-                        </div>
-                    </div>
-                    <div id="tx_details" class="grid gap-2"></div>
-                </section>
-            </div>
-            <div id="send" class="page hidden">
-                <sm-form id="send_tx" skip-submit>
-                    <div class="margin-bottom-0-5">
-                        <div class="flex align-center space-between margin-bottom-0-5">
-                            <h3>Senders</h3>
-                            <button class="button button--small" id="check_balance" onclick="checkBalance()">Check
-                                Balance</button>
-                        </div>
-                        <div id="sender_container"></div>
-                        <div class="flex align-center balance-wrapper">
-                            <span>Total balance:</span>
-                            <output id="total_balance" class="amount-shown" style="margin-left: 0.3rem;"></output>
-                        </div>
-                        <button id="add_sender" class=" button--small" onclick="addSenderInput()">
-                            <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
-                                viewBox="0 0 24 24" width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0V0z" fill="none" />
-                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                            </svg>
-                            Add sender
-                        </button>
-                    </div>
-                    <div>
-                        <h3 class="margin-bottom-0-5">Receivers</h3>
-                        <div id="receiver_container"></div>
-                        <button id="add_receiver" class=" button--small" onclick="addReceiverInput()">
-                            <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px"
-                                viewBox="0 0 24 24" width="24px" fill="#000000">
-                                <path d="M0 0h24v24H0V0z" fill="none" />
-                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                            </svg>
-                            Add receiver</button>
-                    </div>
-                    <div id="fees_section" class="grid gap-0-5">
-                        <div class="flex align-center space-between">
-                            <h4>Fees</h4>
-                            <sm-chips id="fees_selector">
-                                <sm-chip value="suggested" selected>Suggested</sm-chip>
-                                <sm-chip value="custom">Custom</sm-chip>
-                            </sm-chips>
-                        </div>
-                        <div id="fees_wrapper" class="grid gap-0-5 align-center"></div>
-                    </div>
-                    <div id="error_section"></div>
-                    <div class="multi-state-button margin-bottom-1-5">
-                        <button id="send_transaction" type="submit" class="button button--primary cta w-100"
-                            disabled>Send</button>
-                    </div>
-                </sm-form>
-            </div>
-            <div id="convert" class="page hidden flex flex-direction-column gap-1-5" data-sm-containment>
-                <sm-chips id="conversion_view_selector" onchange="handleConversionRouteChange(event)">
-                    <sm-chip value="flo" selected>FLO</sm-chip>
-                    <sm-chip value="btc">BTC</sm-chip>
-                    <sm-chip value="eth">ETH</sm-chip>
-                </sm-chips>
-                <div id="key_conversion_content" class="grid gap-1-5"></div>
-            </div>
-        </main>
+        <main id="pages_container" class="grid" data-scrollable></main>
         <nav id="main_navbar">
             <ul id="menu">
                 <li>
@@ -335,83 +196,6 @@
         </header>
         <div id="transaction_result_popup__content" class="grid gap-2"></div>
     </sm-popup>
-    <template id="sender_template">
-        <fieldset class="sender-card card">
-            <sm-input class="sender-input" placeholder="Sender address" animate required></sm-input>
-            <sm-input class="priv-key-input password-field" type="password" placeholder="Private Key" animate required>
-                <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
-                    height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                    <g>
-                        <rect fill="none" height="24" width="24" />
-                    </g>
-                    <g>
-                        <path
-                            d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z" />
-                    </g>
-                </svg>
-                <label slot="right" class="interact">
-                    <input type="checkbox" class="hidden" autocomplete="off" readonly
-                        onchange="togglePrivateKeyVisibility(this)">
-                    <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                        width="24px" fill="#000000">
-                        <title>Hide password</title>
-                        <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" />
-                        <path
-                            d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
-                    </svg>
-                    <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                        width="24px" fill="#000000">
-                        <title>Show password</title>
-                        <path d="M0 0h24v24H0z" fill="none" />
-                        <path
-                            d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
-                    </svg>
-                </label>
-            </sm-input>
-            <div class="flex align-center space-between full-bleed  remove-card-wrapper">
-                <div class="flex align-center">
-                    <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px"
-                        viewBox="0 0 24 24" width="24px" fill="#000000">
-                        <path d="M0 0h24v24H0V0z" fill="none" />
-                        <path
-                            d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z" />
-                        <circle cx="16" cy="12" r="1.5" />
-                    </svg>
-                    <output class="sender-balance amount-shown flex align-center">Balance</output>
-                </div>
-                <button class="remove-card button--small">
-                    <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px"
-                        viewBox="0 0 24 24" width="24px" fill="#000000">
-                        <path d="M0 0h24v24H0V0z" fill="none" />
-                        <path
-                            d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                    </svg>
-                    Remove
-                </button>
-            </div>
-        </fieldset>
-    </template>
-    <template id="receiver_template">
-        <fieldset class="card receiver-card">
-            <sm-input class="receiver-input" placeholder="Receiver address" data-btc-address animate
-                required></sm-input>
-            <div class="flex align-content-start gap-0-5 remove-card-wrapper">
-                <sm-input type="number" class="amount-input amount-shown" placeholder="Amount" min="0.000006"
-                    step="0.00000001" animate required>
-                    <div class="currency-symbol flex" slot="icon"></div>
-                </sm-input>
-                <button class="remove-card button--small">
-                    <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px"
-                        viewBox="0 0 24 24" width="24px" fill="#000000">
-                        <path d="M0 0h24v24H0V0z" fill="none" />
-                        <path
-                            d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
-                    </svg>
-                    Remove
-                </button>
-            </div>
-        </fieldset>
-    </template>
     <script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
     <script src="scripts/components.min.js"></script>
     <script type="text/javascript" src="scripts/lib.js"></script>
@@ -602,7 +386,6 @@
             if ((tem = ua.match(/version\/(\d+)/i)) != null) M.splice(1, 1, tem[1]);
             return M.join(' ');
         }
-        window.addEventListener('hashchange', e => routeTo(window.location.hash))
         let selectedCurrency = signal('btc');
         let historicPriceApis = {
             active: 0,
@@ -647,21 +430,16 @@
                     isHistoricApiAvailable = true;
                     setTimeout(() => {
                         document.getElementById('currency_selector').value = selectedCurrency.value;
-                        if (getRef('show_current_value')) {
-                            document.getElementById('show_current_value').checked = showCurrentValue.value;
-                            getRef('show_current_value').classList.toggle('hidden', selectedCurrency.value === 'btc')
-                        }
                     }, 100)
                     showCurrentValue.value = localStorage.getItem('btc-wallet-show-current-value') === 'true' || false;
                 })
                 .catch(e => {
                     console.error(e);
-                    getRef('show_current_value').remove();
                     showCurrentValue.value = false;
                     isHistoricApiAvailable = false;
                 }).finally(() => {
                     selectedCurrency.value = localStorage.getItem('btc-wallet-currency') || 'btc';
-                    routeTo(window.location.hash)
+                    router.routeTo(window.location.hash)
                     setTimeout(() => {
                         getRef('loading_page').animate([
                             { transform: 'translateY(0)', },
@@ -674,9 +452,6 @@
                             getRef('loading_page').remove()
                         }
                     }, 500);
-                    addSenderInput()
-                    addReceiverInput()
-                    document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency.value])
                 })
         });
         function createRipple(event, target) {
@@ -711,154 +486,8 @@
             };
         }
 
-        const pagesData = {
-            params: {}
-        }
 
         let tempData
-        async function routeTo(targetPage, options = {}) {
-            const { firstLoad, hashChange, isPreview } = options
-            let pageId
-            let params = {}
-            let searchParams
-            if (targetPage === '') {
-                pageId = 'check_details'
-            } else {
-                if (targetPage.includes('/')) {
-                    let path;
-                    [path, searchParams] = targetPage.split('?');
-                    [, pageId, subPageId1] = path.split('/')
-                } else {
-                    pageId = targetPage
-                }
-            }
-            if (searchParams) {
-                const urlSearchParams = new URLSearchParams('?' + searchParams);
-                params = Object.fromEntries(urlSearchParams.entries());
-            }
-            if (params)
-                pagesData.params = params
-            switch (pageId) {
-                case 'check_details':
-                    if (params.query) {
-                        const query = getRef('search_query_input').value.trim();
-                        if (params.query !== query)
-                            getRef('search_query_input').value = params.query;
-                        render.queryResult(params.query)
-                        if (!params.currency && selectedCurrency.value !== 'btc' && !location.hash.includes(selectedCurrency.value)) {
-                            history.replaceState(null, null, `${location.hash}&currency=${selectedCurrency.value}`)
-                        }
-                        if (params.currency && params.currency !== selectedCurrency.value) {
-                            selectedCurrency.value = params.currency
-                            document.getElementById('currency_selector').value = selectedCurrency.value;
-                            document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency.value])
-                            if (getRef('show_current_value'))
-                                getRef('show_current_value').classList.toggle('hidden', selectedCurrency.value === 'btc')
-                        }
-                    }
-                    break;
-                case 'convert':
-                    renderConversionPage(params.from)
-                    break
-            }
-            const animOptions = {
-                duration: 100,
-                fill: 'forwards',
-            }
-            let previousActiveElement = getRef('main_navbar').querySelector('.nav-item--active')
-            const currentActiveElement = document.querySelector(`.nav-item[href="#/${pageId}"]`)
-            if (currentActiveElement) {
-                if (getRef('main_navbar').classList.contains('hidden')) {
-                    getRef('main_navbar').classList.remove('hide-away')
-                    getRef('main_navbar').classList.remove('hidden')
-                    getRef('main_navbar').animate([
-                        {
-                            transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
-                            opacity: 0,
-                        },
-                        {
-                            transform: `none`,
-                            opacity: 1,
-                        },
-                    ], {
-                        duration: 100,
-                        fill: 'forwards',
-                        easing: 'ease'
-                    })
-                }
-                getRef('main_header').classList.remove('hidden')
-                const previousActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(previousActiveElement)
-                const currentActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(currentActiveElement)
-                const isOnTop = previousActiveElementIndex < currentActiveElementIndex
-                const currentIndicator = html.node`<div class="nav-item__indicator"></div>`;
-                let previousIndicator = getRef('main_navbar').querySelector('.nav-item__indicator')
-                if (!previousIndicator) {
-                    previousIndicator = currentIndicator.cloneNode(true)
-                    previousActiveElement = currentActiveElement
-                    previousActiveElement.append(previousIndicator)
-                } else if (currentActiveElementIndex !== previousActiveElementIndex) {
-                    const indicatorDimensions = previousIndicator.getBoundingClientRect()
-                    const currentActiveElementDimensions = currentActiveElement.getBoundingClientRect()
-                    let moveBy
-                    if (isMobileView) {
-                        moveBy = ((currentActiveElementDimensions.width - indicatorDimensions.width) / 2) + indicatorDimensions.width
-                    } else {
-                        moveBy = ((currentActiveElementDimensions.height - indicatorDimensions.height) / 2) + indicatorDimensions.height
-                    }
-                    indicatorObserver.observe(previousIndicator)
-                    previousIndicator.animate([
-                        {
-                            transform: 'none',
-                            opacity: 1,
-                        },
-                        {
-                            transform: `translate${isMobileView ? 'X' : 'Y'}(${isOnTop ? `${moveBy}px` : `-${moveBy}px`})`,
-                            opacity: 0,
-                        },
-                    ], { ...animOptions, easing: 'ease-in' }).onfinish = () => {
-                        previousIndicator.remove()
-                    }
-                    tempData = {
-                        currentActiveElement,
-                        currentIndicator,
-                        isOnTop,
-                        animOptions,
-                        moveBy
-                    }
-                }
-                previousActiveElement.classList.remove('nav-item--active');
-                currentActiveElement.classList.add('nav-item--active')
-            } else {
-                if (!getRef('main_navbar').classList.contains('hidden')) {
-                    getRef('main_navbar').classList.add('hide-away')
-                    getRef('main_navbar').animate([
-                        {
-                            transform: `none`,
-                            opacity: 1,
-                        },
-                        {
-                            transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
-                            opacity: 0,
-                        },
-                    ], {
-                        duration: 200,
-                        fill: 'forwards',
-                        easing: 'ease'
-                    }).onfinish = () => {
-                        getRef('main_navbar').classList.add('hidden')
-                    }
-                    getRef('main_header').classList.add('hidden')
-                }
-            }
-            if (pagesData.lastPage !== pageId) {
-                closePopup()
-                document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'))
-                getRef(pageId).classList.remove('hidden')
-                getRef(pageId).animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, fill: 'forwards', easing: 'ease' })
-                pagesData.lastPage = pageId
-            }
-        }
-
         const indicatorObserver = new IntersectionObserver(entries => {
             entries.forEach(entry => {
                 if (!entry.isIntersecting) {
@@ -879,6 +508,81 @@
         }, {
             threshold: 1
         })
+        class Router {
+            /**
+             * @constructor {object} options - options for the router
+             * @param {object} options.routes - routes for the router
+             * @param {object} options.state - initial state for the router
+             * @param {function} options.routingStart - function to be called before routing
+             * @param {function} options.routingEnd - function to be called after routing
+             */
+            constructor(options = {}) {
+                const { routes = {}, state = {}, routingStart, routingEnd } = options
+                this.routes = routes
+                this.state = state
+                this.routingStart = routingStart
+                this.routingEnd = routingEnd
+                this.lastPage = null
+                window.addEventListener('hashchange', e => this.routeTo(window.location.hash))
+            }
+            /**
+             * @param {string} route - route to be added
+             * @param {function} callback - function to be called when route is matched
+             */
+            addRoute(route, callback) {
+                this.routes[route] = callback
+            }
+            /**
+             * @param {string} route
+             */
+            handleRouting = async (page) => {
+                if (this.routingStart) {
+                    this.routingStart(this.state)
+                }
+                if (this.routes[page]) {
+                    await this.routes[page](this.state)
+                    this.lastPage = page
+                } else {
+                    if (this.routes['404']) {
+                        this.routes['404'](this.state);
+                    } else {
+                        console.error(`No route found for '${page}' and no '404' route is defined.`);
+                    }
+                }
+                if (this.routingEnd) {
+                    this.routingEnd(this.state)
+                }
+            }
+            async routeTo(destination) {
+                try {
+                    let page
+                    let wildcards = []
+                    let params = {}
+                    let [path, queryString] = destination.split('?');
+                    if (path.includes('#'))
+                        path = path.split('#')[1];
+                    if (path.includes('/'))
+                        [, page, ...wildcards] = path.split('/')
+                    else
+                        page = path
+                    this.state = { page, wildcards, lastPage: this.lastPage, params }
+                    if (queryString) {
+                        params = new URLSearchParams(queryString)
+                        this.state.params = Object.fromEntries(params)
+                    }
+                    if (document.startViewTransition) {
+                        document.startViewTransition(async () => {
+                            await this.handleRouting(page)
+                        })
+                    } else {
+                        // Fallback for browsers that don't support View transition API:
+                        await this.handleRouting(page)
+                    }
+                } catch (e) {
+                    console.error(e)
+                }
+            }
+        }
         // class based lazy loading
         class LazyLoader {
             constructor(container, elementsToRender, renderFn, options = {}) {
@@ -1201,6 +905,305 @@
                 }
             ]
         }
+
+        // routing logic
+        const router = new Router({
+            routingStart(state) {
+                if ("scrollRestoration" in history) {
+                    history.scrollRestoration = "manual";
+                }
+                window.scrollTo(0, 0);
+            },
+            routingEnd(state) {
+                const { page, lastPage } = state
+                const animOptions = {
+                    duration: 100,
+                    fill: 'forwards',
+                }
+                let previousActiveElement = getRef('main_navbar').querySelector('.nav-item--active')
+                let currentActiveElement = document.querySelector(`.nav-item[href="#/${page}"]`)
+                if (page === '' || page === 'check_details') {
+                    currentActiveElement = document.querySelector(`.nav-item[href="#/check_details"]`)
+                }
+                if (currentActiveElement) {
+                    if (getRef('main_navbar').classList.contains('hidden')) {
+                        getRef('main_navbar').classList.remove('hide-away')
+                        getRef('main_navbar').classList.remove('hidden')
+                        getRef('main_navbar').animate([
+                            {
+                                transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
+                                opacity: 0,
+                            },
+                            {
+                                transform: `none`,
+                                opacity: 1,
+                            },
+                        ], {
+                            duration: 100,
+                            fill: 'forwards',
+                            easing: 'ease'
+                        })
+                    }
+                    getRef('main_header').classList.remove('hidden')
+                    const previousActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(previousActiveElement) || -1
+                    const currentActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(currentActiveElement) || 0
+                    const isOnTop = previousActiveElementIndex < currentActiveElementIndex
+                    const currentIndicator = html.node`<div class="nav-item__indicator"></div>`;
+                    let previousIndicator = getRef('main_navbar').querySelector('.nav-item__indicator')
+                    if (!previousIndicator) {
+                        previousIndicator = currentIndicator.cloneNode(true)
+                        previousActiveElement = currentActiveElement
+                        previousActiveElement.append(previousIndicator)
+                    } else if (currentActiveElementIndex !== previousActiveElementIndex) {
+                        const indicatorDimensions = previousIndicator.getBoundingClientRect()
+                        const currentActiveElementDimensions = currentActiveElement.getBoundingClientRect()
+                        let moveBy
+                        if (isMobileView) {
+                            moveBy = ((currentActiveElementDimensions.width - indicatorDimensions.width) / 2) + indicatorDimensions.width
+                        } else {
+                            moveBy = ((currentActiveElementDimensions.height - indicatorDimensions.height) / 2) + indicatorDimensions.height
+                        }
+                        indicatorObserver.observe(previousIndicator)
+                        previousIndicator.animate([
+                            {
+                                transform: 'none',
+                                opacity: 1,
+                            },
+                            {
+                                transform: `translate${isMobileView ? 'X' : 'Y'}(${isOnTop ? `${moveBy}px` : `-${moveBy}px`})`,
+                                opacity: 0,
+                            },
+                        ], { ...animOptions, easing: 'ease-in' }).onfinish = () => {
+                            previousIndicator.remove()
+                        }
+                        tempData = {
+                            currentActiveElement,
+                            currentIndicator,
+                            isOnTop,
+                            animOptions,
+                            moveBy
+                        }
+                    }
+                    previousActiveElement.classList.remove('nav-item--active');
+                    currentActiveElement.classList.add('nav-item--active')
+                } else {
+                    if (!getRef('main_navbar').classList.contains('hidden')) {
+                        getRef('main_navbar').classList.add('hide-away')
+                        getRef('main_navbar').animate([
+                            {
+                                transform: `none`,
+                                opacity: 1,
+                            },
+                            {
+                                transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
+                                opacity: 0,
+                            },
+                        ], {
+                            duration: 200,
+                            fill: 'forwards',
+                            easing: 'ease'
+                        }).onfinish = () => {
+                            getRef('main_navbar').classList.add('hidden')
+                        }
+                        getRef('main_header').classList.add('hidden')
+                    }
+                }
+                if (lastPage !== page) {
+                    closePopup()
+                }
+                document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency.value])
+            }
+        })
+        function renderHome(state) {
+            const { params: { query, currency } } = state
+            renderElem(getRef('pages_container'), html`
+                <div id="check_details" class="page" data-sm-containment>
+                    <section class="flex gap-0-5 margin-bottom-1-5">
+                        <button id="gen_new_addr_btn" class="button primary-action interact" onclick=${generateNewAddress}>
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24" /> </g> <g> <g> <path d="M18.32,4.26C16.84,3.05,15.01,2.25,13,2.05v2.02c1.46,0.18,2.79,0.76,3.9,1.62L18.32,4.26z M19.93,11h2.02 c-0.2-2.01-1-3.84-2.21-5.32L18.31,7.1C19.17,8.21,19.75,9.54,19.93,11z M18.31,16.9l1.43,1.43c1.21-1.48,2.01-3.32,2.21-5.32 h-2.02C19.75,14.46,19.17,15.79,18.31,16.9z M13,19.93v2.02c2.01-0.2,3.84-1,5.32-2.21l-1.43-1.43 C15.79,19.17,14.46,19.75,13,19.93z M13,12V7h-2v5H7l5,5l5-5H13z M11,19.93v2.02c-5.05-0.5-9-4.76-9-9.95s3.95-9.45,9-9.95v2.02 C7.05,4.56,4,7.92,4,12S7.05,19.44,11,19.93z" /> </g> </g> </svg>
+                            Generate BTC address
+                        </button>
+                        <button id="retrieve_addr_btn" class="button primary-action interact"
+                            onclick="openPopup('retrieve_btc_addr_popup')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M14 12c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-2-9c-4.97 0-9 4.03-9 9H0l4 4 4-4H5c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.51 0-2.91-.49-4.06-1.3l-1.42 1.44C8.04 20.3 9.94 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z" /> </svg>
+                            Retrieve BTC address
+                        </button>
+                    </section>
+                    <section>
+                        <sm-form class="flex margin-bottom-2" style="--gap: 0.5rem;">
+                            <sm-input type="search" id="search_query_input" value=${query || ''}
+                                placeholder="Search BTC address or transaction ID" required>
+                                <svg slot="icon" class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" /> </svg>
+                            </sm-input>
+                            <button id="check_address_button" class="button button--primary cta" style="height: 3.2rem;" onclick=${handleAddressCheck}
+                                type="submit" disabled>Search</button>
+                        </sm-form>
+                        <div id="address_details" class="hidden">
+                            <div id="address_balance_card" class="grid gap-1 hidden">
+                                <div class="flex">
+                                    <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z" /> <circle cx="16" cy="12" r="1.5" /> </svg>
+                                    Balance
+                                </div>
+                                <output id="address_balance" class="amount-shown"></output>
+                            </div>
+                            <div class="flex flex-direction-column margin-bottom-1 sticky top-0 gap-0-5"
+                                style="background-color: rgba(var(--foreground-color), 1); z-index: 2">
+                                <div class="flex align-center gap-0-5 space-between">
+                                    <h4>Transactions</h4>
+                                    <sm-chips id="filter_selector" onchange=${(e) => render.transactions(getRef('search_query_input').value)}>
+                                        <sm-chip value="all" selected>All</sm-chip>
+                                        <sm-chip value="sent">Sent</sm-chip>
+                                        <sm-chip value="received">Received</sm-chip>
+                                    </sm-chips>
+                                </div>
+                                ${isHistoricApiAvailable && selectedCurrency.value !== 'btc' ? html`
+                                    <sm-switch class="margin-left-auto"
+                                        onchange="handleValuationTypeChange(event)">
+                                        <p slot="left" class="margin-right-0-5">
+                                            Show current value
+                                        </p>
+                                    </sm-switch>
+                                `: ''}
+                            </div>
+                            <ul id="transactions_list" class="observe-empty-state"></ul>
+                            <div class="empty-state align-self-center text-center">Balance and transactions will appear here
+                            </div>
+                        </div>
+                        <div id="tx_details" class="grid gap-2"></div>
+                    </section>
+                </div>
+            `)
+            if (query) {
+                render.queryResult(query)
+                if (!currency && selectedCurrency.value !== 'btc' && !location.hash.includes(selectedCurrency.value)) {
+                    history.replaceState(null, null, `${location.hash}&currency=${selectedCurrency.value}`)
+                }
+                if (currency && currency !== selectedCurrency.value) {
+                    selectedCurrency.value = currency
+                    document.getElementById('currency_selector').value = selectedCurrency.value;
+                    document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency.value])
+                }
+            }
+        }
+        router.addRoute('', renderHome)
+        router.addRoute('check_details', renderHome)
+        router.addRoute('send', (state) => {
+            renderElem(getRef('pages_container'), html.node/*html*/`
+                <div id="send" class="page">
+                    <sm-form id="send_tx" onvalid=${handleValidForm} oninvalid=${handleInvalidForm} skip-submit>
+                        <div class="margin-bottom-0-5">
+                            <div class="flex align-center space-between margin-bottom-0-5">
+                                <h3>Senders</h3>
+                                <button class="button button--small" id="check_balance" onclick=${checkBalance}>Check
+                                    Balance</button>
+                            </div>
+                            <div id="sender_container"></div>
+                            <div class="flex align-center balance-wrapper">
+                                <span>Total balance:</span>
+                                <output id="total_balance" class="amount-shown" style="margin-left: 0.3rem;"></output>
+                            </div>
+                            <button id="add_sender" class=" button--small" onclick=${addSenderInput}>
+                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /> </svg>
+                                Add sender
+                            </button>
+                        </div>
+                        <div>
+                            <h3 class="margin-bottom-0-5">Receivers</h3>
+                            <div id="receiver_container"></div>
+                            <button id="add_receiver" class=" button--small" onclick=${addReceiverInput}>
+                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /> </svg>
+                                Add receiver</button>
+                        </div>
+                        <div id="fees_section" class="grid gap-0-5">
+                            <div class="flex align-center space-between">
+                                <h4>Fees</h4>
+                                <sm-chips id="fees_selector" onchange=${renderFeesUI}>
+                                    <sm-chip value="suggested" selected>Suggested</sm-chip>
+                                    <sm-chip value="custom">Custom</sm-chip>
+                                </sm-chips>
+                            </div>
+                            <div id="fees_wrapper" class="grid gap-0-5 align-center"></div>
+                        </div>
+                        <div id="error_section"></div>
+                        <div class="multi-state-button margin-bottom-1-5">
+                            <button id="send_transaction" type="submit" class="button button--primary cta w-100" onclick=${handleSendTransaction}
+                                disabled>Send</button>
+                        </div>
+                    </sm-form>
+                </div>
+            `);
+            addSenderInput();
+            addReceiverInput();
+        })
+        router.addRoute('convert', (state) => {
+            const { params: { from: convertingFrom = 'flo' } } = state;
+            let privateKeyConversionDescription = '';
+            let addressConversionDescription = null;
+            let addressForConversion = ''
+            switch (convertingFrom) {
+                case 'flo':
+                    privateKeyConversionDescription = 'Convert FLO private key to corresponding BTC | ETH address & private key';
+                    addressConversionDescription = 'Convert FLO address to BTC address';
+                    addressForConversion = html`<sm-input id="address_for_conversion" placeholder="FLO Address" data-flo-address animate required></sm-input>`
+                    break;
+                case 'btc':
+                    privateKeyConversionDescription = 'Convert BTC private key to corresponding FLO | ETH address & private key';
+                    addressConversionDescription = 'Convert BTC address to FLO address';
+                    addressForConversion = html`<sm-input id="address_for_conversion" placeholder="BTC Address" data-btc-address animate required></sm-input>`
+                    break;
+                case 'eth':
+                    privateKeyConversionDescription = 'Convert ETH private key to corresponding FLO | BTC address & private key';
+                    break;
+            }
+            renderElem(getRef('pages_container'), html.for(getRef('pages_container'), convertingFrom)/*html*/`
+                <div id="convert" class="page flex flex-direction-column gap-1-5" data-sm-containment>
+                    <sm-chips id="conversion_view_selector" onchange=${(e) => location.hash = `#/convert?from=${e.target.value}`}>
+                        <sm-chip value="flo" ?selected=${convertingFrom === 'flo'}>FLO</sm-chip>
+                        <sm-chip value="btc" ?selected=${convertingFrom === 'btc'}>BTC</sm-chip>
+                        <sm-chip value="eth" ?selected=${convertingFrom === 'eth'}>ETH</sm-chip>
+                    </sm-chips>
+                    <div id="key_conversion_content" class="grid gap-1-5">                
+                        <div class="grid gap-1-5">
+                            <div class="grid gap-0-3">
+                                <h3>Private key converter</h3>
+                                <p>${privateKeyConversionDescription}</p>
+                            </div>
+                            <sm-form oninvalid=${() => renderElem(getRef('private_key_conversion_result'), html``)}>
+                                <div class="input-action-wrapper">
+                                    <sm-input type="password" id="private_key_for_conversion" class="password-field" placeholder=${`${convertingFrom.toUpperCase()} private key`} data-private-key required animate>
+                                        <label slot="right" class="interact">
+                                            <input type="checkbox" class="hidden" autocomplete="off" readonly onchange="togglePrivateKeyVisibility(this)">
+                                            <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" /> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" /> </svg>
+                                            <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" /> </svg>
+                                        </label>
+                                    </sm-input>
+                                    <button type="submit" onclick=${() => convertPrivateKey(convertingFrom)} class="button button--primary cta" disabled>Convert</button>
+                                </div>
+                            </sm-form>
+                            <ul id="private_key_conversion_result" class="grid gap-0-5"></ul>
+                        </div>
+                        ${addressConversionDescription ? html`
+                            <div class="grid gap-1-5">
+                                <div class="grid gap-0-3">
+                                    <h3>Address converter</h3>
+                                    <p class="panel-footer">${addressConversionDescription}</p>
+                                </div>  
+                                <sm-form class="flex" oninvalid=${() => renderElem(getRef('address_conversion_result'), html``)}>
+                                    <div class="input-action-wrapper">
+                                        ${addressForConversion}
+                                        <button class="button--primary justify-self-center cta" onclick=${() => convertAddress(convertingFrom)} type="submit" disabled>
+                                            Convert
+                                        </button>
+                                    </div>
+                                </sm-form>
+                                <div id="address_conversion_result" class="converted-card"></div>
+                            </div>
+                        `: ''}
+                    </div>
+                </div>
+            `)
+        })
+
         function toYDM(timestamp) {
             const date = new Date(timestamp)
             return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`
@@ -1236,7 +1239,7 @@
                 if (isUnconfirmed) {
                     icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M6,2l0.01,6L10,12l-3.99,4.01L6,22h12v-6l-4-4l4-3.99V2H6z M16,16.5V20H8v-3.5l4-4L16,16.5z"/></g></svg>`;
                 }
-                const queriedAddress = pagesData.params?.query || getRef('search_query_input').value.trim()
+                const queriedAddress = router.state.params?.query || getRef('search_query_input').value.trim()
                 const isSender = type === 'out' || type === 'self'
                 const className = `transaction grid ${type} ${isUnconfirmed ? 'unconfirmed-tx' : ''}`;
                 const valuationDelta = historicPrice && historicPrice[selectedCurrency.value] ? getConvertedAmount(amount) - getConvertedAmount(amount, { onDate: time }) : 0;
@@ -1300,7 +1303,7 @@
                     timeout = setTimeout(() => {
                         abortController.abort()
                         throw new Error(`Historic price data is taking longer than usual to load. Historic prices won't be shown`)
-                    }, 8000)
+                    }, 20000)
                     const historicPrices = await fetch(`${historicPriceApis.list[historicPriceApis.active]}/price-history?dates=${dates.join()}`, {
                         signal
                     }).then(res => res.json())
@@ -1322,8 +1325,6 @@
                 } else {
                     showCurrentValue.value = true;
                     localStorage.setItem('btc-wallet-show-current-value', showCurrentValue.value);
-                    if (getRef('show_current_value'))
-                        getRef('show_current_value').checked = showCurrentValue.value;
                     notify('Could not fetch historic price data. Showing current value instead', 'error')
                     return []
                 }
@@ -1627,15 +1628,13 @@
         let previouslySelectedCurrency = localStorage.getItem('btc-wallet-currency') || 'btc';
         getRef('currency_selector').addEventListener('change', e => {
             selectedCurrency.value = e.target.value;
-            if (pagesData.lastPage === 'check_details') {
+            if (router.state.lastPage === 'check_details') {
                 if (location.hash.includes('currency')) {
                     history.replaceState(null, null, `${location.hash.split('&')[0]}&currency=${selectedCurrency.value}`)
                 } else {
                     history.replaceState(null, null, `${location.hash}&currency=${selectedCurrency.value}`)
                 }
             }
-            if (getRef('show_current_value'))
-                getRef('show_current_value').classList.toggle('hidden', selectedCurrency.value === 'btc')
             localStorage.setItem('btc-wallet-currency', selectedCurrency.value);
             document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency.value])
             document.querySelectorAll('transaction-card').forEach(el => el.render())
@@ -1670,11 +1669,7 @@
             })
             previouslySelectedCurrency = selectedCurrency.value
         })
-        getRef('filter_selector').addEventListener('change', async e => {
-            const address = getRef('search_query_input').value;
-            render.transactions(address)
-        })
-        getRef('gen_new_addr_btn').addEventListener('click', () => {
+        function generateNewAddress() {
             const { wif, address, segwitAddress, bech32Address } = btcOperator.newKeys;
             renderElem(getRef('generated_btc_addr'), html`
                 <div>
@@ -1687,7 +1682,7 @@
                 </div>
             `);
             openPopup('generate_btc_addr_popup');
-        });
+        }
         function retrieveBtcAddr() {
             function retrieve() {
                 let wif = getRef('retrieve_btc_addr_field').value.trim();
@@ -1706,68 +1701,6 @@
             const target = input.closest('sm-input')
             target.type = target.type === 'password' ? 'text' : 'password';
             target.focusIn()
-        }
-        function handleConversionRouteChange(e) {
-            location.hash = `#/convert?from=${e.target.value}`
-        }
-        function renderConversionPage(convertingFrom = 'flo') {
-            let privateKeyConversionDescription = '';
-            let addressConversionDescription = null;
-            let addressForConversion = ''
-            getRef('conversion_view_selector').value = convertingFrom
-            switch (convertingFrom) {
-                case 'flo':
-                    privateKeyConversionDescription = 'Convert FLO private key to corresponding BTC | ETH address & private key';
-                    addressConversionDescription = 'Convert FLO address to BTC address';
-                    addressForConversion = html`<sm-input id="address_for_conversion" placeholder="FLO Address" data-flo-address animate required></sm-input>`
-                    break;
-                case 'btc':
-                    privateKeyConversionDescription = 'Convert BTC private key to corresponding FLO | ETH address & private key';
-                    addressConversionDescription = 'Convert BTC address to FLO address';
-                    addressForConversion = html`<sm-input id="address_for_conversion" placeholder="BTC Address" data-btc-address animate required></sm-input>`
-                    break;
-                case 'eth':
-                    privateKeyConversionDescription = 'Convert ETH private key to corresponding FLO | BTC address & private key';
-                    break;
-            }
-            renderElem(getRef('key_conversion_content'), html.for(getRef('key_conversion_content'), convertingFrom)/*html*/`
-                <div class="grid gap-1-5">
-                    <div class="grid gap-0-3">
-                        <h3>Private key converter</h3>
-                        <p>${privateKeyConversionDescription}</p>
-                    </div>
-                    <sm-form oninvalid=${() => renderElem(getRef('private_key_conversion_result'), html``)}>
-                        <div class="input-action-wrapper">
-                            <sm-input type="password" id="private_key_for_conversion" class="password-field" placeholder=${`${convertingFrom.toUpperCase()} private key`} data-private-key required animate>
-                                <label slot="right" class="interact">
-                                    <input type="checkbox" class="hidden" autocomplete="off" readonly onchange="togglePrivateKeyVisibility(this)">
-                                    <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" /> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" /> </svg>
-                                    <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" /> </svg>
-                                </label>
-                            </sm-input>
-                            <button type="submit" onclick=${() => convertPrivateKey(convertingFrom)} class="button button--primary cta" disabled>Convert</button>
-                        </div>
-                    </sm-form>
-                    <ul id="private_key_conversion_result" class="grid gap-0-5"></ul>
-                </div>
-                ${addressConversionDescription ? html`
-                    <div class="grid gap-1-5">
-                        <div class="grid gap-0-3">
-                            <h3>Address converter</h3>
-                            <p class="panel-footer">${addressConversionDescription}</p>
-                        </div>  
-                        <sm-form class="flex" oninvalid=${() => renderElem(getRef('address_conversion_result'), html``)}>
-                            <div class="input-action-wrapper">
-                                ${addressForConversion}
-                                <button class="button--primary justify-self-center cta" onclick=${() => convertAddress(convertingFrom)} type="submit" disabled>
-                                    Convert
-                                </button>
-                            </div>
-                        </sm-form>
-                        <div id="address_conversion_result" class="converted-card"></div>
-                    </div>
-                `: ''}
-            `)
         }
         function convertPrivateKey(convertFrom) {
             let keyToConvert = getRef('private_key_for_conversion').value.trim();
@@ -1872,53 +1805,35 @@
                 renderElem(getRef('address_conversion_result'), html``)
             }
         }
-        const txParticipantsObserver = new MutationObserver(mutations => {
-            mutations.forEach(mutation => {
-                if (mutation.type === 'childList') {
-                    if (mutation.addedNodes.length > 0 && mutation.target.children.length > 1) {
-                        const removeButton = mutation.target.firstElementChild.querySelector('.remove-card')
-                        if (!removeButton) {
-                            const newRemoveButton = html.node`
-                                <button class="remove-card button--small">
-                                    <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                                        <path d="M0 0h24v24H0V0z" fill="none"></path>
-                                        <path d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"></path>
-                                    </svg>
-                                    Remove
-                                </button>
-                            `
-                            mutation.target.firstElementChild.querySelector('.remove-card-wrapper').appendChild(newRemoveButton)
-                        }
-                    } else if (mutation.removedNodes.length > 0 && mutation.target.children.length === 1) {
-                        const removeButton = mutation.target.firstElementChild.querySelector('.remove-card')
-                        if (removeButton) {
-                            removeButton.remove()
-                        }
-                    }
-                }
-            })
-        })
-        txParticipantsObserver.observe(getRef('sender_container'), {
-            childList: true
-        })
-        txParticipantsObserver.observe(getRef('receiver_container'), {
-            childList: true
-        })
-        function addSenderInput(address) {
-            let senderCard = getRef('sender_template').content.cloneNode(true)
-            if (!getRef('sender_container').children.length) {
-                senderCard.querySelector('.remove-card').remove()
-            }
+        function addSenderInput() {
+            let senderCard = html.node/*html*/`
+                <fieldset class="sender-card card">
+                    <sm-input class="sender-input" placeholder="Sender address" animate required></sm-input>
+                    <sm-input class="priv-key-input password-field" type="password" placeholder="Private Key" animate required>
+                        <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24" /> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z" /> </g> </svg>
+                        <label slot="right" class="interact">
+                            <input type="checkbox" class="hidden" autocomplete="off" readonly
+                                onchange="togglePrivateKeyVisibility(this)">
+                            <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" /> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" /> </svg>
+                            <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" /> </svg>
+                        </label>
+                    </sm-input>
+                    <div class="flex align-center space-between full-bleed remove-card-wrapper">
+                        <div class="flex align-center">
+                            <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z" /> <circle cx="16" cy="12" r="1.5" /> </svg>
+                            <output class="sender-balance amount-shown flex align-center">Balance</output>
+                        </div>
+                        ${getRef('sender_container').children.length ? html`
+                            <button class="remove-card button--small" onclick=${(e) => e.target.closest('.card').remove()}>
+                                <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /> </svg>
+                                Remove
+                            </button>
+                        `: ''}
+                    </div>
+                </fieldset>
+            `
             getRef('sender_container').appendChild(senderCard);
-            if (address) {
-                getRef('sender_container').lastElementChild.querySelector('.sender-input').value = address
-            }
         }
-        getRef('send_tx').addEventListener('click', e => {
-            if (e.target.closest('.remove-card')) {
-                e.target.closest('.card').remove()
-            }
-        })
         async function checkBalance() {
             const addresses = [...getRef('sender_container').querySelectorAll('.sender-input')].filter(input => input.value.trim() !== '').map(input => input.value.trim())
             if (addresses.length === 0) {
@@ -1945,21 +1860,28 @@
             })
         }
 
-        function addReceiverInput(address, value) {
-            let receiverCard = getRef('receiver_template').content.cloneNode(true)
-            if (!getRef('receiver_container').children.length) {
-                receiverCard.querySelector('.remove-card').remove()
-            }
+        function addReceiverInput() {
+            let receiverCard = html.node/*html*/`
+                <fieldset class="card receiver-card">
+                    <sm-input class="receiver-input" placeholder="Receiver address" data-btc-address animate
+                        required></sm-input>
+                    <div class="flex align-content-start gap-0-5 remove-card-wrapper">
+                        <sm-input type="number" class="amount-input amount-shown" placeholder="Amount" min="0.000006"
+                            step="0.00000001" animate required>
+                            <div class="currency-symbol flex" slot="icon"></div>
+                        </sm-input>
+                        ${getRef('receiver_container').children.length ? html`
+                            <button class="remove-card button--small" onclick=${(e) => e.target.closest('.card').remove()}>
+                                <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /> </svg>
+                                Remove
+                            </button>
+                        `: ''}
+                    </div>
+                </fieldset>
+            `
             receiverCard.querySelector('.currency-symbol') ? receiverCard.querySelector('.currency-symbol').innerHTML = currencyIcons[selectedCurrency.value] : null;
             getRef('receiver_container').appendChild(receiverCard);
-            if (address) {
-                getRef('receiver_container').lastElementChild.querySelector('.receiver-input').value = address
-            }
-            if (value) {
-                getRef('receiver_container').lastElementChild.querySelector('.amount-input').value = getConvertedAmount(value)
-            }
         }
-        getRef('fees_selector').addEventListener('change', renderFeesUI)
         function renderFeesUI() {
             switch (getRef('fees_selector').value) {
                 case 'custom':
@@ -1990,8 +1912,10 @@
                             </div>
                             `)
                         }).catch(e => {
-                            getRef('fees_selector').children[1].click();
-                            getRef('fees_selector').classList.add('hidden')
+                            if (getRef('fees_selector')) {
+                                getRef('fees_selector').children[1].click();
+                                getRef('fees_selector').classList.add('hidden')
+                            }
                         })
                     }
                     getRef('fees_section').classList.remove('hidden')
@@ -2062,7 +1986,7 @@
             })
         }
 
-        getRef('send_tx').addEventListener('valid', debounce(e => {
+        const handleValidForm = debounce(e => {
             if (getRef('fees_selector').value === 'suggested') {
                 calculateExactFee()
             } else {
@@ -2071,12 +1995,12 @@
                 if (getRef('send_tx').isFormValid)
                     getRef('send_transaction').disabled = false;
             }
-        }, 300))
-        getRef('send_tx').addEventListener('invalid', e => {
+        }, 300)
+
+        const handleInvalidForm = debounce(e => {
             renderFeesUI()
             getRef('send_transaction').disabled = true;
-        })
-
+        }, 300)
 
         function showTransactionResult(status, txid) {
             switch (status) {
@@ -2098,7 +2022,7 @@
             openPopup('transaction_result_popup')
         }
 
-        getRef('send_transaction').onclick = async evt => {
+        async function handleSendTransaction(evt) {
             buttonLoader('send_transaction', true)
             const [senders, privKeys, receivers, amounts] = getTransactionInputs();
             let fee = parseFloat(getRef('recommended_fee')?.dataset.btcAmount);
@@ -2187,14 +2111,15 @@
                 return 'invalid';
             }
         }
-        getRef('check_address_button').addEventListener('click', evt => {
+        function handleAddressCheck() {
             const query = getRef('search_query_input').value.trim();
-            if (pagesData.params.hasOwnProperty('query') && query === pagesData.params.query) {
+            if (router.state.params.hasOwnProperty('query') && query === router.state.params.query) {
+                // if the query is same as the previous one, just refresh the page
                 render.queryResult(query);
             } else {
                 location.hash = `#/check_details?query=${query}`;
             }
-        })
+        }
 
         function showAllAddresses(e) {
             const addresses = e.target.closest('li').dataset.transactingAddresses
