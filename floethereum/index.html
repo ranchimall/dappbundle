@@ -445,6 +445,16 @@
                             errorText: `Invalid private key.<br> It usually starts with "L" or "R".`
                         }
                     }
+                },
+                {
+                    selector: '#check_balance_input',
+                    customValidation: (value) => {
+                        if (!value) return { isValid: false, errorText: 'Please enter a private key or eth address' }
+                        return {
+                            isValid: floCrypto.getPubKeyHex(value) || ethOperator.isValidAddress(value),
+                            errorText: `Invalid private key or eth address.<br> It usually starts with "L" or "R" or "0x"`
+                        }
+                    }
                 }
             ]
         }
@@ -454,7 +464,7 @@
             routingEnd(state) {
                 let { page } = state
                 if (!page)
-                    page = 'search'
+                    page = 'balance'
                 if (page !== 'send') {
                     taprootScriptTxDetails = {}
                 }
@@ -569,8 +579,8 @@
                     </h2>
                     <sm-form oninvalid="handleInvalidSearch()">
                         <div id="input_wrapper">
-                            <sm-input id="private_key_input" class="password-field flex-1" placeholder="FLO/BTC private key"
-                                type="password" data-private-key animate required>
+                            <sm-input id="check_balance_input" class="password-field flex-1" placeholder="FLO/BTC private key or Ethereum address"
+                                type="password" animate required>
                                 <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
                                 <label slot="right" class="interact">
                                     <input type="checkbox" class="hidden" autocomplete="off" readonly
@@ -580,39 +590,13 @@
                                 </label>
                             </sm-input>
                             <div class="multi-state-button">
-                                <button id="check_balance_button" class="button button--primary h-100 w-100" type="submit" onclick="checkBalance()" disabled>
+                                <button id="check_balance_button" class="button button--primary h-100 w-100" type="submit" onclick=${() => checkBalance()} disabled>
                                     Check balance
                                 </button>
                             </div>
                         </div>
                     </sm-form>
-                    <div id="eth_balance_wrapper" class="grid gap-2 hidden">
-                        <div class="grid">
-                            <div class="label">ETH address</div>
-                            <sm-copy id="eth_address"></sm-copy>
-                        </div>
-                        <div class="grid">
-                            <div class="label">FLO address</div>
-                            <sm-copy id="flo_address"></sm-copy>
-                        </div>
-                        <div class="grid gap-1">
-                            <h4>Balance</h4>
-                            <ul id="eth_address_balance" class="flex flex-direction-column gap-0-5">
-                                <li class="flex align-center space-between">
-                                    <p>Ether</p>
-                                    <b id="ether_balance">0</b>
-                                </li>
-                                <li class="flex align-center space-between">
-                                    <p>USDC</p>
-                                    <b id="usdc_balance">0</b>
-                                </li>
-                                <li class="flex align-center space-between">
-                                    <p>USDT</p>
-                                    <b id="usdt_balance">0</b>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+                    <div id="eth_balance_wrapper" class="grid gap-2 hidden"></div>
                 </section>
             `)
             if (window.ethereum && !(window.currentChainId && window.currentChainId === '0x1')) {
@@ -663,10 +647,13 @@
                     const { ethAddress } = contacts[floAddress]
                     renderedContacts.push(html`
                         <li class="contact" .dataset=${{ floAddress, ethAddress }}>
-                            <sm-chips onchange=${e => e.target.closest('.contact').querySelector('sm-copy').value = e.target.value}>
-                                <sm-chip value=${floAddress} selected>FLO</sm-chip>
-                                <sm-chip value=${ethAddress}>ETH</sm-chip>
-                            </sm-chips>
+                            ${floAddress === ethAddress ? html`
+                            `: html`
+                                <sm-chips onchange=${e => e.target.closest('.contact').querySelector('sm-copy').value = e.target.value}>
+                                    <sm-chip value=${floAddress} selected>FLO</sm-chip>
+                                    <sm-chip value=${ethAddress}>ETH</sm-chip>
+                                </sm-chips>
+                            `}
                             <sm-copy value="${floAddress}"></sm-copy>
                             <div class="flex align-center space-between gap-0-5">
                                 <button class="button button--small" onclick=${() => deleteContact(floAddress)}>
@@ -683,13 +670,17 @@
         }
         function checkBalance(ethAddress, floAddress) {
             if (!ethAddress) {
-                const keyToConvert = document.querySelector('[data-private-key]').value.trim()
-                if (/^[0-9a-fA-F]{64}$/.test(keyToConvert)) {
-                    keyToConvert = coinjs.privkey2wif(keyToConvert)
+                const keyToConvert = document.querySelector('#check_balance_input').value.trim()
+                if (ethOperator.isValidAddress(keyToConvert)) {
+                    ethAddress = keyToConvert
+                } else {
+                    if (/^[0-9a-fA-F]{64}$/.test(keyToConvert)) {
+                        keyToConvert = coinjs.privkey2wif(keyToConvert)
+                    }
+                    const ethPrivateKey = coinjs.wif2privkey(keyToConvert).privkey;
+                    ethAddress = floEthereum.ethAddressFromPrivateKey(ethPrivateKey)
+                    floAddress = floCrypto.getFloID(keyToConvert)
                 }
-                const ethPrivateKey = coinjs.wif2privkey(keyToConvert).privkey;
-                ethAddress = floEthereum.ethAddressFromPrivateKey(ethPrivateKey)
-                floAddress = floCrypto.getFloID(keyToConvert)
             }
             if (!ethAddress) return
             buttonLoader('check_balance_button', true)
@@ -699,21 +690,45 @@
                 ethOperator.getTokenBalance(ethAddress, 'usdt')
             ])
                 .then(([etherBalance, usdcBalance, usdtBalance]) => {
-                    compactIDB.readData('contacts', floAddress).then(result => {
+                    compactIDB.readData('contacts', floAddress || ethAddress).then(result => {
                         if (result) return
                         compactIDB.addData('contacts', {
                             ethAddress,
-                        }, floAddress).then(() => {
+                        }, floAddress || ethAddress).then(() => {
                             renderSearchedAddressList()
                         }).catch((error) => {
                             console.error(error)
                         })
                     })
-                    getRef('eth_address').value = ethAddress
-                    getRef('flo_address').value = floAddress
-                    getRef('ether_balance').textContent = `${etherBalance} ETH`
-                    getRef('usdc_balance').textContent = `${usdcBalance} USDC`
-                    getRef('usdt_balance').textContent = `${usdtBalance} USDT`
+                    renderElem(getRef('eth_balance_wrapper'), html`
+                        <div class="grid">
+                            <div class="label">ETH address</div>
+                            <sm-copy id="eth_address" value=${ethAddress}></sm-copy>
+                        </div>
+                        ${floAddress && floAddress !== ethAddress ? html`
+                            <div class="grid">
+                                <div class="label">FLO address</div>
+                                <sm-copy id="flo_address" value=${floAddress}></sm-copy>
+                            </div>
+                        `: ''}
+                        <div class="grid gap-1">
+                            <h4>Balance</h4>
+                            <ul id="eth_address_balance" class="flex flex-direction-column gap-0-5">
+                                <li class="flex align-center space-between">
+                                    <p>Ether</p>
+                                    <b id="ether_balance">${etherBalance} ETH</b>
+                                </li>
+                                <li class="flex align-center space-between">
+                                    <p>USDC</p>
+                                    <b id="usdc_balance">${usdcBalance} USDC</b>
+                                </li>
+                                <li class="flex align-center space-between">
+                                    <p>USDT</p>
+                                    <b id="usdt_balance">${usdtBalance} USDT</b>
+                                </li>
+                            </ul>
+                        </div>
+                    `)
                     getRef('eth_balance_wrapper').classList.remove('hidden')
                     getRef('eth_balance_wrapper').animate([
                         {
