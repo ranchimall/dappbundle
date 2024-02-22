@@ -19,7 +19,10 @@
         const floGlobals = {
             blockchain: "FLO",
             adminID: "FMyRTrz9CG4TFNM6rCQgy3VQ5NF23bY2xD",
-            application: "InternManage"
+            application: "InternManage",
+            rmIncorporationId: "FKNW5eCCp2SnJMJ6pLLpUCvk5hAage8Jtk",
+            ribcId: "FDaX363r1ooANA9A2erhehhigNTnidq3o4",
+            certificateIssuerAddress: "FFCpiaZi31TpbYw5q5VNk8qJMeDiTLgsrE"
         }
     </script>
     <script src="scripts/lib.js" defer></script>
@@ -41,16 +44,19 @@
             floDapps.setCustomPrivKeyInput(getSignedIn);
             floDapps.setMidStartup(() =>
                 new Promise((resolve, reject) => {
-                    RIBC.refreshObjectData().then(() => {
-                        resolve()
-                        setTimeout(() => {
-                            if (!floGlobals.loaded) {
-                                routeTo(window.location.hash);
-                            }
-                        }, 0);
-                    }).catch((err) => {
-                        reject(err)
-                    })
+                    RIBC.refreshObjectData()
+                        .then(() => {
+                            resolve()
+                            setTimeout(() => {
+                                if (!floGlobals.loaded) {
+                                    routeTo(window.location.hash);
+                                }
+                            }, 0);
+                        }).catch((err) => {
+                            reject(err)
+                        })
+                    fetchCertificateIssueTxs()
+                    fetchPayments()
                 })
             )
             floDapps.launchStartUp().then(result => {
@@ -330,6 +336,7 @@
                         <sm-chip value="interns">Interns</sm-chip>
                         <sm-chip value="task_display">Task display</sm-chip>
                         <sm-chip value="requests">Requests</sm-chip>
+                        <sm-chip value="certificates">Certificates</sm-chip>
                     </sm-chips>
                 </div>
                 <div id="admin_views">
@@ -440,6 +447,28 @@
                             <ul id="requests_list" class="list-container observe-empty-state"></ul>
                             <div class="empty-state">
                                 <p>No pending requests</p>
+                            </div>
+                        </div>
+                    </section>
+                    <section id="certificates_container" class="hidden">
+                        <div class="flex flex-direction-column gap-1">
+                            <button class="button button--primary margin-right-auto gap-0-3"
+                                onclick="openPopup('issue_certificate_popup')">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                                    height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                                    <g>
+                                        <rect fill="none" height="24" width="24" />
+                                    </g>
+                                    <g>
+                                        <path
+                                            d="M18,15v3H6v-3H4v3c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-3H18z M7,9l1.41,1.41L11,7.83V16h2V7.83l2.59,2.58L17,9l-5-5L7,9z" />
+                                    </g>
+                                </svg>
+                                Issue a certificate
+                            </button>
+                            <ul id="certificates_list" class="list-container observe-empty-state"></ul>
+                            <div class="empty-state">
+                                <p>No certificates added</p>
                             </div>
                         </div>
                     </section>
@@ -805,6 +834,20 @@
             </button>
         </sm-form>
     </sm-popup>
+    <sm-popup id="issue_certificate_popup">
+        <header slot="header" class="popup__header">
+            <button class="popup__header__close justify-self-start" onclick="closePopup()">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0V0z" fill="none" />
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                </svg>
+            </button>
+            <h3>Issue certificate</h3>
+        </header>
+        <div id="issue_certificate_popup__content"></div>
+    </sm-popup>
     <sm-popup id="profile_popup">
         <header slot="header" class="popup__header">
             <button class="popup__header__close justify-self-start" onclick="closePopup()">
@@ -834,10 +877,15 @@
         !function (e, t) { var o = o || {}; "function" == typeof o && o.amd ? o([], t) : "object" == typeof exports && "object" == typeof module ? module.exports = t() : "object" == typeof exports ? exports.RelativeTime = t() : e.RelativeTime = t() }(this, (function () { const e = { year: 31536e6, month: 2628e6, day: 864e5, hour: 36e5, minute: 6e4, second: 1e3 }, t = "en", o = { numeric: "auto" }; function n(e) { e = { locale: (e = e || {}).locale || t, options: { ...o, ...e.options } }, this.rtf = new Intl.RelativeTimeFormat(e.locale, e.options) } return n.prototype = { from(t, o) { const n = t - (o || new Date); for (let t in e) if (Math.abs(n) > e[t] || "second" == t) return this.rtf.format(Math.round(n / e[t]), t) } }, n }));
         const relativeTime = new RelativeTime({ style: 'narrow' });
     </script>
+    <script>
+        // preact signals
+        !function (i, t) { "object" == typeof exports && "undefined" != typeof module ? t(exports) : "function" == typeof define && define.amd ? define(["exports"], t) : t((i || self).preactSignalsCore = {}) }(this, function (i) { function t() { throw new Error("Cycle detected") } var n = Symbol.for("preact-signals"); function o() { if (!(s > 1)) { var i, t = !1; while (void 0 !== h) { var n = h; h = void 0; e++; while (void 0 !== n) { var o = n.o; n.o = void 0; n.f &= -3; if (!(8 & n.f) && c(n)) try { n.c() } catch (n) { if (!t) { i = n; t = !0 } } n = o } } e = 0; s--; if (t) throw i } else s-- } var r = void 0, f = 0, h = void 0, s = 0, e = 0, v = 0; function u(i) { if (void 0 !== r) { var t = i.n; if (void 0 === t || t.t !== r) { t = { i: 0, S: i, p: r.s, n: void 0, t: r, e: void 0, x: void 0, r: t }; if (void 0 !== r.s) r.s.n = t; r.s = t; i.n = t; if (32 & r.f) i.S(t); return t } else if (-1 === t.i) { t.i = 0; if (void 0 !== t.n) { t.n.p = t.p; if (void 0 !== t.p) t.p.n = t.n; t.p = r.s; t.n = void 0; r.s.n = t; r.s = t } return t } } } function d(i) { this.v = i; this.i = 0; this.n = void 0; this.t = void 0 } d.prototype.brand = n; d.prototype.h = function () { return !0 }; d.prototype.S = function (i) { if (this.t !== i && void 0 === i.e) { i.x = this.t; if (void 0 !== this.t) this.t.e = i; this.t = i } }; d.prototype.U = function (i) { if (void 0 !== this.t) { var t = i.e, n = i.x; if (void 0 !== t) { t.x = n; i.e = void 0 } if (void 0 !== n) { n.e = t; i.x = void 0 } if (i === this.t) this.t = n } }; d.prototype.subscribe = function (i) { var t = this; return _(function () { var n = t.value, o = 32 & this.f; this.f &= -33; try { i(n) } finally { this.f |= o } }) }; d.prototype.valueOf = function () { return this.value }; d.prototype.toString = function () { return this.value + "" }; d.prototype.toJSON = function () { return this.value }; d.prototype.peek = function () { return this.v }; Object.defineProperty(d.prototype, "value", { get: function () { var i = u(this); if (void 0 !== i) i.i = this.i; return this.v }, set: function (i) { if (r instanceof y) !function () { throw new Error("Computed cannot have side-effects") }(); if (i !== this.v) { if (e > 100) t(); this.v = i; this.i++; v++; s++; try { for (var n = this.t; void 0 !== n; n = n.x)n.t.N() } finally { o() } } } }); function c(i) { for (var t = i.s; void 0 !== t; t = t.n)if (t.S.i !== t.i || !t.S.h() || t.S.i !== t.i) return !0; return !1 } function a(i) { for (var t = i.s; void 0 !== t; t = t.n) { var n = t.S.n; if (void 0 !== n) t.r = n; t.S.n = t; t.i = -1; if (void 0 === t.n) { i.s = t; break } } } function l(i) { var t = i.s, n = void 0; while (void 0 !== t) { var o = t.p; if (-1 === t.i) { t.S.U(t); if (void 0 !== o) o.n = t.n; if (void 0 !== t.n) t.n.p = o } else n = t; t.S.n = t.r; if (void 0 !== t.r) t.r = void 0; t = o } i.s = n } function y(i) { d.call(this, void 0); this.x = i; this.s = void 0; this.g = v - 1; this.f = 4 } (y.prototype = new d).h = function () { this.f &= -3; if (1 & this.f) return !1; if (32 == (36 & this.f)) return !0; this.f &= -5; if (this.g === v) return !0; this.g = v; this.f |= 1; if (this.i > 0 && !c(this)) { this.f &= -2; return !0 } var i = r; try { a(this); r = this; var t = this.x(); if (16 & this.f || this.v !== t || 0 === this.i) { this.v = t; this.f &= -17; this.i++ } } catch (i) { this.v = i; this.f |= 16; this.i++ } r = i; l(this); this.f &= -2; return !0 }; y.prototype.S = function (i) { if (void 0 === this.t) { this.f |= 36; for (var t = this.s; void 0 !== t; t = t.n)t.S.S(t) } d.prototype.S.call(this, i) }; y.prototype.U = function (i) { if (void 0 !== this.t) { d.prototype.U.call(this, i); if (void 0 === this.t) { this.f &= -33; for (var t = this.s; void 0 !== t; t = t.n)t.S.U(t) } } }; y.prototype.N = function () { if (!(2 & this.f)) { this.f |= 6; for (var i = this.t; void 0 !== i; i = i.x)i.t.N() } }; y.prototype.peek = function () { if (!this.h()) t(); if (16 & this.f) throw this.v; return this.v }; Object.defineProperty(y.prototype, "value", { get: function () { if (1 & this.f) t(); var i = u(this); this.h(); if (void 0 !== i) i.i = this.i; if (16 & this.f) throw this.v; return this.v } }); function w(i) { var t = i.u; i.u = void 0; if ("function" == typeof t) { s++; var n = r; r = void 0; try { t() } catch (t) { i.f &= -2; i.f |= 8; p(i); throw t } finally { r = n; o() } } } function p(i) { for (var t = i.s; void 0 !== t; t = t.n)t.S.U(t); i.x = void 0; i.s = void 0; w(i) } function b(i) { if (r !== this) throw new Error("Out-of-order effect"); l(this); r = i; this.f &= -2; if (8 & this.f) p(this); o() } function g(i) { this.x = i; this.u = void 0; this.s = void 0; this.o = void 0; this.f = 32 } g.prototype.c = function () { var i = this.S(); try { if (8 & this.f) return; if (void 0 === this.x) return; var t = this.x(); if ("function" == typeof t) this.u = t } finally { i() } }; g.prototype.S = function () { if (1 & this.f) t(); this.f |= 1; this.f &= -9; w(this); a(this); s++; var i = r; r = this; return b.bind(this, i) }; g.prototype.N = function () { if (!(2 & this.f)) { this.f |= 2; this.o = h; h = this } }; g.prototype.d = function () { this.f |= 8; if (!(1 & this.f)) p(this) }; function _(i) { var t = new g(i); try { t.c() } catch (i) { t.d(); throw i } return t.d.bind(t) } i.Signal = d; i.batch = function (i) { if (s > 0) return i(); s++; try { return i() } finally { o() } }; i.computed = function (i) { return new y(i) }; i.effect = _; i.signal = function (i) { return new d(i) }; i.untracked = function (i) { if (f > 0) return i(); var t = r; r = void 0; f++; try { return i() } finally { f--; r = t } } });//# sourceMappingURL=signals-core.min.js.map
+    </script>
     <script id="default_ui_library">
         "use strict";
         // Global variables
         const { html, render: renderElem } = uhtml;
+        const { signal, computed, effect } = preactSignalsCore;
         //Checks for internet connection status
         if (!navigator.onLine)
             floGlobals.connectionErrorNotification = notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error')
@@ -1176,6 +1224,11 @@
                         if (renderedAssignedTasks.length === 0) {
                             renderedAssignedTasks = html`No task assigned yet.`;
                         }
+                    } else {
+                        if (subPageId1 === 'my_certificates') {
+                            subPageId1 = undefined
+                            history.replaceState(null, null, '#/dashboard_page')
+                        }
                     }
                     if (!subPageId1) {
                         if (userType === 'intern')
@@ -1192,6 +1245,7 @@
                             ${userType !== 'admin' ? html`<sm-chip value="dashboard_tasks_wrapper" ?selected=${subPageId1 === 'all_tasks'}>All tasks</sm-chip>` : ''} 
                             ${userType === 'admin' ? html`<sm-chip value="active_tasks_wrapper" ?selected=${subPageId1 === 'active_tasks'}>Active tasks</sm-chip>` : ''} 
                             <sm-chip value="projects_wrapper" ?selected=${subPageId1 === 'projects'}>Projects</sm-chip>
+                            ${userType === 'intern' ? html`<sm-chip value="certificates_view" ?selected=${subPageId1 === 'my_certificates'}>My certificates</sm-chip>` : ''}
                             ${floGlobals.isMobileView ? html`<sm-chip value="intern_leaderboard_container">Leaderboard</sm-chip>` : ''} 
                         </sm-chips>
                         ${userType === 'intern' ? html`
@@ -1213,12 +1267,52 @@
                                 <h4>There are no interns</h4>
                             </div>
                         </div>
+                        <div id="certificates_view" class="dashboard-view__item hidden">
+                            <ul id="certificates_container" class="grid gap-1"></ul>
+                        </div>
                     `)
                     changeDashboardView(getKeyByValue(floGlobals.dashboardPages, subPageId1))
                     if (params?.taskId) {
                         showTaskDetails(params.taskId)
                     } else
                         hideTaskDetails()
+                    if (subPageId1 === 'my_certificates' && userType === 'intern') {
+                        effect(() => {
+                            if (fetchCertificateIssueTxsState.value === 'done') {
+                                const issuedCertificates = []
+                                floGlobals.validCerts.forEach((cert, id) => {
+                                    if (cert.floId === floGlobals.myFloID) {
+                                        issuedCertificates.push(html`
+                                            <li class="certificate-card flex align-center gap-0-5">
+                                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M16 4H4c-1.1 0-2 .9-2 2v12.01c0 1.1.9 1.99 2 1.99h16c1.1 0 2-.9 2-2v-8l-6-6zM4 18.01V6h11v5h5v7.01H4z"/></svg>
+                                                <h4 class="capitalize">${cert.certType.toLowerCase()}</h4>
+                                                <a class="button button--small margin-left-auto gap-0-3" href=${`https://ranchimall.github.io/certify/#/home/donwload?id=${cert.txid}`} target="_blank">
+                                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M18,15v3H6v-3H4v3c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2v-3H18z M17,11l-1.41-1.41L13,12.17V4h-2v8.17L8.41,9.59L7,11l5,5 L17,11z"/></g></svg>
+                                                    Download
+                                                </a>
+                                            </li>
+                                        `)
+                                    }
+                                })
+                                if (issuedCertificates.length === 0) {
+                                    renderElem(getRef('certificates_container'), html`
+                                        <li class="flex align-center gap-0-5" style="padding: 1rem 0">
+                                            <h4>You have not received any certificates yet.</h4>
+                                        </li>
+                                    `)
+                                } else {
+                                    renderElem(getRef('certificates_container'), html`${issuedCertificates}`)
+                                }
+                            } else if (fetchCertificateIssueTxsState.value === 'fetching') {
+                                renderElem(getRef('certificates_container'), html`
+                                    <li class="flex align-center gap-0-5" style="padding: 1rem 0">
+                                        <sm-spinner></sm-spinner>
+                                        <h4>Fetching certificates...</h4>
+                                    </li>
+                                `)
+                            }
+                        })
+                    }
                 }
                     break;
                 case 'updates_page': {
@@ -1303,7 +1397,7 @@
                     //show projects
                     if (subPageId1) {
                         getRef('admin_view_selector').value = subPageId1;
-                        const viewIndex = ['projects', 'interns', 'task_display', 'requests'].findIndex(page => page === subPageId1);
+                        const viewIndex = [...getRef('admin_view_selector').children].findIndex(elem => elem.hasAttribute('selected'))
                         showChildElement(getRef('admin_views'), viewIndex, { entry: viewIndex > currentViewIndex ? slideInLeft : slideInRight, exit: viewIndex > currentViewIndex ? slideOutLeft : slideOutRight });
                         currentViewIndex = viewIndex;
                         switch (subPageId1) {
@@ -1400,6 +1494,22 @@
                                     RIBC.admin.setDisplayedTasks(newOrder)
                                     adminDataChanged();
                                 });
+                                break;
+                            case 'certificates':
+                                const issuedCertificates = [...floGlobals.validCerts.values()]
+                                    .sort((a, b) => a.name.localeCompare(b.name))
+                                    .map((cert) => {
+                                        const { name, certType, floId } = cert;
+                                        let initials = name.split(' ').map(word => word[0]).join('')
+                                        initials = initials.length === 1 ? initials : initials[0] + initials[initials.length - 1]
+                                        return html`
+                                        <li class="intern-card align-center flex space-between gap-1">
+                                            <div class="intern-card__initials" style=${`--color: var(${getInternColor(floId)})`}>${initials}</div>
+                                            <span>${name}</span>
+                                            <span>${certType.toLowerCase()}</span>
+                                        </li>`
+                                    })
+                                renderElem(getRef('certificates_list'), html`${issuedCertificates}`)
                                 break;
                         }
                     }
@@ -2435,75 +2545,97 @@
                         savedUpdates.set(`${projectCode}_${branch}_${task}`, { link, description })
                     }
                 })
-                const rewardEarned = Object.keys(completedTasks).reduce((acc, task) => {
-                    return acc + RIBC.getAllTasks()[task].reward
-                }, 0)
-                console.log('rewardEarned', rewardEarned)
-                renderElem(getRef('intern_profile'), html`
-                <div id="intern_profile__left">
-                    <div class="flex flex-direction-column align-items-center gap-1-5">
-                        ${userType !== 'admin' && !active ? html` <div id="intern_profile__status">Inactive</div> ` : ''}
-                        <div id="intern_profile__initials" class="intern-card__initials" style=${`--color: var(${getInternColor(internFloId)})`}>${initials}</div>
-                        <div class="flex flex-direction-column align-items-center gap-0-5">
-                            <div class="flex align-center gap-0-5">
-                                <h3 id="intern_profile__name" class="text-center">${internName}</h3>
-                                ${userType === "admin" ? html`<button id="edit_intern_name" class="button button--small button--colored" onclick=${toggleInternNameEditing}>Edit</button> ` : ''} 
+                // const rewardEarned = Object.keys(completedTasks).reduce((acc, task) => {
+                //     return acc + RIBC.getAllTasks()[task].reward
+                // }, 0)
+                effect(() => {
+                    renderElem(getRef('intern_profile'), html`
+                        <div id="intern_profile__left">
+                            <div class="flex flex-direction-column align-items-center gap-1-5">
+                                ${userType !== 'admin' && !active ? html` <div id="intern_profile__status">Inactive</div> ` : ''}
+                                <div id="intern_profile__initials" class="intern-card__initials" style=${`--color: var(${getInternColor(internFloId)})`}>${initials}</div>
+                                <div class="flex flex-direction-column align-items-center gap-0-5">
+                                    <div class="flex align-center gap-0-5">
+                                        <h3 id="intern_profile__name" class="text-center">${internName}</h3>
+                                        ${userType === "admin" ? html`<button id="edit_intern_name" class="button button--small button--colored" onclick=${toggleInternNameEditing}>Edit</button> ` : ''} 
+                                    </div>
+                                    <sm-copy id="intern_profile__flo_id" value=${internFloId}></sm-copy>
+                                </div>
+                                ${joined ? html`<p>Joined on ${getFormattedTime(joined, 'date-only')}</p>` : ''}
                             </div>
-                            <sm-copy id="intern_profile__flo_id" value=${internFloId}></sm-copy>
-                        </div>
-                        ${joined ? html`<p>Joined on ${getFormattedTime(joined, 'date-only')}</p>` : ''}
-                    </div>
-                    <div id="stats_wrapper"> 
-                        <div id="intern_rating" class="stat">
-                            <div class="stat__display">
-                                <svg class="stat__circle" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"> <circle cx="64" cy="64" r="63.5"/> </svg>
-                                <span class="stat__count">${rating}%</h4>
+                            <div id="stats_wrapper"> 
+                                <div id="intern_rating" class="stat">
+                                    <div class="stat__display">
+                                        <svg class="stat__circle" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"> <circle cx="64" cy="64" r="63.5"/> </svg>
+                                        <span class="stat__count">${rating}%</h4>
+                                    </div>
+                                    <p>Rating</p>
+                                </div>
+                                <div id="intern_complete_tasks" class="stat">
+                                    <div class="stat__display">
+                                        <svg class="stat__circle" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"> <circle cx="64" cy="64" r="63.5"/> </svg>
+                                        <span class="stat__count">${completedTasksCount}</h4>
+                                    </div>
+                                    <p>Task completed</p>
+                                </div>
+                                <div id="intern_points" class="stat">
+                                    <div class="stat__display">
+                                        <svg class="stat__circle" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"> <circle cx="64" cy="64" r="63.5"/> </svg>
+                                        <span class="stat__count">${totalPoints}</h4>
+                                    </div>
+                                    <p>Points earned</p>
+                                </div>
                             </div>
-                            <p>Rating</p>
+                            ${userType === "admin" ? html`
+                                <sm-switch class="w-100" onchange=${toggleInternStatus} ?checked=${active}>
+                                    <div class="grid margin-right-0-5" slot="left">
+                                        <h4>Active</h4>
+                                        <p>Toggle to change intern status</p>
+                                    </div>
+                                </sm-switch>
+                            ` : ''} 
+                            ${fetchPaymentsState.value === 'done' ? html`
+                                <div class="flex align-center space-between gap-1">
+                                    <div class="grid">
+                                        <p style="font-size: 0.8rem">Earned</p>
+                                        <b class="stat__count" style="font-size:1.2rem;">${formatAmount(floGlobals.payments[internFloId]?.total || 0)}</b>
+                                    </div>
+                                    ${floGlobals.payments[internFloId]?.total ? html`
+                                        <a href=${`https://ranchimall.github.io/ribcpayments/#/intern?id=${internFloId}`} target="_blank" class="button button--small button--colored">
+                                            <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"> </path> </svg>
+                                            See payments
+                                        </a>
+                                    `: ``}
+                                </div>
+                            `: html`
+                                <p class="flex align-center gap-0-5">
+                                    <sm-spinner></sm-spinner>
+                                    <span>Loading earnings...</span>
+                                </p>
+                            `}
                         </div>
-                        <div id="intern_complete_tasks" class="stat">
-                            <div class="stat__display">
-                                <svg class="stat__circle" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"> <circle cx="64" cy="64" r="63.5"/> </svg>
-                                <span class="stat__count">${completedTasksCount}</h4>
+                        <div id="intern_profile__right" class="flex flex-direction-column gap-1-5"> 
+                            <div class="flex align-center space-between gap-1">
+                                <h3>Tasks</h3>
+                                <a href=${`#/updates_page?projectCode=all&internId=${internFloId}`} class="button button--small button--colored">See updates</a>
                             </div>
-                            <p>Task completed</p>
-                        </div>
-                        <div id="intern_points" class="stat">
-                            <div class="stat__display">
-                                <svg class="stat__circle" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"> <circle cx="64" cy="64" r="63.5"/> </svg>
-                                <span class="stat__count">${totalPoints}</h4>
+                            <div>
+                                <h4>Assigned</h4>
+                                <div>
+                                    ${render.assignedInternTasks(internFloId) || html`<p>No currently assigned tasks</p>`}
+                                </div>
                             </div>
-                            <p>Points earned</p>
-                        </div>
-                    </div>
-                    ${userType === "admin" ? html`<sm-switch class="w-100" onchange=${toggleInternStatus} ?checked=${active}>
-                            <div class="grid margin-right-0-5" slot="left">
-                                <h4>Active</h4>
-                                <p>Toggle to change intern status</p>
+                            <div>
+                                <div class="flex align-center space-between text-align-right">
+                                    <h4>Completed</h4>
+                                </div>
+                                <div>
+                                    ${render.completedInternTasks(internFloId, savedUpdates) || html`<p>No tasks completed yet</p>`}
+                                </div>
                             </div>
-                        </sm-switch> ` : ''} 
-                </div>
-                <div id="intern_profile__right" class="flex flex-direction-column gap-1-5"> 
-                    <div class="flex align-center space-between gap-1">
-                        <h3>Tasks</h3>
-                        <a href=${`#/updates_page?projectCode=all&internId=${internFloId}`} class="button button--small button--colored">See updates</a>
-                    </div>
-                    <div>
-                        <h4>Assigned</h4>
-                        <div>
-                            ${render.assignedInternTasks(internFloId) || html`<p>No currently assigned tasks</p>`}
                         </div>
-                    </div>
-                    <div>
-                        <div class="flex align-center space-between text-align-right">
-                            <h4>Completed</h4>
-                        </div>
-                        <div>
-                            ${render.completedInternTasks(internFloId, savedUpdates) || html`<p>No tasks completed yet</p>`}
-                        </div>
-                    </div>
-                </div>
-            `)
+                    `)
+                })
                 // <div class="grid">
                 //    <p style="font-size: 0.8rem">Earned</p>
                 //    <b class="stat__count" style="font-size:1rem;">${formatAmount(rewardEarned)}</b>
@@ -2879,6 +3011,7 @@
             'projects_wrapper': 'projects',
             'intern_leaderboard_container': 'leaderboard',
             'active_tasks_wrapper': 'active_tasks',
+            'certificates_view': 'my_certificates',
         }
         // find key of the object by value
         function getKeyByValue(object, value) {
@@ -3655,6 +3788,72 @@
                 case 'intern_list_popup':
                     renderElem(getRef('intern_list_container'), filterInterns('', { availableInternsOnly: true, activeOnly: true }))
                     break;
+                case 'issue_certificate_popup':
+                    async function issueCertificate() {
+                        const floId = getRef('issue_certificate__intern_selector').value;
+                        const name = RIBC.getInternList()[floId];
+                        const certificateType = getRef('issue_certificate__certificate_selector').value;
+                        const description = getRef('issue_certificate__description').value.trim();
+                        const privateKey = getRef('issue_certificate__private_key').value.trim();
+                        const isCorrectPrivateKey = floCrypto.verifyPrivKey(privateKey, floGlobals.certificateIssuerAddress)
+                        if (!isCorrectPrivateKey) {
+                            notify('Invalid private key', 'error')
+                            return;
+                        }
+                        const receiver = certificateType === 'CERTIFICATE OF EMPLOYMENT' ? floGlobals.rmIncorporationId : floGlobals.ribcId;
+                        const consent = await getConfirmation(`Issue certificate to ${name}?`, { confirmText: 'Issue' })
+                        if (!consent) return;
+                        buttonLoader(getRef('issue_button'), true)
+                        floBlockchainAPI.writeData(floGlobals.certificateIssuerAddress, `${certificateType}|${floId}|${name}|${description}`, privateKey, receiver).then((txid) => {
+                            console.log(txid)
+                            renderElem(getRef('issue_certificate_popup__content'), html`
+                                <div class="grid text-center gap-1-5 justify-items-center margin-auto">
+                                    <div class="grid text-center gap-0-5">
+                                        <h2>Certificate issued</h2>
+                                        <p>
+                                            Will be listed after confirmation on the blockchain.    
+                                        </p>
+                                    </div>
+                                    <a href=${`https://blockbook.ranchimall.net/tx/${txid}`} target="_blank" class="button button--primary">View on explorer</a>
+                                </div>
+                            `)
+                        }).catch((error) => {
+                            notify(error, 'error')
+                        }).finally(() => {
+                            buttonLoader(getRef('issue_button'), false)
+                        })
+                    }
+                    renderElem(getRef('issue_certificate_popup__content'), html`
+                        <sm-form class="grid gap-0-5">
+                            <div class="grid">
+                                <p>Issue to</p>
+                                <sm-select id="issue_certificate__intern_selector" required>
+                                    ${Object.entries(RIBC.getInternList()).sort((a, b) => a[1].localeCompare(b[1])).map(([floId, name]) => html`<sm-option value=${floId}>${name}</sm-option>`)}
+                                </sm-select>
+                            </div>
+                            <div class="grid">
+                                <p>Certificate type</p>
+                                <sm-select id="issue_certificate__certificate_selector" required>
+                                    <sm-option value="CERTIFICATE OF INTERNSHIP">Certificate of Internship</sm-option>
+                                    <sm-option value="CERTIFICATE OF EMPLOYMENT">Certificate of Employment</sm-option>
+                                    <sm-option value="CERTIFICATE OF VOLUNTEERSHIP">Certificate of Volunteership</sm-option>
+                                    <sm-option value="CERTIFICATE OF PARTICIPATION">Certificate of Participation</sm-option>
+                                </sm-select>
+                            </div>
+                            <div class="grid">
+                                <p>Description</p>
+                                <sm-textarea id="issue_certificate__description" rows="6" required></sm-textarea>
+                            </div>
+                            <div class="grid">
+                                <p>Private key of ${floGlobals.certificateIssuerAddress}</p>
+                                <sm-input id="issue_certificate__private_key" type="password" required></sm-input>
+                            </div>
+                            <div class="multi-state-button">
+                                <button id="issue_button" class="button button--primary" type="submit" onclick=${issueCertificate} disabled>Issue</button>
+                            </div>
+                        </sm-form>
+                    `)
+                    break;
                 case 'profile_popup':
                     renderElem(getRef('profile_popup__content'), render.settings())
                     break;
@@ -3930,6 +4129,100 @@
             replacePattern3 = /(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})/gim;
             replacedText = replacedText.replace(replacePattern3, '<a href="mailto:$1">$1</a>');
             return replacedText;
+        }
+        // return string between two strings
+        function getBetween(str, start, end) {
+            return str.substring(str.indexOf(start) + start.length, str.indexOf(end));
+        }
+        // get first three words of a string
+        function getFirstThreeWords(str) {
+            return str.split(' ').slice(0, 3).join(' ')
+        }
+        // get all words after given word including the word
+        function removeWordsBefore(str, word) {
+            return str.substring(str.indexOf(word));
+        }
+        floGlobals.validCerts = new Map();
+        let fetchCertificateIssueTxsState = signal('idle');
+        function fetchCertificateIssueTxs() {
+            return new Promise((resolve, reject) => {
+                fetchCertificateIssueTxsState.value = 'fetching'
+                floBlockchainAPI.readData(floGlobals.certificateIssuerAddress, {
+                    sentOnly: true,
+                    tx: true,
+                    receivers: [floGlobals.rmIncorporationId, floGlobals.ribcId],
+                    filter: d => d?.startsWith('CERTIFICATE OF')
+                }).then(res => {
+                    for (const tx of res.items) {
+                        const { time, txid, blockheight } = tx;
+                        const floData = tx.data;
+                        let name, floId, certType, certPara = ''
+                        // check if certificates are of newer format
+                        if (blockheight > 5787555) {
+                            [certType, floId, name, certPara] = floData.split('|')
+                        } else {
+                            floId = floData.match(/\b\w{30,36}\b/)?.[0].trim()
+                            name = getBetween(floData, 'certifies that', 'FLO ID').replace(/(,|\s)+$/, '')
+                            certType = getFirstThreeWords(floData).trim()
+                        }
+                        if (!floId) continue;
+                        let certificateVerification = ''
+                        switch (certType) {
+                            case "CERTIFICATE OF INTERNSHIP":
+                                certificateVerification = 'internCertificate';
+                                break;
+                            case "CERTIFICATE OF EMPLOYMENT":
+                                certificateVerification = 'employeeCertificate';
+                                break;
+                            case "CERTIFICATE OF VOLUNTEERSHIP":
+                                certificateVerification = 'volunteerCertificate';
+                                break;
+                            case "CERTIFICATE OF PARTICIPATION":
+                                certificateVerification = 'participationCertificate';
+                                break;
+                        }
+                        const verificationLink = `https://www.ranchimall.net/verify/?${certificateVerification}=${txid}`
+                        const btcId = btcOperator.convert.legacy2bech(floId)
+                        floGlobals.validCerts.set(floId, { txid, name, floId, btcId, certType, certPara, verificationLink })
+                    }
+                    resolve()
+                    fetchCertificateIssueTxsState.value = 'done'
+                }).catch(err => {
+                    notify(err, 'error')
+                    reject(err)
+                    fetchCertificateIssueTxsState.value = 'idle'
+                })
+            })
+        }
+        floGlobals.payments = {};
+        let fetchPaymentsState = signal('idle');
+        function fetchPayments() {
+            fetchPaymentsState.value = 'fetching'
+            floBlockchainAPI
+                .readAllTxs("FThgnJLcuStugLc24FJQggmp2WgaZjrBSn")
+                .then(({ items }) => {
+                    items.forEach((tx) => {
+                        const floId = tx.vout[0].scriptPubKey.addresses[0];
+                        if (!RIBC.getInternList()[floId]) return; // check if floId is of an intern
+                        const { txid, floData, time } = tx
+                        if (!floGlobals.payments[floId])
+                            floGlobals.payments[floId] = {
+                                total: 0,
+                                txs: []
+                            };
+                        const amount = parseFloat(floData.match(/([0-9]+)/)[1]) || 0; // get amount from floData
+                        floGlobals.payments[floId].total += amount;
+                        floGlobals.payments[floId].txs.push({
+                            txid,
+                            amount,
+                            time
+                        });
+                    });
+                    fetchPaymentsState.value = 'done'
+                }).catch((err) => {
+                    notify(err, 'error')
+                    fetchPaymentsState.value = 'idle'
+                });
         }
     </script>
 </body>

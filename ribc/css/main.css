@@ -52,6 +52,7 @@ body[data-theme=dark] {
   --danger-color: rgb(255, 106, 106);
   --green: #00e676;
   --yellow: rgb(255, 213, 5);
+  color-scheme: dark;
   --dark-red: #ff5e7e;
   --red: #ff6098;
   --kinda-pink: #c44ae6;
@@ -67,9 +68,6 @@ body[data-theme=dark] {
   --tangerine: #ffac6d;
   --orange: #ffbe68;
   --redish-orange: #ff8560;
-}
-body[data-theme=dark] ::-webkit-calendar-picker-indicator {
-  filter: invert(1);
 }
 
 h1,
@@ -258,7 +256,7 @@ sm-textarea {
 }
 
 sm-spinner {
-  --size: 1.5rem;
+  --size: 1.2rem;
   --stroke-width: 0.1rem;
 }
 
@@ -434,6 +432,10 @@ ul {
   justify-items: start;
 }
 
+.justify-items-center {
+  justify-items: center;
+}
+
 .justify-content-start {
   justify-content: start;
 }
@@ -548,6 +550,10 @@ ul {
 
 .margin-inline-1-5 {
   margin-inline: 1.5rem;
+}
+
+.margin-auto {
+  margin: auto;
 }
 
 .hidden {
@@ -1129,6 +1135,7 @@ ul {
   grid-template-columns: minmax(0, 1fr);
   overflow-y: auto;
   align-items: flex-start;
+  align-content: flex-start;
   padding: 0 1rem 1rem 1rem;
 }
 
@@ -2132,6 +2139,70 @@ input[type=date]:focus {
   opacity: 0.8;
 }
 
+#certificates_container {
+  padding: 0 1rem;
+  overflow-y: auto;
+  height: 100%;
+}
+
+#certificates_list {
+  display: grid;
+}
+#certificates_list .intern-card {
+  background-color: rgba(var(--text-color), 0.03);
+}
+#certificates_list .intern-card span:last-of-type {
+  margin-left: auto;
+  text-align: end;
+}
+
+#certificates_view {
+  align-self: flex-start;
+}
+
+.certificate-card {
+  position: relative;
+}
+.certificate-card:not(:last-of-type) {
+  padding-bottom: 1rem;
+}
+.certificate-card:not(:last-of-type)::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 3.5rem;
+  right: 0;
+  height: 1px;
+  background-color: rgba(var(--text-color), 0.2);
+}
+.certificate-card > .icon {
+  height: 3rem;
+  width: 3rem;
+  padding: 0.8rem;
+  background-color: rgba(var(--text-color), 0.06);
+  border-radius: 5rem;
+  fill: var(--accent-color);
+}
+
+#issue_certificate_popup {
+  --min-height: 90vh;
+}
+#issue_certificate_popup #issue_certificate_popup__content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+#issue_certificate_popup sm-form {
+  flex: 1;
+}
+#issue_certificate_popup sm-form::part(form) {
+  display: flex;
+  flex-direction: column;
+}
+#issue_certificate_popup sm-form .multi-state-button {
+  margin-top: auto;
+}
+
 @media only screen and (max-width: 640px) {
   .list-container {
     padding-bottom: 5rem;
@@ -2361,6 +2432,9 @@ input[type=date]:focus {
     top: 1rem;
     align-self: flex-start;
     padding: 1.5rem;
+  }
+  #issue_certificate_popup {
+    --width: 32rem;
   }
   #profile_popup {
     --width: 32rem;
