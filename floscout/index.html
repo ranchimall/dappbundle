@@ -1543,10 +1543,11 @@
 			try {
 				const [floAddress] = state.wildcards
 				if (!floAddress) return;
-				let [ownedTokens = {}, floBalance, addressTxs] = await Promise.all([getAddressInfo(floAddress), getAddressBalance(floAddress), getAddressTxs(floAddress)])
+				let [ownedTokens = {}, floBalance, addressTxs] = await Promise.all([getAddressInfo(floAddress), floBlockchainAPI.getBalance(floAddress), getAddressTxs(floAddress)]);
+				console.log(ownedTokens)
 				const ownedTokensCards = []
 				for (const token in ownedTokens) {
-					render.tokenBalanceCard(token, ownedTokens[token].balance || 0)
+					ownedTokensCards.push(render.tokenBalanceCard(token, ownedTokens[token].balance || 0))
 				}
 				renderElem(getRef("page_container"), html`
 					<div id="address_page" class="page">
@@ -2409,10 +2410,6 @@
 		async function getAddressInfo(floAddress) {
 			const addressInfo = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/floAddressInfo/${floAddress}`)
 			return addressInfo.floAddressBalances
-		}
-
-		async function getAddressBalance(floAddress) {
-			return await fetchJson(`${floGlobals.floApiUrl}/api/addr/${floAddress}/balance`)
 		}
 
 		async function getAddressTxs(floAddress) {
