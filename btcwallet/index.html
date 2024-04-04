@@ -1155,7 +1155,7 @@
                     privateKeyConversionDescription = 'Convert ETH private key to corresponding FLO | BTC address & private key';
                     break;
             }
-            renderElem(getRef('pages_container'), html.for(getRef('pages_container'), convertingFrom)/*html*/`
+            renderElem(getRef('pages_container'), html.node/*html*/`
                 <div id="convert" class="page flex flex-direction-column gap-1-5" data-sm-containment>
                     <sm-chips id="conversion_view_selector" onchange=${(e) => location.hash = `#/convert?from=${e.target.value}`}>
                         <sm-chip value="flo" ?selected=${convertingFrom === 'flo'}>FLO</sm-chip>
@@ -1224,7 +1224,6 @@
                 const transactingAddresses = (receiver || sender || [])
                 const transactingAddressesLinks = transactingAddresses
                     .slice(0, 2).map(address => html`<a href="${`#/check_details?query=${address}`}" class="tx-participant wrap-around">${address}</a>`)
-                // block = null
                 const isUnconfirmed = block < 0 || block === null || block === undefined
                 if (type === 'out') {
                     transactionReceiver = html`Sent to ${transactingAddressesLinks}`;
