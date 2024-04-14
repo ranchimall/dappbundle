@@ -357,6 +357,8 @@
             throw "No API available"
         } catch (error) {
             console.error(error)
+            if (!APIs[index])
+                throw "No API available"
             APIs[index].coolDownTime = new Date().getTime() + 1000 * 60 * 10; // 10 minutes
             return multiApi(fnName, { index: index + 1, ...args });
         }

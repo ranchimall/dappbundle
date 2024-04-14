@@ -1341,6 +1341,7 @@
             },
             async transactions(address) {
                 try {
+                    if (!address || address === '') return
                     getRef('address_details').classList.remove('hidden')
                     getRef('transactions_list').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
                     getRef('address_balance').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
