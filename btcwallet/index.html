@@ -1341,7 +1341,7 @@
             },
             async transactions(address) {
                 try {
-                    if (!address || address === '') return
+                    if (!address || address === '' || !btcOperator.validateAddress(address)) return;
                     getRef('address_details').classList.remove('hidden')
                     getRef('transactions_list').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
                     getRef('address_balance').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
@@ -1554,6 +1554,7 @@
             },
             queryResult(query) {
                 const type = checkQueryStringType(query);
+                console.log(type)
                 if (type === 'address') {
                     getRef('tx_details').classList.add('hidden')
                     render.addressDetails(query)
@@ -1591,16 +1592,18 @@
         }
         let globalExchangeRate = {}
         async function getExchangeRate() {
-            return new Promise((resolve, reject) => {
-                Promise.all(['usd', 'inr'].map(cur => fetch(`https://bitpay.com/api/rates/btc/${cur}`))).then(responses => {
-                    Promise.all(responses.map(res => res.json())).then(rates => {
-                        rates.forEach(rate => {
-                            globalExchangeRate[rate.code.toLowerCase()] = rate.rate
-                        })
-                        globalExchangeRate.btc = 1
-                        resolve(globalExchangeRate)
-                    }).catch(err => reject(err))
-                }).catch(err => reject(err))
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const responses = await Promise.all(['usd', 'inr'].map(cur => fetch(`https://bitpay.com/api/rates/btc/${cur}`)))
+                    const rates = await Promise.all(responses.map(res => res.json()))
+                    rates.forEach(rate => {
+                        globalExchangeRate[rate.code.toLowerCase()] = rate.rate
+                    })
+                    globalExchangeRate.btc = 1;
+                    resolve(globalExchangeRate)
+                } catch (err) {
+                    reject(err)
+                }
             })
         }
         function getConvertedAmount(amount, { shouldFormatAmount = false, onDate } = {}) {
@@ -1934,21 +1937,17 @@
             return [senders, privKeys, receivers, amounts]
         }
         function calculateApproxFee() {
-            return new Promise((resolve, reject) => {
-                fetch('https://bitcoiner.live/api/fees/estimates/latest')
-                    .then(res => {
-                        res.json()
-                            .then(data => {
-                                const satPerByte = data.estimates['60'].sat_per_vbyte;
-                                const legacyBytes = 200;
-                                const segwitBytes = 77;
-                                resolve((legacyBytes * satPerByte + (0.25 * satPerByte) * segwitBytes) / Math.pow(10, 8));
-                            }).catch(e => {
-                                reject(e)
-                            })
-                    }).catch(e => {
-                        reject(e)
-                    })
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const res = await fetch('https://bitcoiner.live/api/fees/estimates/latest')
+                    const data = await res.json()
+                    const satPerByte = data.estimates['60'].sat_per_vbyte;
+                    const legacyBytes = 200;
+                    const segwitBytes = 77;
+                    resolve((legacyBytes * satPerByte + (0.25 * satPerByte) * segwitBytes) / Math.pow(10, 8));
+                } catch (e) {
+                    reject(e)
+                }
             })
         }
         function calculateExactFee() {

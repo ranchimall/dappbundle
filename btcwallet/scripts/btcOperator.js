@@ -1459,11 +1459,13 @@
         } catch (error) {
             reject(error)
         }
-    }).catch(error => reject(error))
+    })
 
     getTx.hex = btcOperator.getTx.hex = txid => multiApi('txHex', { txid });
 
     btcOperator.getAddressData = address => new Promise((resolve, reject) => {
+        if (!validateAddress(address))
+            return reject("Invalid address");
         Promise.all([
             multiApi('balance', { addr: address }),
             multiApi('txs', { addr: address })
