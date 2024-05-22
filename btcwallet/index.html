@@ -2073,10 +2073,10 @@
                 console.error(error)
                 if (error.hasOwnProperty('hasInsufficientBalance')) {
                     notify('Insufficient balance', 'error')
-                } else if (error === 'TypeError: Failed to fetch') {
+                } else {
                     notify(`
                         <div style="display: grid; gap: 0.3rem;">
-                            <h4>Couldn't fetch transaction ID!</h4>
+                            <h4>Error sending transaction</h4>
                             <p style="font-size: 0.9rem; opacity: 0.8">Please check transaction history before retrying.</p>
                         </div>
                         `, 'error', {
@@ -2088,8 +2088,7 @@
                             }
                         }
                     });
-                } else {
-                    notify(`Error sending transaction \n ${error}`, 'error');
+                    console.error(error)
                 }
             }).finally(_ => {
                 buttonLoader('send_transaction', false)
