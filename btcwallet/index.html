@@ -1725,15 +1725,15 @@
                         convertedToEthAddress = floEthereum.ethAddressFromPrivateKey(convertedToEthPrivateKey)
                         break;
                     case 'btc':
-                        convertedToFloPrivateKey = btcOperator.convert.wif(keyToConvert, bitjs.priv)
+                        convertedToFloPrivateKey = btcOperator.convert.wif(keyToConvert, bitjs.priv);
                         convertedToFloAddress = floCrypto.getFloID(convertedToFloPrivateKey);
                         convertedToEthPrivateKey = coinjs.wif2privkey(keyToConvert).privkey;
-                        convertedToEthAddress = floEthereum.ethAddressFromPrivateKey(convertedToEthPrivateKey)
+                        convertedToEthAddress = floEthereum.ethAddressFromPrivateKey(convertedToEthPrivateKey);
                         break;
                     case 'eth':
-                        convertedToBtcPrivateKey = btcOperator.convert.wif(keyToConvert)
+                        convertedToBtcPrivateKey = btcOperator.convert.wif(keyToConvert);
                         convertedToBtcAddress = btcOperator.bech32Address(convertedToBtcPrivateKey);
-                        convertedToFloPrivateKey = keyToConvert
+                        convertedToFloPrivateKey = btcOperator.convert.wif(keyToConvert, bitjs.priv);
                         convertedToFloAddress = floCrypto.getFloID(convertedToFloPrivateKey);
                         break;
                 }
