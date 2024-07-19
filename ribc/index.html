@@ -4209,7 +4209,8 @@
 
                         //Errorfix 2 - Making sure FLO ID is in the intern list
                         const internList = RIBC.getInternList();
-                        if (!(floId in internList)) return; // check if floId is of an intern
+                        // Ensure internList is defined and floId exists in it
+                        if (!internList || !(floId in internList)) return; // check if floId is of an intern
 
                         if (!RIBC.getInternList()[floId]) return; // check if floId is of an intern
                         const { txid, floData, time } = tx
