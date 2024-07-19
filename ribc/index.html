@@ -4202,6 +4202,9 @@
                 .readAllTxs("FThgnJLcuStugLc24FJQggmp2WgaZjrBSn")
                 .then(({ items }) => {
                     items.forEach((tx) => {
+                        // Ensure tx.vout exists and has the expected structure
+                        if (!tx.vout || !tx.vout[0] || !tx.vout[0].scriptPubKey || !tx.vout[0].scriptPubKey.addresses) return;
+
                         const floId = tx.vout[0].scriptPubKey.addresses[0];
                         if (!RIBC.getInternList()[floId]) return; // check if floId is of an intern
                         const { txid, floData, time } = tx
