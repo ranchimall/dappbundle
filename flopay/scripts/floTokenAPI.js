@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floTokenAPI v1.2.0
+(function (EXPORTS) { //floTokenAPI v1.2.1a
     /* Token Operator to send/receive tokens via blockchain using API calls*/
     'use strict';
     const tokenAPI = EXPORTS;
@@ -68,9 +68,13 @@
 
     const getBalance = tokenAPI.getBalance = function (floID, token = DEFAULT.currency) {
         return new Promise((resolve, reject) => {
-            fetch_api(`api/v2/floAddressInfo/${floID}`)
-                .then(result => resolve(result.floAddressBalances[token]?.balance || 0))
-                .catch(error => reject(error))
+            fetch_api(`api/v2/floAddressInfo/${floID}`).then(result => {
+                let token_balance = 0
+                if(result.floAddressBalances != null && typeof result.floAddressBalances == "object" && token in result.floAddressBalances){
+                    token_balance = result.floAddressBalances[token]["balance"] || 0
+                }
+                resolve(token_balance)
+            }).catch(error => reject(error))
         })
     }
 
@@ -79,10 +83,10 @@
             fetch_api(`api/v2/transactionDetails/${txID}`).then(res => {
                 if (res.result === "error")
                     reject(res.description);
-                else if (!res.parsedFloData)
-                    reject("Data piece (parsedFloData) missing");
-                else if (!res.transactionDetails)
-                    reject("Data piece (transactionDetails) missing");
+                //else if (!res.parsedFloData)
+                //    reject("Data piece (parsedFloData) missing");
+                //else if (!res.transactionDetails)
+                //    reject("Data piece (transactionDetails) missing");
                 else
                     resolve(res);
             }).catch(error => reject(error))
@@ -178,15 +182,15 @@
 
     const util = tokenAPI.util = {};
 
-    util.parseTxData = function (txData) {
+     util.parseTxData = function (txData) {
         let parsedData = {};
         for (let p in txData.parsedFloData)
             parsedData[p] = txData.parsedFloData[p];
-        parsedData.sender = txData.transactionDetails.vin[0].addr;
-        for (let vout of txData.transactionDetails.vout)
+        parsedData.sender = txData.vin[0].addresses[0];
+        for (let vout of txData.vout)
             if (vout.scriptPubKey.addresses[0] !== parsedData.sender)
                 parsedData.receiver = vout.scriptPubKey.addresses[0];
-        parsedData.time = txData.transactionDetails.time;
+        parsedData.time = txData.time;
         return parsedData;
     }
 

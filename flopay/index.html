@@ -1515,7 +1515,7 @@
                 console.log("Starting the app! Please Wait!")
                 floDapps.setCustomPrivKeyInput(getSignedIn)
                 floDapps.setAppObjectStores({ savedIds: {}, savedUserData: {} })
-                await floExchangeAPI.init("FMxYC7gYZhouzqtHZukGnPiQ8nvG4CMzXM", "exchange")
+                await floExchangeAPI.init("exchange")
                 console.log('Exchange API initialized!')
                 floDapps.launchStartUp().then(result => {
                     console.log(`Welcome ${floDapps.user.id}`);
