@@ -2157,8 +2157,7 @@
                             try {
                                 upiID = floDapps.user.decrypt(upi_id);
                             } catch (error) {
-                                console.error("UPI ID is not encrypted with a proper key", error);
-                                return notify("UPI ID is not encrypted with a proper key", 'error');
+                                upiID = "your UPI ID";
                             }
                         } else
                             upiID = upi_id;
