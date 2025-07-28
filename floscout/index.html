@@ -2973,13 +2973,22 @@ function parseTransactions(txList) {
 				const url = `${floGlobals.floApiUrl}/api/v2/address/${floAddress}?details=basic`;
 				console.log(`📡 Fetching address balance from: ${url}`);
 				const balance = await fetchJson(url);
-				console.log("📦 Balance info:", balance);
+				console.log("📦 Raw balance info:", balance);
+
+				// Add normalized balanceFLO for uniform usage between Address Indexer and Blockbook
+				if ("balanceSat" in balance) {
+					balance.balance = balance.balance; // already in FLO
+				} else {
+					balance.balance = parseFloat(balance.balance) / 1e8; // convert from satoshi string
+				}
+
 				return balance;
 			} catch (error) {
 				console.error("❌ Error fetching address balance:", error);
 				return null;
 			}
 		}
+
 
 
 
@@ -3188,36 +3197,47 @@ async function processNavbarSearch() {
 
 
 		async function getAllSuggestions() {
-			console.log(`📡 Fetching token and smart contract list from ${floGlobals.tokenApiUrl}/api/v2/tokenSmartContractList`);
+			console.log(`📡 Checking cached token and smart contract list...`);
 			window.allSuggestions = [];
 
-			try {
-				let { tokens, smartContracts } = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/tokenSmartContractList`);
-				console.log("✅ Token & Smart Contract list received:", { tokensCount: tokens.length, smartContractsCount: smartContracts.length });
-
-				floGlobals.tokenList = tokens;
-				floGlobals.smartContractList = {};
-				smartContracts.forEach(contract => {
-					floGlobals.smartContractList[`${contract.contractName}_${contract.contractAddress}`] = contract;
-					allSuggestions.push(`${contract.contractName}_${contract.contractAddress}`);
+			// Check sessionStorage
+			let cached = sessionStorage.getItem("tokenSmartContractList");
+			if (cached) {
+				console.log("📦 Loaded token & contract list from session cache.");
+				cached = JSON.parse(cached);
+			} else {
+				// Fetch from network
+				console.log(`🌐 Fetching from: ${floGlobals.tokenApiUrl}/api/v2/tokenSmartContractList`);
+				cached = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/tokenSmartContractList`);
+				sessionStorage.setItem("tokenSmartContractList", JSON.stringify(cached));
+				console.log("✅ Fetched and cached:", {
+					tokensCount: cached.tokens.length,
+					smartContractsCount: cached.smartContracts.length
 				});
-				allSuggestions = allSuggestions.concat(tokens);
-
-				window.flexSearchIndex = new FlexSearch.Index({
-					tokenize: "reverse",
-					suggest: true
-				});
-
-				allSuggestions.forEach((suggestion, index) => {
-					flexSearchIndex.add(index, suggestion);
-				});
-
-				console.log("🔍 Search suggestions initialized with", allSuggestions.length, "items");
-			} catch (err) {
-				console.error("❌ Failed to fetch suggestions:", err);
-				throw err;
 			}
+
+			const { tokens, smartContracts } = cached;
+
+			floGlobals.tokenList = tokens;
+			floGlobals.smartContractList = {};
+			smartContracts.forEach(contract => {
+				floGlobals.smartContractList[`${contract.contractName}_${contract.contractAddress}`] = contract;
+				allSuggestions.push(`${contract.contractName}_${contract.contractAddress}`);
+			});
+			allSuggestions = allSuggestions.concat(tokens);
+
+			window.flexSearchIndex = new FlexSearch.Index({
+				tokenize: "reverse",
+				suggest: true
+			});
+
+			allSuggestions.forEach((suggestion, index) => {
+				flexSearchIndex.add(index, suggestion);
+			});
+
+			console.log("🔍 Search suggestions initialized with", allSuggestions.length, "items");
 		}
+
 
 
 		function initSmartContractCreation() {
