@@ -2768,7 +2768,7 @@
 
         function hasUnconfirmedTransactions(address) {
             return new Promise((resolve, reject) => {
-                fetchJson(`https://blockbook.ranchimall.net/api/v2/address/${address}?details=basic`)
+                fetchJson(`https://blockbook.flocard.app/api/v2/address/${address}?details=basic`)
                     .then(details => {
                         resolve(details.unconfirmedTxs > 0)
                         if (details.unconfirmedTxs > 0) {
