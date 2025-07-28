@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<!-- Last working but with critical data missing -->
 
 <head>
 	<meta charset="UTF-8" />
@@ -143,7 +144,7 @@
 		const floGlobals = {
 			blockchain: testMode ? "FLO_TEST" : "FLO",
 			tokenApiUrl: testMode ? 'https://ranchimallflo-testnet.ranchimall.net' : 'https://ranchimallflo.ranchimall.net',
-			floApiUrl: testMode ? 'https://blockbook-testnet.ranchimall.net' : 'https://blockbook.ranchimall.net',
+			floApiUrl: testMode ? 'https://blockbook-testnet.ranchimall.net' : 'https://blockbook.flocard.app',
 			expirationDays: 60,
 		}
 	</script>
@@ -832,22 +833,25 @@
 			},
 			contractChoiceCard(details) {
 				const { participantFloAddress, userChoice, tokenAmount, transactionHash, winningAmount, tokenIdentification } = details;
-				let action;
+				let action, amount;
 				if (winningAmount) {
 					action = 'Won'
 					amount = winningAmount
-				} else
+				} else {
 					action = 'Invested'
+					amount = tokenAmount
+				}
 				return html`
 					<li class="contract-winner">
 						<sm-copy value=${participantFloAddress}>
 							<a href=${`#/address/${participantFloAddress}`} class="address wrap-around">${participantFloAddress}</a>
 						</sm-copy>
 						<span>${userChoice}</span>
-						<span>${action} ${formatAmount(tokenAmount)} ${tokenIdentification}</span>
+						<span>${action} ${formatAmount(amount)} ${tokenIdentification}</span>
 					</li>
 				`;
 			},
+
 			contractDepositCard(obj) {
 				const { hash, blockHeight, token, sender, receiver, amount, type, time, contractAddress, contractName } = obj;
 				let title = 'Contract deposit';
@@ -869,7 +873,7 @@
 								</div>
 								<div class="flex flex-direction-column">
 									<h5 class="label">Receiver (Smart contract)</h5>
-									<a href=${`#/contract/${contractName}-${receiver}`} class="address wrap-around">${contractName}-${receiver}</a> 
+									<a href=${`#/contract/${contractName}_${receiver}`} class="address wrap-around">${contractName}_${receiver}</a> 
 								</div>
 							</div>
 							<div class="flex flex-direction-column">
@@ -917,7 +921,7 @@
 							</div>
 							<div class="flex flex-direction-column">
 								<h5 class="label">Receiver (Smart contract)</h5>
-								<h4><a class="address wrap-around" href=${`#/contract/${contractName}-${receiver}`}>${contractName}-${receiver}</a></h4>
+								<h4><a class="address wrap-around" href=${`#/contract/${contractName}_${receiver}`}>${contractName}_${receiver}</a></h4>
 							</div>
 							<div class="flex align-center space-between flex-wrap gap-1">
 								<div class="flex flex-direction-column">
@@ -1012,45 +1016,73 @@
 						</div>
 					</li>`;
 			},
-			contractTriggerCard(obj) {
-				// TODO: change committee address to actual committee address instead of contract address
-				const { hash, blockHeight, contractName, contractAddress, winningChoice, committeeAddress, time } = obj;
-				return html`
-					<li id=${hash} class="transaction contract-trigger">
-						<svg class="icon" viewBox="0 0 64 64"> <circle cx="32" cy="32" r="31"/> <polyline points="32 13.47 32 32 43.4 43.4"/> </svg>
-						<div class="contract-type">
-							<h5 class="label">smart contract </h5>
-							<h4 class="uppercase">trigger</h4>
+contractTriggerCard(obj) {
+	const {
+		hash, blockHeight, contractName, contractAddress,
+		winningChoice, committeeAddress,
+		sender, receiver, amount, token,
+		time, onChain,
+		triggerCondition // 🔧 make sure it's destructured
+	} = obj;
+
+	return html`
+		<li id=${hash} class="transaction contract-trigger">
+			<svg class="icon" viewBox="0 0 64 64">
+				<circle cx="32" cy="32" r="31"/>
+				<polyline points="32 13.47 32 32 43.4 43.4"/>
+			</svg>
+			<div class="contract-type">
+				<h5 class="label">smart contract</h5>
+				<h4 class="uppercase">trigger</h4>
+			</div>
+			<div class="contract-info">
+				<time>${getFormattedTime(time)}</time>
+				<div class="flex flex-direction-column">
+					<h5 class="label">contract address</h5>
+					<sm-copy value=${contractAddress}>
+						<a href=${`#/contract/${contractName}_${contractAddress}`} class="address wrap-around">${contractName}_${contractAddress}</a>
+					</sm-copy>
+				</div>
+
+				${onChain
+					? html`
+						<div class="flex flex-direction-column">
+							<h5 class="label">Triggered Choice</h5> <!-- 🔧 updated label -->
+							<h4>${triggerCondition ? triggerCondition : 'Triggered by Time'}</h4> <!-- 🔧 show the actual triggered choice -->
 						</div>
-						<div class="contract-info">
-							<time>${getFormattedTime(time)}</time>
-							<div class="flex flex-direction-column">
-								<h5 class="label">contract address</h5>
-								<sm-copy value=${contractAddress}>
-									<a href=${`#/contract/${contractName}-${contractAddress}`} class="address wrap-around">${contractName}-${contractAddress}</a>
-								</sm-copy>
-							</div>
-							<div class="flex flex-direction-column">
-								<h5 class="label">Winning Choice</h5>
-								<h4>${winningChoice}</h4>
-							</div>
-							<div class="flex flex-direction-column">
-								<h5 class="label">committee address</h5>
-								<sm-copy value=${committeeAddress}>
-									<a href=${`#/address/${committeeAddress}`} class="address wrap-around">${committeeAddress}</a>
-								</sm-copy>
-							</div>
-							<div class="flex align-center space-between flex-wrap gap-1">
-								<div class="flex flex-direction-column">
-									<h5 class="label">Transaction ID</h5>
-									<sm-copy value=${hash} clip-text></sm-copy>
-								</div>
-								<a href=${`#/transaction/${hash}`} class="button button--small button--colored">View details</a>
-							</div>
+					`
+					: html`
+						<div class="flex flex-direction-column">
+							<h5 class="label">Sender</h5>
+							<sm-copy value=${sender}>
+								<a href=${`#/address/${sender}`} class="address wrap-around">${sender}</a>
+							</sm-copy>
 						</div>
-					</li>
-				`;
-			},
+						<div class="flex flex-direction-column">
+							<h5 class="label">Receiver</h5>
+							<sm-copy value=${receiver}>
+								<a href=${`#/address/${receiver}`} class="address wrap-around">${receiver}</a>
+							</sm-copy>
+						</div>
+						<div class="flex flex-direction-column">
+							<h5 class="label">Amount</h5>
+							<h4>${amount} ${token || ''}</h4>
+						</div>
+					`
+				}
+
+				<div class="flex align-center space-between flex-wrap gap-1">
+					<div class="flex flex-direction-column">
+						<h5 class="label">Transaction ID</h5>
+						<sm-copy value=${hash} clip-text></sm-copy>
+					</div>
+					<a href=${`#/transaction/${hash}`} class="button button--small button--colored">View details</a>
+				</div>
+			</div>
+		</li>
+	`;
+},
+
 			contractCreationCard(obj) {
 				const {
 					hash, blockHeight, token, contractName, incAddress, contractType,
@@ -1071,7 +1103,7 @@
 							` : ''}
 							<div class="flex flex-direction-column">
 								<h5 class="label">Contract ID</h5>
-								<a href=${`#/contract/${contractName}-${incAddress}`} class="address wrap-around">${contractName}-${incAddress}</a>
+								<a href=${`#/contract/${contractName}_${incAddress}`} class="address wrap-around">${contractName}_${incAddress}</a>
 							</div>
 							<div class="flex flex-direction-column">
 								<h5 class="label">contract type</h5>
@@ -1166,14 +1198,20 @@
 							<time>${getFormattedTime(time)}</time>
 							<div class="flex flex-direction-column">
 								<h5 class="label">Sender (Smart contract)</h5>
-								<a href=${`#/contract/${contractName}-${senderAddress}`} class="address wrap-around">${contractName}-${senderAddress}</a>
+								<a href=${`#/contract/${contractName}_${receiverAddress}`} class="address wrap-around">${contractName}_${receiverAddress}</a>
 							</div>
 							<div class="flex flex-direction-column">
+								<h5 class="label">Sender address</h5>
+								<sm-copy value=${senderAddress}>
+									<a href=${`#/address/${senderAddress}`} class="address wrap-around">${senderAddress}</a>
+								</sm-copy>
+							</div>
+								<div class="flex flex-direction-column">
 								<h5 class="label">Receiver address</h5>
 								<sm-copy value=${receiverAddress}>
 									<a href=${`#/address/${receiverAddress}`} class="address wrap-around">${receiverAddress}</a>
 								</sm-copy>
-							</div>
+							</div>		
 							<div class="flex flex-direction-column">
 								<h5 class="label">Amount</h5>
 								<h4>${tokenAmount} ${tokenIdentification}</h4>
@@ -1190,75 +1228,103 @@
 						</div>
 					</li>`;
 			},
-			compoundTransactionCard(details) {
-				const { time, hash, sender, receiver, contractName, token, amount, offChainTransactions = [], userChoice, contractAddress } = details
-				const smartContract = `${contractName}-${receiver || contractAddress}`
-				const renderedOffChainTransactions = offChainTransactions.map(tx => {
-					const { receiverAddress, tokenAmount, tokenIdentification } = tx
-					return html`
+compoundTransactionCard(details) {
+	const {
+		time, hash, sender, receiver,
+		contractName, token, amount,
+		offChainTransactions = [],
+		userChoice, contractAddress,
+		triggerCondition
+	} = details;
+
+	const smartContract = `${contractName}_${receiver || contractAddress}`;
+	const renderedOffChainTransactions = offChainTransactions.map(tx => {
+		const { receiverAddress, tokenAmount, tokenIdentification } = tx;
+		return html`
+			<li class="transfer-step">
+				<div class="flex flex-direction-column gap-0-5">
+					<div class="flex flex-direction-column gap-0-5">
+						<div class="flex align-center gap-0-5">
+							<h5 class="label" style="margin-bottom: 0">Sender (Smart contract)</h5>
+							<div class="badge">Off-chain</div>
+						</div>
+						<a href=${`#/contract/${smartContract}`} class="address wrap-around"><b>${smartContract}</b></a>
+					</div>
+					<p>Sent: <b>${tokenAmount} ${tokenIdentification}</b></p>
+				</div>
+				<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+					<path d="M0 0h24v24H0V0z" fill="none"/>
+					<path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/>
+				</svg>
+				<div class="flex flex-direction-column">
+					<h5 class="label">Receiver</h5>
+					<sm-copy value=${receiverAddress}>
+						<a href=${`#/address/${receiverAddress}`} class="address wrap-around">${receiverAddress}</a>
+					</sm-copy>
+				</div>
+			</li>
+		`;
+	});
+
+	return html`
+		<li class="transaction">
+			<svg class="icon" viewBox="0 0 64 64">
+				<title>transfer</title>
+				<polyline points="17.04 35.97 14.57 33.5 40.15 7.9 32.75 0.5 55.52 0.5 55.52 23.28 48.12 15.87 23.86 40.14 15.88 48.13 8.48 40.72 8.48 63.5 31.25 63.5 23.85 56.1 49.43 30.5 46.96 28.03"/>
+			</svg>
+
+			<div class="contract-type flex flex-direction-column gap-0-5">
+				<h4>Smart contract transfer</h4>
+				<time>${getFormattedTime(time)}</time>
+				
+				${triggerCondition ? html`
+					<div>
+						<h5 class="label">Triggered Choice</h5>
+						<b>${triggerCondition}</b>
+					</div>
+				` : ''}
+			</div>
+
+			<div class="contract-info">
+				<ul class="transfer-steps">
+					${sender ? html`
 						<li class="transfer-step">
 							<div class="flex flex-direction-column gap-0-5">
-								<div class="flex flex-direction-column gap-0-5">
-									<div class="flex align-center gap-0-5">
-										<h5 class="label" style="margin-bottom: 0">Sender (Smart contract)</h5>
-										<div class="badge">Off-chain</div>
-									</div>
-									<a href=${`#/contract/${smartContract}`} class="address wrap-around"><b>${smartContract}</b></a>
+								<div class="flex flex-direction-column">
+									<h5 class="label">Sender</h5>
+									<sm-copy value=${sender}>
+										<a href=${`#/address/${sender}`} class="address wrap-around">${sender}</a>
+									</sm-copy>
+									<p>Sent:<b>${(!amount || Number(amount) === 0) ? "Trigger" : `${amount} ${token}`}</b></p>
+
 								</div>
-								<p>Sent: <b>${tokenAmount} ${tokenIdentification}</b></p>
 							</div>
-							<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/></svg>
+							<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+								<path d="M0 0h24v24H0V0z" fill="none"/>
+								<path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/>
+							</svg>
 							<div class="flex flex-direction-column">
-								<h5 class="label">Receiver</h5>
-								<sm-copy value=${receiverAddress}>
-									<a href=${`#/address/${receiverAddress}`} class="address wrap-around">${receiverAddress}</a>
-								</sm-copy>
+								<h5 class="label">Receiver (Smart contract)</h5>
+								<a href=${`#/contract/${smartContract}`} class="address wrap-around">${smartContract}</a>
 							</div>
 						</li>
-					`
-				})
-				return html`
-					<li class="transaction">
-						<svg class="icon" viewBox="0 0 64 64"> <title>transfer</title> <polyline points="17.04 35.97 14.57 33.5 40.15 7.9 32.75 0.5 55.52 0.5 55.52 23.28 48.12 15.87 23.86 40.14 15.88 48.13 8.48 40.72 8.48 63.5 31.25 63.5 23.85 56.1 49.43 30.5 46.96 28.03"/> </svg>
-						<div class="contract-type flex flex-direction-column gap-0-5">
-							<h4>Smart contract transfer</h4>
-							<time>${getFormattedTime(time)}</time>
+					` : ''}
+					${renderedOffChainTransactions}
+				</ul>
+
+				${hash ? html`
+					<div class="flex align-center space-between flex-wrap gap-1">
+						<div class="flex flex-direction-column">
+							<h5 class="label">Transaction ID</h5>
+							<sm-copy value=${hash} clip-text></sm-copy>
 						</div>
-						<div class="contract-info">
-							<ul class="transfer-steps">
-								${sender ? html`
-									<li class="transfer-step">
-										<div class="flex flex-direction-column gap-0-5">
-											<div class="flex flex-direction-column">
-												<h5 class="label">Sender</h5>
-												<sm-copy value=${sender}>
-													<a href=${`#/address/${sender}`} class="address wrap-around">${sender}</a>
-												</sm-copy>
-												<p>Sent: <b>${amount} ${token}</b></p>
-											</div>
-										</div>
-										<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/></svg>
-										<div class="flex flex-direction-column">
-											<h5 class="label">Receiver (Smart contract)</h5>
-											<a href=${`#/contract/${smartContract}`} class="address wrap-around">${smartContract}</a>
-										</div>
-									</li>
-								`: ''}
-								${renderedOffChainTransactions}
-							</ul>	
-							${hash ? html`
-								<div class="flex align-center space-between flex-wrap gap-1">
-									<div class="flex flex-direction-column">
-										<h5 class="label">Transaction ID</h5>
-										<sm-copy value=${hash} clip-text></sm-copy>
-									</div>
-									<a href=${`#/transaction/${hash}`} class="button button--small button--colored">View details</a>
-								</div>
-							`: ''}
-						</div>
-					</li>
-				`
-			},
+						<a href=${`#/transaction/${hash}`} class="button button--small button--colored">View details</a>
+					</div>
+				` : ''}
+			</div>
+		</li>
+	`;
+},
 			availableAssetOptions() {
 				return (floGlobals.tokenList || []).map(token => html` <sm-option value=${token}>${token}</sm-option> `)
 			},
@@ -1432,7 +1498,7 @@
 			filterSmartContracts().forEach(contract => {
 				const { tokenIdentification, acceptingToken, blockNumber, contractAddress, contractName, contractSubType,
 					contractType, incorporationDate, oracle_address, price, sellingToken, status, transactionHash } = contract;
-				const smartContractAddress = `${contractName}-${contractAddress}`;
+				const smartContractAddress = `${contractName}_${contractAddress}`;
 				let type = '';
 				let actions = getSmartContractActions(smartContractAddress);
 				if (contractSubType === 'tokenswap') {
@@ -1447,7 +1513,7 @@
 						${status !== 'active' ? html` <div class="badge">${status}</div> ` : ''}
 						<div class="flex align-center space-between">
 							<p class="sc-card__type">${type}</p>
-							<a href=${`#/contract/${contractName}-${contractAddress}`} class="sc-card__info-link">
+							<a href=${`#/contract/${contractName}_${contractAddress}`} class="sc-card__info-link">
 								View details
 								<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10.02 6L8.61 7.41 13.19 12l-4.58 4.59L10.02 18l6-6-6-6z"/></svg>	
 							</a>
@@ -1539,305 +1605,409 @@
 			closePopup()
 			getRef("page_title").textContent = 'Smart Contracts';
 		})
-		router.addRoute('address', async state => {
-			try {
-				const [floAddress] = state.wildcards
-				if (!floAddress) return;
-				let [ownedTokens = {}, floBalance, addressTxs] = await Promise.all([getAddressInfo(floAddress), floBlockchainAPI.getBalance(floAddress), getAddressTxs(floAddress)]);
-				console.log(ownedTokens)
-				const ownedTokensCards = []
-				for (const token in ownedTokens) {
-					ownedTokensCards.push(render.tokenBalanceCard(token, ownedTokens[token].balance || 0))
-				}
-				renderElem(getRef("page_container"), html`
-					<div id="address_page" class="page">
-						<div class="balance-card">
-							<h2 class="wrap-around margin-bottom-2">${floAddress}</h2>
-							<h5 class="label">FLO Balance</h5>
-							<h3 class="margin-bottom-2">${floBalance} FLO</h3>
-							${ownedTokensCards.length ? html`
-								<div class="grid gap-0-5">
-									<h5>Tokens</h5>
-									<ul id="token_balance_list">
-										${ownedTokensCards}
-									</ul>
-								</div>
-							`: ''}
-						</div>
-						<h4>Transactions</h4>
-						<ul id="address_transaction_container" class="transaction-container">
-							${renderTransactions(addressTxs)}
-						</ul>
-					</div>
-				`);
-				getRef("page_title").textContent = 'Address';
 
-			} catch (e) {
-				console.error(e)
-				renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
-			}
-		})
-		router.addRoute('token', async state => {
-			const token = state.wildcards[0].toLowerCase()
-			if (!token) return;
-			try {
-				let [tokenInfo, tokenBalances, tokenTransactions] = await Promise.all([getTokenInfo(token), getTokenBalances(token), getTokenTransactions(token)])
-				let { supply, incAddress } = tokenInfo
-				const tokenHolders = []
-				for (const address in tokenBalances) {
-					tokenHolders.push(render.addrBalanceCard(address, tokenBalances[address], tokenInfo.token))
-				}
-				renderElem(getRef("page_container"), html`
-					<div id="token_page" class="page">
-						<div class="card">
-						<h2 class="uppercase">${token}</h2>
-						<h5 class="label">Supply</h5>
-						<h4>${supply ? formatAmount(supply, token.toLowerCase() === 'rupee' ? 'inr' : 'usd') : 'Infinite'}</h4>
-						<h5 class="label">Incorporation address</h5>
-						<sm-copy value=${incAddress}>
-							<a href=${`#/address/${incAddress}`} class="address wrap-around">${incAddress}</a> 	
-						</sm-copy>
-						</div>
-						<sm-chips data-target="token_views" onchange="changeView(event)">
-							<sm-chip value="0" selected>Transactions</sm-chip>
-							<sm-chip value="1">Token holders</sm-chip>
-						</sm-chips>
-						<div id="token_views" class="view-wrapper">
-							<ul id="token_transaction_container" class="transaction-container">
-								${renderTransactions(tokenTransactions)}
-							</ul>
-							<ul id="token_balance_container" class="hidden">
-								${tokenHolders?.length ? tokenHolders : html`<div>No token holders found</div>`}
-							</ul>
-						</div>
-					</div>
-				`);
-				getRef("page_title").textContent = "Token";
-			} catch (e) {
-				console.trace(e)
-				renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
-			}
-		})
-		router.addRoute('contract', async state => {
-			try {
-				const [contractId] = state.wildcards
-				if (!contractId) return;
-				const contractIdObj = splitContractNameAddress(contractId)
-				let {
-					status, contract, contractType, contractSubtype, contractAddress, expiration, token,
-					participationFees, userChoices, payeeAddress, minAmount, maxAmount, acceptingToken,
-					sellingToken, numberOfDeposits, numberOfParticipants, totalHonorAmount, totalParticipationAmount = 0,
-					priceType, oracle_address, price, currentDepositBalance
-				} = await getContractInfo(contractIdObj)
-				const detailsToFetch = [getContractTransactions(contractIdObj), getContractParticipants(contractIdObj)]
-				if (contractType === 'continuos-event' && contractSubtype === 'tokenswap')
-					detailsToFetch.push(getContractDeposits(contractIdObj))
-				let [contractTransactions = [], contractParticipants = {}, contractDeposits = []] = await Promise.all(detailsToFetch)
-				let participants = [];
-				let winners = []
-				let deposits = contractDeposits.map(deposit => render.depositCard({ ...deposit, acceptingToken, sellingToken }))
-				// Consolidate participants with same address and choice
-				const consolidatedParticipants = {}
-				for (const participant in contractParticipants) {
-					const { participantFloAddress, tokenAmount, userChoice, winningAmount, participationAmount } = contractParticipants[participant]
-					const id = userChoice ? `${participantFloAddress}-${userChoice}` : participantFloAddress
-					if (!consolidatedParticipants[id]) {
-						consolidatedParticipants[id] = contractParticipants[participant]
-					} else {
-						if (tokenAmount) {
-							if (!consolidatedParticipants[id].tokenAmount)
-								consolidatedParticipants[id].tokenAmount = 0
-							consolidatedParticipants[id].tokenAmount += tokenAmount
-						}
-						if (participationAmount) {
-							if (!consolidatedParticipants[id].participationAmount)
-								consolidatedParticipants[id].participationAmount = 0
-							consolidatedParticipants[id].participationAmount += participationAmount
-						}
-						if (winningAmount) {
-							if (!consolidatedParticipants[id].winningAmount)
-								consolidatedParticipants[id].winningAmount = 0
-							consolidatedParticipants[id].winningAmount += winningAmount
+router.addRoute('address', async state => {
+    try {
+        const [floAddress] = state.wildcards;
+        if (!floAddress) return;
+
+        let addressInfo = {};
+        let floBalance = { balance: 0 };
+        let addressTxs = [];
+
+        // Always try to get FLO balance
+        try {
+            floBalance = await getAddressBalance(floAddress);
+        } catch (e) {
+            console.warn("⚠️ Failed to fetch FLO balance:", e);
+        }
+
+        try {
+            addressInfo = await getAddressInfo(floAddress);
+        } catch (e) {
+            console.warn("⚠️ Failed to fetch address token info:", e);
+        }
+
+		try {
+		    addressTxs = await getAddressTxs(floAddress);
+		    console.log("📦 Raw addressTxs:", addressTxs);
+		} catch (e) {
+		    console.warn("⚠️ Failed to fetch token transactions:", e);
+		}
+
+
+        const ownedTokens = addressInfo?.floAddressBalances || {};
+        console.log("✅ ownedTokens fetched from addressInfo:", ownedTokens);
+
+        const ownedTokensCards = [];
+        for (const token in ownedTokens) {
+            ownedTokensCards.push(
+                render.tokenBalanceCard(token, ownedTokens[token].balance || 0)
+            );
+        }
+
+        console.log("✅ ownedTokensCards:", ownedTokensCards);
+
+        renderElem(getRef("page_container"), html`
+            <div id="address_page" class="page">
+                <div class="balance-card">
+                    <h2 class="wrap-around margin-bottom-2">${floAddress}</h2>
+                    <h5 class="label">FLO Balance</h5>
+                    <h3 class="margin-bottom-2">${floBalance?.balance || 0} FLO</h3>
+
+                    ${ownedTokensCards.length ? html`
+                        <div class="token-balances grid gap-0-5">
+                            <h5>Token Balances</h5>
+                            <div id="token_balance_list" class="token-card-list grid gap-0-5">
+                                ${ownedTokensCards}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <h4>Transactions</h4>
+                <ul id="address_transaction_container" class="transaction-container">
+                    ${renderTransactions(addressTxs)}
+                </ul>
+            </div>
+        `);
+
+        getRef("page_title").textContent = 'Address';
+
+    } catch (e) {
+        console.error("💥 Router-level failure:", e);
+        renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
+    }
+});
+
+
+router.addRoute('token', async state => {
+	const token = state.wildcards[0].toLowerCase();
+	if (!token) return;
+	try {
+		console.log("🔍 Token route triggered for:", token);
+
+		let [tokenInfo, tokenBalances, tokenTransactions] = await Promise.all([
+			getTokenInfo(token),
+			getTokenBalances(token),
+			getTokenTransactions(token)
+		]);
+
+		console.log("✅ tokenInfo:", tokenInfo);
+		console.log("✅ tokenBalances:", tokenBalances);
+		console.log("✅ tokenTransactions:", tokenTransactions);
+		console.log("✅ Number of token transactions:", tokenTransactions?.length || 0);
+
+		let { supply, incAddress } = tokenInfo;
+
+		// Render token holders
+		const tokenHolders = [];
+		for (const address in tokenBalances) {
+			tokenHolders.push(render.addrBalanceCard(address, tokenBalances[address], tokenInfo.token));
+		}
+		console.log("✅ Number of token holders:", tokenHolders.length);
+
+		// Render transactions with protection
+		let renderedTx;
+		try {
+			renderedTx = renderTransactions(tokenTransactions);
+			console.log("✅ renderTransactions output:", renderedTx);
+		} catch (err) {
+			console.error("❌ Error in renderTransactions:", err);
+			renderedTx = html`<div>⚠️ Rendering failed</div>`;
+		}
+
+		renderElem(getRef("page_container"), html`
+			<div id="token_page" class="page">
+				<div class="card">
+					<h2 class="uppercase">${token}</h2>
+					<h5 class="label">Supply</h5>
+					<h4>${supply ? formatAmount(supply, token.toLowerCase() === 'rupee' ? 'inr' : 'usd') : 'Infinite'}</h4>
+					<h5 class="label">Incorporation address</h5>
+					<sm-copy value=${incAddress}>
+						<a href=${`#/address/${incAddress}`} class="address wrap-around">${incAddress}</a> 	
+					</sm-copy>
+				</div>
+				<sm-chips data-target="token_views" onchange="changeView(event)">
+					<sm-chip value="0" selected>Transactions</sm-chip>
+					<sm-chip value="1">Token holders</sm-chip>
+				</sm-chips>
+				<div id="token_views" class="view-wrapper">
+					<ul id="token_transaction_container" class="transaction-container">
+						${renderedTx}
+					</ul>
+					<ul id="token_balance_container" class="hidden">
+						${tokenHolders?.length ? tokenHolders : html`<div>No token holders found</div>`}
+					</ul>
+				</div>
+			</div>
+		`);
+		getRef("page_title").textContent = "Token";
+
+	} catch (e) {
+		console.trace("❌ Error loading token page:", e);
+		renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
+	}
+});
+
+			router.addRoute('contract', async state => {
+				try {
+					const [contractId] = state.wildcards
+					if (!contractId) return;
+					const contractIdObj = splitContractNameAddress(contractId)
+					let {
+						status, contract, contractType, contractSubtype, contractAddress, expiration, token,
+						participationFees, userChoices, payeeAddress, minAmount, maxAmount, acceptingToken,
+						sellingToken, numberOfDeposits, numberOfParticipants, totalHonorAmount, totalParticipationAmount = 0,
+						priceType, oracle_address, price, currentDepositBalance
+					} = await getContractInfo(contractIdObj)
+
+					console.log("DEBUG raw backend status:", status, "expiration:", expiration);
+
+					if (typeof payeeAddress === 'string') {
+						try {
+							payeeAddress = JSON.parse(payeeAddress);
+						} catch (err) {
+							console.warn("❌ Failed to parse payeeAddress JSON string:", payeeAddress, err);
+							payeeAddress = {};
 						}
 					}
-				}
-				for (const participant in consolidatedParticipants) {
-					const participantCard = render.participantCard(consolidatedParticipants[participant])
-					if (participantCard)
-						participants.push(participantCard)
-					if (consolidatedParticipants[participant].winningAmount)
-						winners.push(render.contractChoiceCard(consolidatedParticipants[participant]))
-				}
-				const contractActions = getSmartContractActions(contractId, priceType, true)
-				const progress = Math.min((() => {
-					if (!minAmount && !maxAmount) return 0
-					if (minAmount) return totalParticipationAmount / minAmount * 100
-					if (maxAmount) return totalParticipationAmount / maxAmount * 100
-				})(), 100)
-				renderElem(getRef("page_container"), html`
-					<div id="contract_page" class="page">
-						${status ? html` <div class=${`status ${status}`}>${status}</div> ` : ''}
-                    	<h2 class="uppercase">${replaceDash(contract)}</h2>
-						${minAmount || maxAmount ? html`
-							<div class="card grid gap-2">
-								<div class='grid gap-0-5'>
-									<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12.36 6l.4 2H18v6h-3.36l-.4-2H7V6h5.36M14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6L14 4z"/></svg>
-								</div>
-								<div class='grid'>
-									<div id="goal_progress_wrapper">
-										<div id="goal_progress" class="progress-bar" style=${`width: ${progress}%`}></div>
+
+
+					let expirationTimestamp;
+					if (typeof expiration === "string") {
+					    expirationTimestamp = new Date(expiration).getTime();
+					} else if (typeof expiration === "number") {
+					    expirationTimestamp = expiration > 1e12 
+					        ? expiration
+					        : expiration * 1000;
+					}
+
+					
+					const isExpired = expirationTimestamp && Date.now() > expirationTimestamp;
+
+					console.log("DEBUG isExpired:", isExpired);
+
+					if (isExpired && (!status || status === "active")) {
+					    status = "expired";
+					}
+
+					console.log("DEBUG final status:", status);
+
+					const detailsToFetch = [getContractTransactions(contractIdObj), getContractParticipants(contractIdObj)]
+					if (contractType === 'continuos-event' && contractSubtype === 'tokenswap')
+						detailsToFetch.push(getContractDeposits(contractIdObj))
+					let [contractTransactions = [], contractParticipants = {}, contractDeposits = []] = await Promise.all(detailsToFetch)
+					let participants = [];
+					let winners = []
+					let deposits = contractDeposits.map(deposit => render.depositCard({ ...deposit, acceptingToken, sellingToken }))
+					// Consolidate participants with same address and choice
+					const consolidatedParticipants = {}
+					for (const participant in contractParticipants) {
+						const { participantFloAddress, tokenAmount, userChoice, winningAmount, participationAmount } = contractParticipants[participant]
+						const id = userChoice ? `${participantFloAddress}-${userChoice}` : participantFloAddress
+						if (!consolidatedParticipants[id]) {
+							consolidatedParticipants[id] = contractParticipants[participant]
+						} else {
+							if (tokenAmount) {
+								if (!consolidatedParticipants[id].tokenAmount)
+									consolidatedParticipants[id].tokenAmount = 0
+								consolidatedParticipants[id].tokenAmount += tokenAmount
+							}
+							if (participationAmount) {
+								if (!consolidatedParticipants[id].participationAmount)
+									consolidatedParticipants[id].participationAmount = 0
+								consolidatedParticipants[id].participationAmount += participationAmount
+							}
+							if (winningAmount) {
+								if (!consolidatedParticipants[id].winningAmount)
+									consolidatedParticipants[id].winningAmount = 0
+								consolidatedParticipants[id].winningAmount += winningAmount
+							}
+						}
+					}
+					for (const participant in consolidatedParticipants) {
+						const participantCard = render.participantCard(consolidatedParticipants[participant])
+						if (participantCard)
+							participants.push(participantCard)
+						if (consolidatedParticipants[participant].winningAmount)
+							winners.push(render.contractChoiceCard(consolidatedParticipants[participant]))
+					}
+					const contractActions = getSmartContractActions(contractId, priceType, true)
+					const progress = Math.min((() => {
+						if (!minAmount && !maxAmount) return 0
+						if (minAmount) return totalParticipationAmount / minAmount * 100
+						if (maxAmount) return totalParticipationAmount / maxAmount * 100
+					})(), 100)
+					renderElem(getRef("page_container"), html`
+						<div id="contract_page" class="page">
+							${status ? html` <div class=${`status ${status}`}>${status}</div> ` : ''}
+	                    	<h2 class="uppercase">${replaceDash(contract)}</h2>
+							${minAmount || maxAmount ? html`
+								<div class="card grid gap-2">
+									<div class='grid gap-0-5'>
+										<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12.36 6l.4 2H18v6h-3.36l-.4-2H7V6h5.36M14 4H5v17h2v-7h5.6l.4 2h7V6h-5.6L14 4z"/></svg>
 									</div>
-									<div class="flex align-center space-between gap-1">
-										<div class='grid goal-milestone'>
-											<h5 class="label">Raised (${progress}%)</h5>
-											<h4>${formatAmount(totalParticipationAmount)} ${token}</h4>
+									<div class='grid'>
+										<div id="goal_progress_wrapper">
+											<div id="goal_progress" class="progress-bar" style=${`width: ${progress}%`}></div>
 										</div>
-										<div class="grid goal-milestone">
-											<h5 class="label">Goal</h5>
-											<h4>${minAmount ? `${formatAmount(minAmount)} ${token}` : ''} ${maxAmount ? ` - ${formatAmount(maxAmount)} ${token}` : ''}</h4>
+										<div class="flex align-center space-between gap-1">
+											<div class='grid goal-milestone'>
+												<h5 class="label">Raised (${progress}%)</h5>
+												<h4>${formatAmount(totalParticipationAmount)} ${token}</h4>
+											</div>
+											<div class="grid goal-milestone">
+												<h5 class="label">Goal</h5>
+												<h4>${minAmount ? `${formatAmount(minAmount)} ${token}` : ''} ${maxAmount ? ` - ${formatAmount(maxAmount)} ${token}` : ''}</h4>
+											</div>
 										</div>
 									</div>
 								</div>
-							</div>
-						`: ''}
-						${userChoices ? html`
-							<h3>Available Choices</h3>
-							<ul type="circle" class="card">
-								${Object.keys(userChoices).map(choice => html`
-									<li>${userChoices[choice]}</li>
-								`)}
-							</ul>
-						`: ''}
-						${contractActions ? html`
-							<div class="card grid gap-1">
-								<h4>Participate in this contract</h4>
-								${contractActions}
-							</div>
-						`: ''}
-						<div id="contract_info" class="card">
-							<div class="flex info-row">
-								<h5 class="label">Contract Type</h5>
-								<h4>${replaceDash(contractType) === 'continuos event' ? 'continuous event' : replaceDash(contractType)}</h4>
-							</div>
-							${contractSubtype ? html`
-								<div class="flex info-row">
-									<h5 class="label">Contract Sub-type</h5>
-									<h4>${replaceDash(contractSubtype)}</h4>
+							`: ''}
+							${userChoices ? html`
+								<h3>Available Choices</h3>
+								<ul type="circle" class="card">
+									${Object.keys(userChoices).map(choice => html`
+										<li>${userChoices[choice]}</li>
+									`)}
+								</ul>
+							`: ''}
+							${contractActions ? html`
+								<div class="card grid gap-1">
+									<h4>Participate in this contract</h4>
+									${contractActions}
 								</div>
 							`: ''}
-							<div class="flex info-row">
-								<h5 class="label">Contract Address</h5>
-								<sm-copy value=${contractAddress}>
-									<a href=${`#/address/${contractAddress}`} class="address wrap-around">${contractAddress}</a>
-								</sm-copy>
-							</div>
-							${expiration ? html`
+							<div id="contract_info" class="card">
 								<div class="flex info-row">
-									<h5 class="label">Expiration</h5>
-									<h4>${getFormattedTime(new Date(expiration).getTime())}</h4>
+									<h5 class="label">Contract Type</h5>
+									<h4>${replaceDash(contractType) === 'continuos event' ? 'continuous event' : replaceDash(contractType)}</h4>
 								</div>
-							`: ''}
-							${payeeAddress ? html`
-								<div class="flex info-row">
-									<h5 class="label">Payee Addresses</h5>
-									<div class="grid gap-0-5">
-										${Object.keys(payeeAddress).map(address => html`
-											<sm-copy value=${address}>
-												<a href=${`#/address/${address}`} class="address wrap-around">${address}</a>
-											</sm-copy>
-										`)}
+								${contractSubtype ? html`
+									<div class="flex info-row">
+										<h5 class="label">Contract Sub-type</h5>
+										<h4>${replaceDash(contractSubtype)}</h4>
 									</div>
-								</div>
-							`: ''}
-							${participationFees ? html`
+								`: ''}
 								<div class="flex info-row">
-									<h5 class="label">Participation Amount</h5>
-									<h4>${formatAmount(participationFees)} ${token}</h4>
-								</div>
-							`: ''}
-							${contractType === 'one-time-event' ? html`
-								<div class="flex info-row">
-									<h5 class="label">Token Used</h5>
-									<h4>${token}</h4>
-								</div>
-							`: ''}
-							${contractType === 'continuos-event' && contractSubtype === 'tokenswap' ? html`
-								<div class="flex info-row">
-									<h5 class="label">deposit token</h5>
-									<h4>${sellingToken}</h4>
-								</div>
-								<div class="flex info-row">
-									<h5 class="label">participation token</h5>
-									<h4>${acceptingToken}</h4>	
-								</div>
-								<div class="flex info-row">
-									<h5 class="label">Exchange rate (${priceType === 'dynamic' ? 'Dynamic' : 'Fixed'})</h5>
-									<h4>1 ${sellingToken} = ${price} ${acceptingToken}</h4>
-								</div>
-							`: ''}
-							${numberOfDeposits ? html`
-								<div class="flex info-row">
-									<h5 class="label">Number of deposits</h5>
-									<h4>${numberOfDeposits}</h4>
-								</div>
-							`: ''}
-							${numberOfParticipants ? html`
-								<div class="flex info-row">
-									<h5 class="label">Number of participants</h5>
-									<h4>${numberOfParticipants}</h4>
-								</div>
-							`: ''}
-							${oracle_address ? html`
-								<div class="flex info-row">
-									<h5 class="label">Oracle address</h5>
-									<sm-copy value=${oracle_address}>
-										<a href=${`#/address/${oracle_address}`} class="address wrap-around">${oracle_address}</a>
+									<h5 class="label">Contract Address</h5>
+									<sm-copy value=${contractAddress}>
+										<a href=${`#/address/${contractAddress}`} class="address wrap-around">${contractAddress}</a>
 									</sm-copy>
 								</div>
-							`: ''}
-							${totalParticipationAmount ? html`
-								<div class="flex info-row">
-									<h5 class="label">Total participation amount</h5>
-									<h4>${formatAmount(totalParticipationAmount)} ${acceptingToken}</h4>
-								</div>
-							`: ''}
-							${totalHonorAmount ? html`
-								<div class="flex info-row">
-									<h5 class="label">Total output amount</h5>
-									<h4>${formatAmount(totalHonorAmount)} ${sellingToken}</h4>
-								</div>
-							`: ''}
-							${currentDepositBalance ? html`
-								<div class="flex info-row">
-									<h5 class="label">Total deposit balance </h5>
-									<h4>${formatAmount(currentDepositBalance)} ${sellingToken}</h4>
-								</div>
-							`: ''}
+								${expiration ? html`
+									<div class="flex info-row">
+										<h5 class="label">Expiration</h5>
+										<h4>${getFormattedTime(new Date(expiration).getTime())}</h4>
+									</div>
+								`: ''}
+								${payeeAddress ? html`
+									<div class="flex info-row">
+										<h5 class="label">Payee Addresses</h5>
+<div class="grid payee-grid">
+	${Object.keys(payeeAddress).map(address => html`
+		<div class="flex space-between align-center">
+			<h4 class="flex-1"><a href=${`#/address/${address}`} class="address wrap-around">${address}</a></h4>
+			<h4><span>${payeeAddress[address]}%</span></h4>
+		</div>
+	`)}
+</div>
+
+
+									</div>
+								` : ''}
+
+
+								${participationFees ? html`
+									<div class="flex info-row">
+										<h5 class="label">Participation Amount</h5>
+										<h4>${formatAmount(participationFees)} ${token}</h4>
+									</div>
+								`: ''}
+								${contractType === 'one-time-event' ? html`
+									<div class="flex info-row">
+										<h5 class="label">Token Used</h5>
+										<h4>${token}</h4>
+									</div>
+								`: ''}
+								${contractType === 'continuos-event' && contractSubtype === 'tokenswap' ? html`
+									<div class="flex info-row">
+										<h5 class="label">deposit token</h5>
+										<h4>${sellingToken}</h4>
+									</div>
+									<div class="flex info-row">
+										<h5 class="label">participation token</h5>
+										<h4>${acceptingToken}</h4>	
+									</div>
+									<div class="flex info-row">
+										<h5 class="label">Exchange rate (${priceType === 'dynamic' ? 'Dynamic' : 'Fixed'})</h5>
+										<h4>1 ${sellingToken} = ${price} ${acceptingToken}</h4>
+									</div>
+								`: ''}
+								${numberOfDeposits ? html`
+									<div class="flex info-row">
+										<h5 class="label">Number of deposits</h5>
+										<h4>${numberOfDeposits}</h4>
+									</div>
+								`: ''}
+								${numberOfParticipants ? html`
+									<div class="flex info-row">
+										<h5 class="label">Number of participants</h5>
+										<h4>${numberOfParticipants}</h4>
+									</div>
+								`: ''}
+								${oracle_address ? html`
+									<div class="flex info-row">
+										<h5 class="label">Oracle address</h5>
+										<sm-copy value=${oracle_address}>
+											<a href=${`#/address/${oracle_address}`} class="address wrap-around">${oracle_address}</a>
+										</sm-copy>
+									</div>
+								`: ''}
+								${totalParticipationAmount ? html`
+									<div class="flex info-row">
+										<h5 class="label">Total participation amount</h5>
+										<h4>${formatAmount(totalParticipationAmount)} ${acceptingToken}</h4>
+									</div>
+								`: ''}
+								${totalHonorAmount ? html`
+									<div class="flex info-row">
+										<h5 class="label">Total output amount</h5>
+										<h4>${formatAmount(totalHonorAmount)} ${sellingToken}</h4>
+									</div>
+								`: ''}
+								${currentDepositBalance ? html`
+									<div class="flex info-row">
+										<h5 class="label">Total deposit balance </h5>
+										<h4>${formatAmount(currentDepositBalance)} ${sellingToken}</h4>
+									</div>
+								`: ''}
+							</div>
+							<sm-chips class="margin-top-1" data-target="contract_views" onchange="changeView(event)">
+								<sm-chip value="0" selected>Transactions</sm-chip>
+								<sm-chip value="1">Participants</sm-chip>
+								${winners?.length ? html`<sm-chip value="2">Winners</sm-chip>` : ''}
+								${deposits?.length ? html`<sm-chip value="2">Deposits</sm-chip>` : ''}
+							</sm-chips>
+							<div id="contract_views" class="view-wrapper">
+								<ul id="contract_transaction_container" class="transaction-container">
+									${renderTransactions(contractTransactions)}	
+								</ul>
+								<ul id="participant_container" class="card hidden">
+									${participants?.length ? participants : html`<div>No participants found</div>`}	
+								</ul>
+								${winners?.length ? html`<ul id="winners_container" class="card hidden">${winners}</ul>` : ''}
+								${deposits?.length ? html`<ul id="deposits_container" class="card hidden">${deposits}</ul>` : ''}
+							</div>
 						</div>
-						<sm-chips class="margin-top-1" data-target="contract_views" onchange="changeView(event)">
-							<sm-chip value="0" selected>Transactions</sm-chip>
-							<sm-chip value="1">Participants</sm-chip>
-							${winners?.length ? html`<sm-chip value="2">Winners</sm-chip>` : ''}
-							${deposits?.length ? html`<sm-chip value="2">Deposits</sm-chip>` : ''}
-						</sm-chips>
-						<div id="contract_views" class="view-wrapper">
-							<ul id="contract_transaction_container" class="transaction-container">
-								${renderTransactions(contractTransactions)}	
-							</ul>
-							<ul id="participant_container" class="card hidden">
-								${participants?.length ? participants : html`<div>No participants found</div>`}	
-							</ul>
-							${winners?.length ? html`<ul id="winners_container" class="card hidden">${winners}</ul>` : ''}
-							${deposits?.length ? html`<ul id="deposits_container" class="card hidden">${deposits}</ul>` : ''}
-						</div>
-					</div>
-				`);
-				getRef("page_title").textContent = "Contract";
-			} catch (e) {
-				console.trace(e)
-				renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
-			}
-		})
+					`);
+					getRef("page_title").textContent = "Contract";
+				} catch (e) {
+					console.trace(e)
+					renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
+				}
+			})
 
 		router.addRoute('block', async state => {
 			const [blockId] = state.wildcards
@@ -1895,102 +2065,172 @@
 				</div>
 			`)
 		})
-		router.addRoute('transactions', async state => {
-			let allTxs = await getAllTxs();
-			getRef("page_title").textContent = "All token transactions";
-			renderElem(getRef("page_container"), html`
-				<div id="all_transactions_page" class="page"> 
-					<ul id="all_transaction_list" class="transaction-container">
-						${renderTransactions(allTxs)}
-					</ul>	
+
+router.addRoute('transaction', async state => {
+	try {
+		let txIdArr = state.wildcards;
+		console.log("🔍 Wildcards:", txIdArr);
+		let txId = txIdArr[0];
+		if (!txId) return;
+
+		let txResult = await getTxInfo(txId);
+		console.log("📥 Raw getTxInfo result:", txResult);
+
+		let status = txResult[0];
+		let txInfoRaw = txResult[1];
+
+		console.log("🧪 txInfoRaw before any patch:", txInfoRaw);
+
+		if (!status)
+			return renderElem(getRef("page_container"), html`${render.errorPage(txInfoRaw)}`);
+
+		// ✅ Clone to avoid accidental mutation
+		let txInfo = { ...txInfoRaw };
+
+		// ✅ Normalize type
+		if (txInfo.type) {
+			txInfo.type = txInfo.type.trim();
+		}
+		console.log("🔠 Normalized type:", txInfo.type);
+
+		// ✅ Patch: trigger + onChain:false + contractAddress
+		if (
+			txInfo.type === 'trigger' &&
+			txInfo.onChain === false &&
+			txInfo.contractAddress
+		) {
+			txInfo.sender = txInfo.contractAddress;
+			txInfo.receiver = txInfo.contractAddress;
+			txInfo.senderAddress = txInfo.contractAddress;
+			txInfo.receiverAddress = txInfo.contractAddress;
+			console.log("🔧 Patched sender/receiver from contractAddress due to off-chain trigger");
+		} else {
+			console.log("❌ No patch applied");
+		}
+
+		console.log("🧪 txInfo after patch:", txInfo);
+
+		// ✅ Destructure
+		let {
+			type,
+			tokenIdentification,
+			tokenAmount,
+			amount,
+			blockheight,
+			blockHeight,
+			senderAddress,
+			sender,
+			receiverAddress,
+			receiver,
+			txid,
+			hash,
+			floData,
+			confirmations,
+			nftHash,
+			subTransactions,
+			time
+		} = txInfo;
+
+		console.log("📦 Destructured values:");
+		console.log({ type, tokenIdentification, tokenAmount, amount, blockheight, blockHeight, senderAddress, sender, receiverAddress, receiver, txid, hash, floData, confirmations, nftHash, subTransactions, time });
+
+		let name = tokenIdentification || txInfo.name || '';
+		let finalAmount = tokenAmount ?? amount ?? '';
+		let finalSender = senderAddress ?? sender ?? '';
+		let finalReceiver = receiverAddress ?? receiver ?? '';
+		let finalBlock = blockheight ?? blockHeight ?? '';
+		let finalHash = txid ?? hash ?? '';
+
+		console.log("🔎 Final computed values:");
+		console.log({ name, finalAmount, finalSender, finalReceiver, finalBlock, finalHash });
+
+		switch (type) {
+			case 'smartContractPays':
+				name = '';
+				break;
+			case 'nftIncorporation':
+				type = 'NFT Incorporation';
+				break;
+			case 'nft transfer':
+				type = 'NFT Transfer';
+				break;
+		}
+
+		let renderedSubTransactions = subTransactions?.map(tx =>
+			render.offChainTransferCard({ ...tx, hideUnnecessary: true })
+		);
+
+		renderElem(getRef("page_container"), html`
+			<div id="transaction_page" class="page">
+				<div class='head'>
+					<h5 class="label">${type}</h5>
+					<h2 class="token uppercase">
+						<a href=${`#/token/${name}`} style="text-decoration:none;">${name}</a>
+					</h2>
+					<h5 class="label">Transaction ID</h5>
+					<sm-copy value=${finalHash} clip-text></sm-copy>
 				</div>
-			`)
-		})
-		router.addRoute('transaction', async state => {
-			try {
-				const [txId] = state.wildcards
-				if (!txId) return
-				const [status, txInfo] = await getTxInfo(txId);
-				if (!status)
-					return renderElem(getRef("page_container"), html`${render.errorPage(txInfo)}`);
-				const { type, name, blockHeight, amount, sender, receiver, floData, hash, confirmations, nftHash, subTransactions, time } = txInfo;
-				switch (type.trim()) {
-					case 'smartContractPays':
-					case 'smartContractPays':
-						name = ''
-						break
-					case 'nftIncorporation':
-						type = 'NFT Incorporation'
-						break
-					case 'nft transfer':
-						type = 'NFT Transfer'
-						break
-				}
-				const renderedSubTransactions = subTransactions?.map(tx => render.offChainTransferCard({ ...tx, hideUnnecessary: true }));
-				renderElem(getRef("page_container"), html`
-					<div id="transaction_page" class="page">
-						<div class='head'>
-							<h5 class="label">${type}</h5>
-							<h2 class="token uppercase">
-								<a href=${`#/token/${name}`} style="text-decoration:none;">${name}</a>
-							</h2>
-							<h5 class="label">Transaction ID</h5>
-							<sm-copy value=${hash} clip-text></sm-copy>
+				<div class="flex flex-wrap gap-1">
+					<div class="card grid gap-1-5">
+						<time class="label">${getFormattedTime(time)}</time>
+						<div class="flex flex-direction-column">
+							<h5 class="label">Sender</h5>
+							<sm-copy value=${finalSender}>
+								<a href=${`#/address/${finalSender}`} class="address wrap-around">${finalSender}</a>
+							</sm-copy>
 						</div>
-						<div class="flex flex-wrap gap-1">
-							<div class="card grid gap-1-5">
-								<time class="label">${getFormattedTime(time)}</time>
-								<div class="flex flex-direction-column">
-									<h5 class="label">Sender</h5>
-									<sm-copy value=${sender}>
-										<a href=${`#/address/${sender}`} class="address wrap-around">${sender}</a>
-									</sm-copy>
-								</div>
-								${receiver ? html`
-									<div class="flex flex-direction-column">
-										<h5 class="label">Receiver</h5>
-										<sm-copy value=${receiver}>
-											<a href=${`#/address/${receiver}`} class="address wrap-around">${receiver}</a>
-										</sm-copy>
-									</div>
-								`: ''}
-								${amount ? html`
-									<div class="flex flex-direction-column">
-										<h5 class="label">Amount</h5>
-										<h4>${formatAmount(amount)}</h4>
-									</div>
-								`: ''}
+						${finalReceiver ? html`
+							<div class="flex flex-direction-column">
+								<h5 class="label">Receiver</h5>
+								<sm-copy value=${finalReceiver}>
+									<a href=${`#/address/${finalReceiver}`} class="address wrap-around">${finalReceiver}</a>
+								</sm-copy>
 							</div>
-							<div class="card flex-1">
-								<h5 class="label">FLO Data</h5>
-								<p class="wrap-around">${floData}</p>
-								<h5 class="label">Block</h5>
-								<a href=${`#/block/${blockHeight}`} class="block-height">${blockHeight}</a>
-								<h5 class="label">Block Confirmations</h5>
-								<h4>${confirmations}</h4>
-								${nftHash ? html`
-									<h5 class="label">NFT hash</h5>
-									<sm-copy value=${nftHash} clip-text></sm-copy>
-								`: ''}
+						` : ''}
+						${finalAmount ? html`
+							<div class="flex flex-direction-column">
+								<h5 class="label">Amount</h5>
+								<h4>${formatAmount(finalAmount)}</h4>
 							</div>
-						</div>
-						${subTransactions?.length ? html`
-							<div class="grid gap-1">
-								<div class="grid gap-0-3">
-									<h4>Sub Transactions</h4>
-									<p>These are Off-chain transactions that are triggered by above transaction</p>
-								</div>
-								<ul class="grid gap-1">${renderedSubTransactions}</ul>
-							</div>	
-						`: ''}
+						` : ''}
 					</div>
-				`);
-				getRef("page_title").textContent = "Transaction";
-			} catch (e) {
-				console.error(e)
-				renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
-			}
-		})
+					<div class="card flex-1">
+						<h5 class="label">FLO Data</h5>
+						<p class="wrap-around">${floData}</p>
+						<h5 class="label">Block</h5>
+						<a href=${`#/block/${finalBlock}`} class="block-height">${finalBlock}</a>
+						<h5 class="label">Block Confirmations</h5>
+						<h4>${confirmations}</h4>
+						${nftHash ? html`
+							<h5 class="label">NFT hash</h5>
+							<sm-copy value=${nftHash} clip-text></sm-copy>
+						` : ''}
+					</div>
+				</div>
+				${subTransactions?.length ? html`
+					<div class="grid gap-1">
+						<div class="grid gap-0-3">
+							<h4>Sub Transactions</h4>
+							<p>These are Off-chain transactions that are triggered by above transaction</p>
+						</div>
+						<ul class="grid gap-1">${renderedSubTransactions}</ul>
+					</div>	
+				` : ''}
+			</div>
+		`);
+
+		getRef("page_title").textContent = "Transaction";
+	} catch (e) {
+		console.error("💥 Exception in route:", e);
+		renderElem(getRef("page_container"), html`${render.errorPage(e)}`);
+	}
+});
+
+
+
+
+
+
 		router.addRoute('404', state => {
 			renderElem(getRef("page_container"), html`${render.errorPage('404 Not Found')}`);
 		})
@@ -2010,78 +2250,168 @@
 			return str.replace(/ /g, "-");
 		}
 
-		function renderTransactions(transactions = []) {
-			let parsedTxs = parseTransactions(transactions);
-			let groupedTxs = new Map();
+function renderTransactions(transactions = []) {
+	console.log("💡 Raw token transactions (input):", transactions);
 
-			parsedTxs.forEach((tx) => {
-				const { hash, transactionTrigger } = tx;
-				const key = hash || transactionTrigger;
+	// ✅ Step 1: Merge nested fields and apply fallbacks
+	const mergedTxs = transactions.map((tx, i) => {
+		const merged = {
+			...(tx.transactionDetails || {}),
+			...(tx.parsedFloData || {}),
+			...tx
+		};
 
-				if (!groupedTxs.has(key)) {
-					groupedTxs.set(key, {
-						sourceTransaction: {},
-						offChainTransactions: [],
-						type: transactionTrigger ? 'compoundTransaction' : undefined,
-					});
-				}
-
-				if (hash) {
-					groupedTxs.get(key).sourceTransaction = tx;
-				} else {
-					const { tokenIdentification, senderAddress, receiverAddress, onChain, tokenAmount, time, contractName } = tx;
-					groupedTxs.get(key).offChainTransactions.push({
-						tokenIdentification,
-						receiverAddress,
-						tokenAmount,
-					});
-					if (time)
-						groupedTxs.get(key).sourceTransaction.time = time
-					if (contractName)
-						groupedTxs.get(key).sourceTransaction.contractName = contractName
-					if (senderAddress)
-						groupedTxs.get(key).sourceTransaction.contractAddress = senderAddress
-				}
-			});
-
-			// Convert the Map to an array of values for sorting
-			const sortedTxs = [...groupedTxs.values()].sort((a, b) => b.sourceTransaction.time - a.sourceTransaction.time);
-
-			// Replace parsedTxs with sortedTxs
-			parsedTxs = sortedTxs.map((tx) => {
-				if (tx.type === 'compoundTransaction') {
-					return {
-						...tx.sourceTransaction,
-						offChainTransactions: tx.offChainTransactions,
-						type: tx.type,
-					};
-				}
-				return tx.sourceTransaction;
-			});
-			const renderedTransactions = parsedTxs.map(tx => {
-				switch (tx.type) {
-					case 'tokentransfer':
-					case 'nfttransfer':
-						return render.tokenTransferCard(tx)
-					case 'contractdeposit':
-						return render.contractDepositCard(tx)
-					case 'contracttransfer':
-						return render.contractTransferCard(tx);
-					case 'tokenincorp':
-					case 'nftincorp':
-						return render.tokenCreationCard(tx);
-					case 'contractincorp':
-						return render.contractCreationCard(tx);
-					case 'contracttrigger':
-						return render.contractTriggerCard(tx);
-					case 'offChainTransfer':
-						return render.offChainTransferCard(tx);
-					case 'compoundTransaction':
-						return render.compoundTransactionCard(tx)
-				}
-			})
-			return html`${renderedTransactions.length ? renderedTransactions : html`<div class="no-results">No transactions found</div>`}`
+		if (merged.onChain === undefined) {
+			merged.onChain = true;
+			console.log(`🩹 TX #${i}: Defaulted onChain to true`);
 		}
+
+		if (!merged.transactionTrigger && (
+			merged.contractName || (merged.floData || "").includes('@')
+		)) {
+			merged.transactionTrigger = merged.txid || merged.hash;
+			console.log(`🧷 TX #${i}: Injected transactionTrigger = ${merged.transactionTrigger}`);
+		}
+
+		console.log(`🔀 TX #${i} after merge:`, merged);
+		return merged;
+	});
+
+	console.log("🔧 Merged Transactions (post-merge):", mergedTxs);
+
+	// ✅ Step 2: Parse
+	let parsedTxs = parseTransactions(mergedTxs);
+	console.log("🧩 Parsed Transactions (from parser):", parsedTxs);
+
+	// ✅ Step 3: Grouping
+	let groupedTxs = new Map();
+
+	parsedTxs.forEach((tx, i) => {
+		console.log(`📦 Grouping TX #${i}:`, tx);
+		const { hash, transactionTrigger, type } = tx;
+		const key = hash || transactionTrigger;
+
+		if (!groupedTxs.has(key)) {
+			groupedTxs.set(key, {
+				sourceTransaction: undefined,
+				offChainTransactions: [],
+			});
+			console.log(`📌 Created new group for key: ${key}`);
+		}
+
+		const group = groupedTxs.get(key);
+
+		if (hash || (type === 'trigger' && !tx.onChain)) {
+			group.sourceTransaction = tx;
+			console.log(`📌 Set sourceTransaction for group ${key}:`, tx);
+		} else if (type?.includes('tokenswap') || type === 'offChainTransfer') {
+			group.offChainTransactions.push(tx);
+			console.log(`📌 Added to offChainTransactions for group ${key}:`, tx);
+
+			if (!group.sourceTransaction) group.sourceTransaction = {};
+			if (!group.sourceTransaction.time && tx.time)
+				group.sourceTransaction.time = tx.time;
+			if (!group.sourceTransaction.contractName && tx.contractName)
+				group.sourceTransaction.contractName = tx.contractName;
+			if (!group.sourceTransaction.contractAddress && tx.senderAddress)
+				group.sourceTransaction.contractAddress = tx.senderAddress;
+		} else {
+			group.sourceTransaction = tx;
+			console.log(`📌 Set default sourceTransaction for group ${key}:`, tx);
+		}
+	});
+
+	// ✅ Step 3.5: Ensure fallback sourceTransaction
+	for (const [key, group] of groupedTxs.entries()) {
+		if (!group.sourceTransaction && group.offChainTransactions.length) {
+			group.sourceTransaction = group.offChainTransactions[0];
+			console.log(`🔧 Fallback sourceTransaction assigned for group ${key}`);
+		}
+	}
+
+	// ✅ Step 4: Flatten + sort
+	const sortedTxs = [...groupedTxs.values()].sort((a, b) =>
+		(b.sourceTransaction?.time || 0) - (a.sourceTransaction?.time || 0)
+	);
+	console.log("📊 Sorted Transactions:", sortedTxs);
+
+	parsedTxs = [];
+
+	sortedTxs.forEach((group, i) => {
+		const { sourceTransaction, offChainTransactions } = group;
+
+		if (offChainTransactions.length) {
+			console.log(`🧬 TX Group #${i} is compound:`, sourceTransaction);
+			parsedTxs.push({
+				...sourceTransaction,
+				offChainTransactions,
+				type: 'compoundTransaction',
+			});
+
+			if (['trigger', 'contracttrigger'].includes(sourceTransaction?.type)) {
+				const triggerCard = {
+					...sourceTransaction,
+					type: 'trigger',
+				};
+
+				if (!triggerCard.hash && triggerCard.transactionTrigger) {
+					triggerCard.hash = triggerCard.transactionTrigger;
+					console.log(`🔖 TX Group #${i}: Fallback hash set for trigger = ${triggerCard.hash}`);
+				}
+
+				parsedTxs.push(triggerCard);
+			}
+		} else if (sourceTransaction) {
+			console.log(`✅ TX Group #${i} has source only:`, sourceTransaction);
+			parsedTxs.push(sourceTransaction);
+		} else {
+			console.warn(`❗ TX Group #${i} has no sourceTransaction and was skipped`);
+		}
+	});
+
+	console.log("🧱 Final transactions for rendering (flattened):", parsedTxs);
+
+	// ✅ Step 5: Rendering
+	const renderedTransactions = parsedTxs.map((tx, i) => {
+		console.log(`🎨 Rendering TX #${i} of type '${tx.type}':`, tx);
+		switch (tx.type) {
+			case 'tokentransfer':
+			case 'nfttransfer':
+				return render.tokenTransferCard(tx);
+			case 'contractdeposit':
+				return render.contractDepositCard(tx);
+			case 'contracttransfer':
+				return render.contractTransferCard(tx);
+			case 'tokenincorp':
+			case 'nftincorp':
+				return render.tokenCreationCard(tx);
+			case 'contractincorp':
+				return render.contractCreationCard(tx);
+			case 'trigger':
+				return render.contractTriggerCard(tx);
+			case 'offChainTransfer':
+				return render.offChainTransferCard(tx);
+			case 'compoundTransaction':
+				return render.compoundTransactionCard(tx);
+			default:
+				console.warn(`⚠️ Unrecognized transaction type '${tx.type}'`, tx);
+				return html`<div class="unknown-transaction">Unknown transaction</div>`;
+		}
+	});
+
+	console.log("📋 Final rendered HTML cards:", renderedTransactions);
+
+	return html`${renderedTransactions.length
+		? renderedTransactions
+		: html`<div class="no-results">No transactions found</div>`}`;
+}
+
+
+
+
+
+
+
 
 		getRef('suggestions').addEventListener('keyup', e => {
 			if (e.target.closest('.suggestion') && e.key === 'Enter') {
@@ -2102,13 +2432,23 @@
 			renderElem(getRef('suggestions'), html`${renderedSuggestions}`)
 		}, 100))
 		async function getBannerData() {
-			const { systemTransactionCount, systemAddressCount } = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/info`)
-			return {
-				topToken: "RUPEE",
-				totalTransactions: systemTransactionCount,
-				walletAddresses: systemAddressCount,
+			try {
+				console.log("📡 Fetching banner data from /api/v2/info...");
+				const { systemTransactionCount, systemAddressCount } =
+					await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/info`);
+				console.log("✅ Banner data received:", { systemTransactionCount, systemAddressCount });
+
+				return {
+					topToken: "RUPEE",
+					totalTransactions: systemTransactionCount,
+					walletAddresses: systemAddressCount,
+				};
+			} catch (err) {
+				console.error("❌ Failed to fetch banner data:", err);
+				throw err;
 			}
 		}
+
 		let currentViewIndex = 0;
 		function changeView(e) {
 			const targetWrapper = e.target.dataset.target;
@@ -2118,354 +2458,623 @@
 		}
 
 		function getLatestTxs() {
+			console.log("📡 Fetching latest transactions...");
 			return new Promise((resolve, reject) => {
 				fetchJson(`${floGlobals.tokenApiUrl}/api/v2/latestTransactionDetails?limit=4`)
 					.then(function (latestTxs) {
-						resolve(latestTxs.latestTransactions)
-					}).catch((err) => {
-						reject(err)
+						console.log("✅ Latest transactions received:", latestTxs);
+						resolve(latestTxs.latestTransactions);
+					})
+					.catch((err) => {
+						console.error("❌ Failed to fetch latest transactions:", err);
+						reject(err);
 					});
-			})
+			});
 		}
+
 
 		function getTokenInfo(thisToken) {
+			console.log(`📡 Fetching token info for: ${thisToken}`);
 			return new Promise((resolve, reject) => {
-				fetchJson(
-					`${floGlobals.tokenApiUrl}/api/v2/tokenInfo/${thisToken.toLowerCase()}`
-				).then(function (tokenInfo) {
-					if (tokenInfo.result === "error")
-						reject(tokenInfo.description);
-					let associatedSC = {};
-					tokenInfo.associatedSmartContracts.forEach((sc) => {
-						associatedSC[`${sc.contractName}-${sc.contractAddress}`] = sc;
+				fetchJson(`${floGlobals.tokenApiUrl}/api/v2/tokenInfo/${thisToken.toLowerCase()}`)
+					.then(function (tokenInfo) {
+						console.log("✅ Token info received:", tokenInfo);
+						if (tokenInfo.result === "error") {
+							console.error("❌ Token info error:", tokenInfo.description);
+							reject(tokenInfo.description);
+							return;
+						}
+						let associatedSC = {};
+						tokenInfo.associatedSmartContracts.forEach((sc) => {
+							associatedSC[`${sc.contractName}_${sc.contractAddress}`] = sc;
+						});
+						resolve({
+							token: tokenInfo["token"],
+							supply: tokenInfo["tokenSupply"],
+							incAddress: tokenInfo["incorporationAddress"],
+							associatedContracts: associatedSC,
+							blockchainReference: tokenInfo["blockchainReference"],
+						});
+					})
+					.catch((err) => {
+						console.error("❌ Failed to fetch token info:", err);
+						reject(err);
 					});
-					resolve({
-						token: tokenInfo["token"],
-						supply: tokenInfo["tokenSupply"],
-						incAddress: tokenInfo["incorporationAddress"],
-						associatedContracts: associatedSC,
-						blockchainReference: tokenInfo["blockchainReference"],
-					});
-				}).catch((err) => {
-					reject(err);
-				});
-			})
+			});
 		}
 
+
 		async function getTokenBalances(tokenName) {
-			const tokenDetails = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/tokenBalances/` + tokenName)
-			return tokenDetails.balances
+			try {
+				const url = `${floGlobals.tokenApiUrl}/api/v2/tokenBalances/${tokenName}`;
+				console.log(`📡 Fetching token balances from: ${url}`);
+				const tokenDetails = await fetchJson(url);
+				console.log("📦 Token balances fetched:", tokenDetails);
+				return tokenDetails.balances;
+			} catch (error) {
+				console.error("❌ Error fetching token balances:", error);
+				return [];
+			}
 		}
 
 		async function getTokenTransactions(tokenName) {
-			const transactions = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/tokenTransactions/` + tokenName)
-			return transactions.transactions
+			try {
+				const url = `${floGlobals.tokenApiUrl}/api/v2/tokenTransactions/${tokenName}`;
+				console.log(`📡 Fetching token transactions from: ${url}`);
+				const transactions = await fetchJson(url);
+				console.log("📦 Token transactions fetched:", transactions);
+				return transactions.transactions;
+			} catch (error) {
+				console.error("❌ Error fetching token transactions:", error);
+				return [];
+			}
 		}
 
+
 		async function getBlockInfo(thisBlock) {
-			const info = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/blockDetails/${thisBlock}`);
-			const { height, size, reward, hash, difficulty, nonce, tx } = info.blockDetails
-			return {
-				blockHeight: height,
-				size: size,
-				transactions: tx,
-				reward: reward,
-				hash: hash,
-				difficulty: difficulty,
-				nonce: nonce,
+			try {
+				const url = `${floGlobals.tokenApiUrl}/api/v2/blockDetails/${thisBlock}`;
+				console.log(`📡 Fetching block info from: ${url}`);
+				const info = await fetchJson(url);
+				console.log("📦 Block info fetched:", info);
+
+				const { height, size, reward, hash, difficulty, nonce, tx } = info.blockDetails || {};
+
+				return {
+					blockHeight: height,
+					size: size,
+					transactions: tx,
+					reward: reward,
+					hash: hash,
+					difficulty: difficulty,
+					nonce: nonce,
+				};
+			} catch (error) {
+				console.error("❌ Error fetching block info:", error);
+				return null;
 			}
 		}
 
 		async function getBlockTransactions(thisBlock) {
-			const blockTransactions = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/blockTransactions/${thisBlock}`)
-			return blockTransactions.transactions
+			try {
+				const url = `${floGlobals.tokenApiUrl}/api/v2/blockTransactions/${thisBlock}`;
+				console.log(`📡 Fetching block transactions from: ${url}`);
+				const blockTransactions = await fetchJson(url);
+				console.log("📦 Block transactions fetched:", blockTransactions);
+				return blockTransactions.transactions || [];
+			} catch (error) {
+				console.error("❌ Error fetching block transactions:", error);
+				return [];
+			}
 		}
 
 		async function getContractInfo(contract) {
-			const info = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/smartContractInfo?contractName=${contract.name}&contractAddress=${contract.address}`);
-			const {
-				contractInfo: {
+			try {
+				const url = `${floGlobals.tokenApiUrl}/api/v2/smartContractInfo?contractName=${contract.name}&contractAddress=${contract.address}`;
+				console.log(`📡 Fetching smart contract info from: ${url}`);
+				const info = await fetchJson(url);
+				console.log("📦 Smart contract info fetched:", info);
+
+				const {
+					contractInfo: {
+						contractType,
+						numberOfDeposits,
+						numberOfParticipants,
+						priceType,
+						oracle_address,
+						contractSubtype,
+						status,
+						expiryTime,
+						payeeAddress,
+						userChoices,
+						tokenIdentification,
+						acceptingToken,
+						sellingToken,
+						contractAmount,
+						minimumsubscriptionamount,
+						maximumsubscriptionamount,
+						totalHonorAmount,
+						totalParticipationAmount,
+						price,
+						currentDepositBalance
+					},
+					contractAddress,
+					contractName
+				} = info;
+
+				const details = {
+					contract: contractName,
+					contractAddress,
 					contractType,
+					contractSubtype,
+					status,
+					expiration: expiryTime,
+					payeeAddress,
+					userChoices,
+					token: tokenIdentification,
+					acceptingToken,
+					sellingToken,
+					participationFees: contractAmount,
+					minAmount: minimumsubscriptionamount,
+					maxAmount: maximumsubscriptionamount,
 					numberOfDeposits,
 					numberOfParticipants,
 					priceType,
 					oracle_address,
-					contractSubtype,
-					status,
-					expiryTime,
-					payeeAddress,
-					userChoices,
-					tokenIdentification,
-					acceptingToken,
-					sellingToken,
-					contractAmount,
-					minimumsubscriptionamount,
-					maximumsubscriptionamount,
 					totalHonorAmount,
 					totalParticipationAmount,
 					price,
 					currentDepositBalance
-				}, contractAddress,
-				contractName
-			} = info
-			const details = {
-				contract: contractName,
-				contractAddress,
-				contractType,
-				contractSubtype,
-				status,
-				expiration: expiryTime,
-				payeeAddress,
-				userChoices,
-				token: tokenIdentification,
-				acceptingToken,
-				sellingToken,
-				participationFees: contractAmount,
-				minAmount: minimumsubscriptionamount,
-				maxAmount: maximumsubscriptionamount,
-				numberOfDeposits,
-				numberOfParticipants,
-				priceType,
-				oracle_address,
-				totalHonorAmount,
-				totalParticipationAmount,
-				price,
-				currentDepositBalance
+				};
+
+				const key = `${contractName}_${contractAddress}`;
+				console.log(`🧠 Caching contract info under key: ${key}`);
+				floGlobals.smartContractList[key] = {
+					...details,
+					...floGlobals.smartContractList[key]
+				};
+
+				return details;
+			} catch (error) {
+				console.error("❌ Error fetching smart contract info:", error);
+				return null;
 			}
-			floGlobals.smartContractList[`${contractName}-${contractAddress}`] = {
-				...details,
-				...floGlobals.smartContractList[`${contractName}-${contractAddress}`]
-			}
-			return details
 		}
 
+
 		async function getContractParticipants(contract) {
-			const participants = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/smartContractParticipants?contractName=${contract.name}&contractAddress=${contract.address}`)
-			return participants.participantInfo
+			try {
+				const url = `${floGlobals.tokenApiUrl}/api/v2/smartContractParticipants?contractName=${contract.name}&contractAddress=${contract.address}`;
+				console.log(`📡 Fetching contract participants from: ${url}`);
+				const participants = await fetchJson(url);
+				console.log("📦 Participants response:", participants);
+				return participants.participantInfo || [];
+			} catch (error) {
+				console.error("❌ Error fetching contract participants:", error);
+				return [];
+			}
 		}
 
 		async function getContractTransactions(contract) {
-			const transactions = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/smartContractTransactions?contractName=${contract.name}&contractAddress=${contract.address}`)
-			return transactions.contractTransactions
+			try {
+				const url = `${floGlobals.tokenApiUrl}/api/v2/smartContractTransactions?contractName=${contract.name}&contractAddress=${contract.address}`;
+				console.log(`📡 Fetching contract transactions from: ${url}`);
+				const transactions = await fetchJson(url);
+				console.log("📦 Transactions response:", transactions);
+				return transactions.contractTransactions || [];
+			} catch (error) {
+				console.error("❌ Error fetching contract transactions:", error);
+				return [];
+			}
 		}
 
 		async function getContractDeposits(contract) {
-			const deposits = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/smartContractDeposits?contractName=${contract.name}&contractAddress=${contract.address}`)
-			return deposits.depositInfo
+			try {
+				const url = `${floGlobals.tokenApiUrl}/api/v2/smartContractDeposits?contractName=${contract.name}&contractAddress=${contract.address}`;
+				console.log(`📡 Fetching contract deposits from: ${url}`);
+				const deposits = await fetchJson(url);
+				console.log("📦 Deposits response:", deposits);
+				return deposits.depositInfo || [];
+			} catch (error) {
+				console.error("❌ Error fetching contract deposits:", error);
+				return [];
+			}
 		}
+
 		function getReceiver(vin, vout) {
 			return vout.find(output => output.scriptPubKey.addresses.find(address => address !== vin[0].addr))?.scriptPubKey.addresses[0] || vin[0].addr
 		}
 
-		function parseTransactions(txList) {
-			if (!Array.isArray(txList))
-				txList = [txList]
-			let latestTxArray = [];
-			txList.forEach(tx => {
-				const {
-					txid, blockHeight, vin, vout, time, receiverAddress, senderAddress, contractAddress, contractType,
-					contractConditions: {
-						expiryTime, accepting_token, selling_token, subtype, price,
-						participationAmount, minimumsubscriptionamount, maximumsubscriptionamount
-					} = {},
-					contractAmount, type, tokenAmount, transferType, triggerCondition, userChoice, nftHash, depositAmount,
-					contractName, tokenIdentification, transactionTrigger, onChain
-				} = tx;
-				let obj = {
-					time
-				};
-				if (txid)
-					obj["hash"] = txid;
-				if (blockHeight)
-					obj["blockHeight"] = blockHeight;
-				if (onChain) {
-					if (type === "smartContractPays") {
-						// transaction is a FLO Smart Contract Committee trigger
-						obj = Object.assign({}, obj, {
-							hash: txid,
-							blockHeight,
-							contractName,
-							contractAddress: receiverAddress,
-							winningChoice: triggerCondition,
-							committeeAddress: senderAddress,
-							type: 'contracttrigger'
-						});
-						latestTxArray.push(obj);
-					}
-					else if (type === 'transfer') {
-						if (transferType == "token" || transferType == 'nft') {
-							obj = Object.assign({}, obj, {
-								sender: senderAddress,
-								receiver: receiverAddress,
-								amount: tokenAmount,
-								type: transferType == "token" ? "tokentransfer" : "nfttransfer",
-								token: tokenIdentification,
-							});
-							latestTxArray.push(obj);
-						} else if (transferType == 'smartContract') {
-							// smart contract transfer
-							obj = Object.assign({}, obj, {
-								sender: senderAddress,
-								receiver: receiverAddress,
-								amount: tokenAmount,
-								contractName,
-								userChoice,
-								type: "contracttransfer",
-								token: tokenIdentification,
-							});
-							latestTxArray.push(obj);
-						}
-					} else if (type === 'tokenIncorporation') {
-						// token incorporation
-						// smart contract incorporation
-						obj = Object.assign({}, obj, {
-							incAddress: senderAddress,
-							supply: tokenAmount,
-							type: "tokenincorp",
-							token: tokenIdentification,
-						});
-						latestTxArray.push(obj);
-					} else if (type === 'smartContractIncorporation') {
-						// smart contract incorporation
-						// todo : add checks to determine obj for different types of smart contract incorporation
-						if (subtype == 'tokenswap') {
-							obj = Object.assign({}, obj, {
-								contractName,
-								incAddress: contractAddress,
-								contractType,
-								type: "contractincorp",
-								sellingToken: selling_token,
-								acceptingToken: accepting_token,
-								price,
-							});
-						} else {
-							obj = Object.assign({}, obj, {
-								contractName,
-								incAddress: contractAddress,
-								contractType,
-								expiration: expiryTime,
-								participationFees: contractAmount,
-								availableChoices: "",
-								type: "contractincorp",
-								minAmount: minimumsubscriptionamount,
-								maxAmount: maximumsubscriptionamount,
-								token: tokenIdentification,
-							});
-						}
-						latestTxArray.push(obj);
-					} else if (type === 'nftIncorporation') {
-						// nft incorporation
-						obj = Object.assign({}, obj, {
-							incAddress: senderAddress,
-							supply: tokenAmount,
-							type: "nftincorp",
-							nftHash,
-							token: tokenIdentification,
-						});
-						latestTxArray.push(obj);
-					} else if (type === 'smartContractDeposit') {
-						// smart contract deposit
-						obj = Object.assign({}, obj, {
-							contractName,
-							contractAddress,
-							contractType,
-							amount: depositAmount,
-							type: "contractdeposit",
-							sender: senderAddress,
-							receiver: receiverAddress,
-							token: tokenIdentification,
-						});
-						latestTxArray.push(obj);
-					}
-				} else {
-					obj = Object.assign({}, obj, {
-						transactionTrigger,
-						contractName,
-						contractAddress,
-						onChain: false,
-						type: 'offChainTransfer',
-						senderAddress,
-						receiverAddress,
-						tokenAmount,
-						tokenIdentification,
-						time
-					});
-					latestTxArray.push(obj);
-				}
-			})
+const internalTransactionTypes = [
+	"tokenswapDepositSettlement",
+	"tokenswapParticipationSettlement",
+	"smartContractDepositReturn",
+	"tokenswapRefund",
+	"smartContractPays"
+];
 
-			return latestTxArray;
+function parseTransactions(txList) {
+	if (!Array.isArray(txList)) txList = [txList];
+
+	console.log("💡 Raw input to parseTransactions:", txList);
+	let latestTxArray = [];
+
+	txList.forEach((tx, index) => {
+		console.log(`🔍 Processing TX #${index}:`, tx);
+
+		const {
+			txid, blockHeight, vin, vout, time,
+			receiverAddress, senderAddress,
+			contractAddress: rawContractAddress, contractType: rawContractType,
+			contractConditions: {
+				expiryTime, accepting_token, selling_token, subtype, price,
+				participationAmount, minimumsubscriptionamount, maximumsubscriptionamount
+			} = {},
+			contractAmount, type, tokenAmount, transferType,
+			triggerCondition, userChoice, nftHash, depositAmount,
+			contractName, tokenIdentification, transactionTrigger,
+			onChain
+		} = tx;
+
+		const contractAddress = rawContractAddress || receiverAddress || tx.contractAddress;
+		const contractType = rawContractType || tx.contractType;
+
+		let obj = { time };
+		if (txid) obj["hash"] = txid;
+		if (blockHeight) obj["blockHeight"] = blockHeight;
+
+		console.log(`🧪 TX Type: ${type}, OnChain: ${onChain}, TXID: ${txid}`);
+
+		if (type === "tokenswapParticipation") {
+			console.log("🔄 Handling tokenswapParticipation");
+			obj = {
+				hash: txid,
+				sender: senderAddress,
+				receiver: receiverAddress,
+				amount: tokenAmount,
+				contractName,
+				userChoice,
+				type: "contracttransfer",
+				token: tokenIdentification,
+				transactionTrigger,
+				onChain: true,
+				time
+			};
+			console.log("✅ Parsed tokenswapParticipation:", obj);
+			latestTxArray.push(obj);
+			return;
 		}
 
-		async function getAllBlocks(number) {
-			const allBlocks = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/latestBlockDetails${number ? `?limit=${number}` : ''}`)
-			return Object.values(allBlocks.latestBlocks).sort((a, b) => b.height - a.height)
-		}
+		if (!onChain) {
+			console.log("🌐 Off-chain transaction");
+			if (internalTransactionTypes.includes(type) || type === 'trigger') {
+				console.log("📩 Recognized internal or trigger off-chain TX");
 
-		async function getAllTxs() {
-			const allTxs = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/latestTransactionDetails?limit=200`)
-			return allTxs.latestTransactions
-		}
-
-		async function getAddressInfo(floAddress) {
-			const addressInfo = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/floAddressInfo/${floAddress}`)
-			return addressInfo.floAddressBalances
-		}
-
-		async function getAddressTxs(floAddress) {
-			const transactions = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/floAddressTransactions/${floAddress}`)
-			return transactions.transactions
-		}
-
-		async function getTxInfo(thisTx) {
-			try {
-				const transaction = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/transactionDetails/${thisTx}`)
-				console.log(transaction)
-				if (transaction.result === 'error')
-					return [false, transaction.description]
-				let {
-					floData,
-					tokenAmount,
-					tokenIdentification,
-					type,
-					nftHash,
-					blockheight,
-					vin,
-					vout,
-					confirmations,
-					transferType,
+				obj = {
+					hash: txid,
+					transactionTrigger: transactionTrigger || txid,
+					contractName,
+					contractAddress,
+					onChain: false,
+					type: 'offChainTransfer',
 					senderAddress,
 					receiverAddress,
-					txid,
-					onChain,
-					subTransactions,
+					tokenAmount,
+					tokenIdentification: tokenIdentification || accepting_token || 'unknown',
 					time
-				} = transaction;
-				if (type == 'smartContractPays') {
-					tokenAmount = '-'
-				}
-				return [
-					true, {
-						type: `${transferType || ''} ${type}`,
-						name: tokenIdentification,
-						blockHeight: blockheight,
-						amount: tokenAmount,
-						sender: senderAddress,
-						receiver: receiverAddress,
-						floData,
-						hash: txid,
-						confirmations,
-						nftHash,
-						onChain,
-						subTransactions,
-						time
-					}
-				]
+				};
+				console.log("✔️ Parsed offChainTransfer:", obj);
+				latestTxArray.push(obj);
+			} else {
+				console.warn("⛔ Ignored off-chain TX:", tx);
 			}
-			catch (err) {
-				throw err
+			return;
+		}
+
+		if (type === "trigger") {
+			console.log("⚡ Handling on-chain trigger");
+			obj = {
+				hash: transactionTrigger || txid,
+				contractName,
+				contractAddress,
+				sender: senderAddress || contractAddress,
+				receiver: receiverAddress || contractAddress,
+				amount: tokenAmount,
+				type: "trigger",
+				token: tokenIdentification || accepting_token || 'unknown',
+				triggerCondition,
+				onChain: true,
+				time
+			};
+			console.log("⚡ Parsed on-chain trigger:", obj);
+			latestTxArray.push(obj);
+			return;
+		}
+
+		if ((type === 'transfer' || type === 'participation') && transferType === 'smartContract') {
+			console.log("🔁 Handling smartContract transfer/participation");
+			obj = {
+				hash: txid,
+				sender: senderAddress,
+				receiver: receiverAddress,
+				amount: tokenAmount,
+				contractName,
+				userChoice,
+				type: "contracttransfer",
+				token: tokenIdentification,
+				transactionTrigger,
+				time
+			};
+			console.log("🔁 Parsed contracttransfer:", obj);
+			latestTxArray.push(obj);
+			return;
+		}
+
+		if (type === 'transfer') {
+			console.log("💸 Handling regular token/nft transfer");
+			if (transferType === "token" || transferType === 'nft') {
+				obj = {
+					hash: txid,
+					sender: senderAddress,
+					receiver: receiverAddress,
+					amount: tokenAmount,
+					type: transferType === "token" ? "tokentransfer" : "nfttransfer",
+					token: tokenIdentification,
+					time
+				};
+				console.log("💸 Parsed token/nft transfer:", obj);
+				latestTxArray.push(obj);
+				return;
+			} else {
+				console.warn("🚫 Unrecognized transferType:", transferType, "in TX:", tx);
 			}
 		}
+
+		if (type === 'tokenIncorporation') {
+			console.log("📦 Handling token incorporation");
+			obj = {
+				hash: txid,
+				incAddress: senderAddress,
+				supply: tokenAmount,
+				type: "tokenincorp",
+				token: tokenIdentification,
+				time
+			};
+			console.log("📦 Parsed tokenIncorporation:", obj);
+			latestTxArray.push(obj);
+			return;
+		}
+
+		if (type === 'smartContractIncorporation' || type === 'incorporation') {
+			console.log("🏗️ Handling smart contract incorporation");
+			if (subtype === 'tokenswap') {
+				obj = {
+					hash: txid,
+					contractName,
+					incAddress: contractAddress,
+					contractType,
+					type: "contractincorp",
+					sellingToken: selling_token,
+					acceptingToken: accepting_token,
+					price,
+					time
+				};
+			} else {
+				obj = {
+					hash: txid,
+					contractName,
+					incAddress: contractAddress,
+					contractType,
+					expiration: expiryTime,
+					participationFees: contractAmount,
+					availableChoices: "",
+					type: "contractincorp",
+					minAmount: minimumsubscriptionamount,
+					maxAmount: maximumsubscriptionamount,
+					token: tokenIdentification,
+					time
+				};
+			}
+			console.log("✅ Parsed smartContractIncorporation:", obj);
+			latestTxArray.push(obj);
+			return;
+		}
+
+		if (type === 'nftIncorporation') {
+			console.log("🖼️ Handling NFT incorporation");
+			obj = {
+				hash: txid,
+				incAddress: senderAddress,
+				supply: tokenAmount,
+				type: "nftincorp",
+				nftHash,
+				token: tokenIdentification,
+				time
+			};
+			console.log("🖼️ Parsed nftIncorporation:", obj);
+			latestTxArray.push(obj);
+			return;
+		}
+
+		if (type === 'smartContractDeposit') {
+			console.log("🪙 Handling smart contract deposit");
+			obj = {
+				hash: txid,
+				contractName,
+				contractAddress,
+				contractType,
+				amount: typeof depositAmount !== "undefined" ? depositAmount : tokenAmount,
+				type: "contractdeposit",
+				sender: senderAddress,
+				receiver: receiverAddress,
+				token: tokenIdentification,
+				time
+			};
+			console.log("🪙 Parsed smartContractDeposit:", obj);
+			latestTxArray.push(obj);
+			return;
+		}
+
+		console.warn("❓ Unhandled TX type:", type, tx);
+	});
+
+	console.log("🧩 Final Parsed Transactions (types):", latestTxArray.map(t => t.type));
+	console.log("🧩 Final Parsed Transactions (full):", latestTxArray);
+	return latestTxArray;
+}
+
+
+		async function getAllBlocks(number) {
+			try {
+				const url = `${floGlobals.tokenApiUrl}/api/v2/latestBlockDetails${number ? `?limit=${number}` : ''}`;
+				console.log(`📡 Fetching latest blocks from: ${url}`);
+				const allBlocks = await fetchJson(url);
+				console.log("📦 Fetched blocks:", allBlocks);
+				const blocks = Object.values(allBlocks.latestBlocks || {}).sort((a, b) => b.height - a.height);
+				return blocks;
+			} catch (error) {
+				console.error("❌ Error fetching latest blocks:", error);
+				return [];
+			}
+		}
+
+
+		async function getAllTxs() {
+			try {
+				const url = `${floGlobals.tokenApiUrl}/api/v2/latestTransactionDetails?limit=200`;
+				console.log(`📡 Fetching latest transactions from: ${url}`);
+				const allTxs = await fetchJson(url);
+				console.log("📦 Fetched transactions:", allTxs);
+				return allTxs.latestTransactions || [];
+			} catch (error) {
+				console.error("❌ Error fetching latest transactions:", error);
+				return [];
+			}
+		}
+
+
+		async function getAddressInfo(floAddress) {
+			try {
+				const url = `${floGlobals.tokenApiUrl}/api/v2/floAddressInfo/${floAddress}`;
+				console.log(`📡 Fetching address info from: ${url}`);
+				const addressInfo = await fetchJson(url);
+				console.log("📦 Address info response:", addressInfo);
+				return addressInfo;
+			} catch (error) {
+				console.error("❌ Error fetching address info:", error);
+				return null;
+			}
+		}
+
+
+
+		async function getAddressBalance(floAddress) {
+			try {
+				const url = `${floGlobals.floApiUrl}/api/v2/address/${floAddress}?details=basic`;
+				console.log(`📡 Fetching address balance from: ${url}`);
+				const balance = await fetchJson(url);
+				console.log("📦 Balance info:", balance);
+				return balance;
+			} catch (error) {
+				console.error("❌ Error fetching address balance:", error);
+				return null;
+			}
+		}
+
+
+
+		async function getAddressTxs(floAddress) {
+			try {
+				const url = `${floGlobals.tokenApiUrl}/api/v2/floAddressTransactions/${floAddress}`;
+				console.log(`📡 Fetching address transactions from: ${url}`);
+				const transactions = await fetchJson(url);
+				console.log("📦 Address transactions:", transactions);
+				return transactions.transactions || [];
+			} catch (error) {
+				console.error("❌ Error fetching address transactions:", error);
+				return [];
+			}
+		}
+
+
+
+async function getTxInfo(thisTx) {
+	try {
+		const url = `${floGlobals.tokenApiUrl}/api/v2/transactionDetails/${thisTx}`;
+		console.log(`📡 Fetching transaction info from: ${url}`);
+
+		const transaction = await fetchJson(url);
+		console.log("📦 Transaction response:", transaction);
+
+		if (transaction.result === 'error')
+			return [false, transaction.description];
+
+		// Extract all known fields safely
+		let {
+			floData,
+			tokenAmount,
+			tokenIdentification,
+			type,
+			nftHash,
+			blockheight,
+			vin,
+			vout,
+			confirmations,
+			transferType,
+			senderAddress,
+			receiverAddress,
+			txid,
+			onChain,
+			subTransactions,
+			time,
+			contractAddress,
+			contractName,
+			operation,
+			operationDetails
+		} = transaction;
+
+		// Normalize amount for smart contract pays
+		if (type === 'smartContractPays') {
+			tokenAmount = '-';
+		}
+
+		return [
+			true,
+			{
+				// Original and normalized values
+				txid,
+				hash: txid,  // fallback for compatibility
+				type: transferType ? `${transferType.trim()} ${type.trim()}` : type.trim(),
+				name: tokenIdentification,
+				tokenAmount,
+				amount: tokenAmount,
+				blockheight,
+				blockHeight: blockheight,
+				confirmations,
+				sender: senderAddress,
+				senderAddress,
+				receiver: receiverAddress,
+				receiverAddress,
+				floData,
+				nftHash,
+				onChain,
+				subTransactions,
+				time,
+
+				// ✅ Additional preserved fields
+				contractAddress,
+				contractName,
+				operation,
+				operationDetails
+			}
+		];
+	} catch (err) {
+		console.error("❌ Error fetching transaction info:", err);
+		return [false, err.message || "Unknown error"];
+	}
+}
+
+
 
 
 		function returnHexNumber(s) {
@@ -2482,89 +3091,134 @@
 		}
 
 		function splitContractNameAddress(text) {
-			const index = text.lastIndexOf('-');
+			const index = text.lastIndexOf('_');
 			return {
 				name: text.substring(0, index),
 				address: text.substring(index + 1)
 			};
 		}
 
-		function categorizeText(text) {
-			return new Promise((resolve, reject) => {
-				// check if text have only numbers
-				if (/^\d+$/.test(text)) {
-					//console.log('this is a block number');
-					location.href = `#/block/${text}`
-					resolve('block')
-				} else if (text.length == 34 && floCrypto.validateFloID(text)) {
-					//console.log('data entered is a FLO address');
-					location.href = `#/address/${text}`
-					resolve('address')
-				} else if (floGlobals.tokenList.includes(text.toLowerCase())) {
-					//console.log('data entered is a token name');
-					location.href = `#/token/${text}`
-					resolve('token')
-				} else if (floGlobals.smartContractList[text]) {
-					location.href = `#/contract/${text}`
-					resolve('contract')
-				} else if (text.length == 64 && returnHexNumber(text)) {
-					fetchJson(`${floGlobals.tokenApiUrl}/api/v2/categoriseString/` + text)
-						.then(function (myJson) {
-							console.log(`${floGlobals.tokenApiUrl}/api/v2/categoriseString/` + text)
-							if (myJson['type'] == 'transaction') {
-								//console.log('data entered is a transaction hash');
-								location.href = `#/transaction/${text}`
-							} else if (myJson['type'] == 'block') {
-								// console.log('data entered is a block hash');
-								location.href = `#/block/${text}`
-							} else {
-								renderElem(getRef("page_container"), html`${render.errorPage('The entered text is not a part of the token system')}`);
-							}
-							resolve()
-						}).catch(err => {
-							console.error(err)
-							resolve()
-						})
+function categorizeText(text) {
+	console.log("🔍 Categorizing input:", text);
+	return new Promise((resolve, reject) => {
+		// check if text has only numbers
+		if (/^\d+$/.test(text)) {
+			console.log("📘 Input detected as block number");
+			location.href = `#/block/${text}`;
+			resolve('block');
+		} else if (text.length === 34 && floCrypto.validateFloID(text)) {
+			console.log("📘 Input detected as valid FLO address");
+			location.href = `#/address/${text}`;
+			resolve('address');
+		} else if (floGlobals.tokenList.includes(text.toLowerCase())) {
+			console.log("📘 Input detected as token name");
+			location.href = `#/token/${text}`;
+			resolve('token');
+		} else if (floGlobals.smartContractList[text]) {
+			console.log("📘 Input detected as smart contract key");
+			location.href = `#/contract/${text}`;
+			resolve('contract');
+		} else if (text.length === 64 && returnHexNumber(text)) {
+			const url = `${floGlobals.tokenApiUrl}/api/v2/categoriseString/${text}`;
+			console.log("📡 Fetching categorization from:", url);
 
-				} else {
-					renderElem(getRef("page_container"), html`${render.errorPage('Invalid search query')}`);
-				}
-			})
+			fetchJson(url)
+				.then(function (myJson) {
+					console.log("✅ Categorization result:", myJson);
+					const type = myJson['type'];
+					if (type === 'transaction') {
+						location.href = `#/transaction/${text}`;
+					} else if (type === 'block') {
+						location.href = `#/block/${text}`;
+} else if (type === 'noise') {
+	console.warn("⚠️ Categorized as noise – no match found.");
+	renderElem(getRef("page_container"), html`
+		<section class="page flex flex-direction-column gap-2 align-center justify-center">
+			<svg class="icon" style="width: 64px; height: 64px; opacity: 0.5;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+				<circle cx="12" cy="12" r="10"></circle>
+				<line x1="12" y1="8" x2="12" y2="12"></line>
+				<circle cx="12" cy="16" r="1"></circle>
+			</svg>
+			<h2 class="text-center">Nothing found</h2>
+			<p class="text-center breakable" style="max-width: 50rem;">
+				No transaction, block, token, or contract matched your input:<br>
+				<code>${text}</code>
+			</p>
+			<button class="button button--primary" onclick=${() => router.routeTo('#/home')}>Go back home</button>
+		</section>
+	`);
+}
+
+
+					 else {
+						console.warn("⚠️ Unknown categorization type:", type);
+					}
+					resolve(); // ✅ Ensure spinner clears
+				})
+				.catch(err => {
+					console.error("❌ Categorization fetch failed:", err);
+					resolve(); // ✅ Still resolve to clear spinner
+				});
+		} else {
+			console.warn("⚠️ Invalid search query format");
+			renderElem(getRef("page_container"), html`${render.errorPage('Invalid search query')}`);
+			resolve(); // ✅ Added this resolve too
 		}
+	});
+}
 
-		async function processNavbarSearch() {
-			const query = getRef('main_search_field').value.trim();
+
+
+
+async function processNavbarSearch() {
+	const query = getRef('main_search_field').value.trim();
+	try {
+		if (query === '') return;
+		loading(); // Start spinner
+		await getAllSuggestions();
+		await categorizeText(query);
+		getRef('main_search_field').value = '';
+		renderElem(getRef('suggestions'), html``);
+	} catch (err) {
+		console.error(err);
+	} finally {
+		loading(false); // ✅ Always stop spinner, even if error or "noise"
+	}
+}
+
+
+		async function getAllSuggestions() {
+			console.log(`📡 Fetching token and smart contract list from ${floGlobals.tokenApiUrl}/api/v2/tokenSmartContractList`);
+			window.allSuggestions = [];
+
 			try {
-				if (query === '') return
-				loading()
-				await getAllSuggestions();
-				await categorizeText(query)
-				getRef('main_search_field').value = ''
-				renderElem(getRef('suggestions'), html``)
+				let { tokens, smartContracts } = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/tokenSmartContractList`);
+				console.log("✅ Token & Smart Contract list received:", { tokensCount: tokens.length, smartContractsCount: smartContracts.length });
+
+				floGlobals.tokenList = tokens;
+				floGlobals.smartContractList = {};
+				smartContracts.forEach(contract => {
+					floGlobals.smartContractList[`${contract.contractName}_${contract.contractAddress}`] = contract;
+					allSuggestions.push(`${contract.contractName}_${contract.contractAddress}`);
+				});
+				allSuggestions = allSuggestions.concat(tokens);
+
+				window.flexSearchIndex = new FlexSearch.Index({
+					tokenize: "reverse",
+					suggest: true
+				});
+
+				allSuggestions.forEach((suggestion, index) => {
+					flexSearchIndex.add(index, suggestion);
+				});
+
+				console.log("🔍 Search suggestions initialized with", allSuggestions.length, "items");
 			} catch (err) {
-				console.error(err)
+				console.error("❌ Failed to fetch suggestions:", err);
+				throw err;
 			}
 		}
 
-		async function getAllSuggestions() {
-			window.allSuggestions = [];
-			let { tokens, smartContracts } = await fetchJson(`${floGlobals.tokenApiUrl}/api/v2/tokenSmartContractList`);
-			floGlobals.tokenList = tokens;
-			floGlobals.smartContractList = {}
-			smartContracts.forEach(contract => {
-				floGlobals.smartContractList[`${contract.contractName}-${contract.contractAddress}`] = contract;
-				allSuggestions.push(`${contract.contractName}-${contract.contractAddress}`);
-			})
-			allSuggestions = allSuggestions.concat(tokens);
-			window.flexSearchIndex = new FlexSearch.Index({
-				tokenize: "reverse",
-				suggest: true
-			});
-
-			allSuggestions.forEach((suggestion, index) => {
-				flexSearchIndex.add(index, suggestion);
-			})
-		}
 
 		function initSmartContractCreation() {
 			const [selectedSCTemplate, setSelectedSCTemplate] = $signal(null);
@@ -2961,7 +3615,7 @@
 							description = html`
 								<div class="grid gap-0-5">
 									<p>You have participated in ${contractName} with ${participationAmount} ${tokenIdentification}</p>
-									<a href=${`#/contract/${contractName}-${contractAddress}`} class="button button--small button--primary">Check your participation</a>
+									<a href=${`#/contract/${contractName}_${contractAddress}`} class="button button--small button--primary">Check your participation</a>
 								</div>
 							`
 							break
@@ -2973,7 +3627,7 @@
 							description = html`
 								<div class="grid gap-0-5">
 									<p>You have casted your vote for ${userChoice} in ${contractName} with ${participationAmount} ${tokenIdentification}</p>
-									<a href=${`#/contract/${contractName}-${contractAddress}`} class="button button--small button--primary">Check your vote</a>
+									<a href=${`#/contract/${contractName}_${contractAddress}`} class="button button--small button--primary">Check your vote</a>
 								</div>
 							`
 							break
@@ -2988,7 +3642,7 @@
 							description = html`
 								<div class="grid gap-0-5">
 									<p>You have initiated a token swap in ${contractName} with ${participationAmount} ${acceptingToken}</p>
-									<a href=${`#/contract/${contractName}-${contractAddress}`} class="button button--small button--primary">Check swap status</a>
+									<a href=${`#/contract/${contractName}_${contractAddress}`} class="button button--small button--primary">Check swap status</a>
 								</div>
 							`
 							break;
@@ -3094,7 +3748,7 @@
 				return notify(`You already have a smart contract with this address. Only one smart contract is allowed per address.`, 'error')
 			let floData
 			let confirmationMessage = ''
-			if (floGlobals.smartContractList.hasOwnProperty(`${contractName}-${creatorAddress}`))
+			if (floGlobals.smartContractList.hasOwnProperty(`${contractName}_${creatorAddress}`))
 				return notify(`Contract with name: ${contractName} and address: ${creatorAddress} already exists`, 'error')
 			switch (type) {
 				case 'one-time-event':
