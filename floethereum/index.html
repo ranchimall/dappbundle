@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FLO Ethereum</title>
-    <link rel="stylesheet" href="css/main.min.css">
+    <link rel="stylesheet" href="css/main.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -91,53 +91,67 @@
             </button>
             <theme-toggle></theme-toggle>
         </header>
-        <nav id="main_navbar">
-            <ul>
-                <li>
-                    <a class="nav-item nav-item--active interactive" href="#/balance">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                            width="24px" fill="#000000">
-                            <path d="M0 0h24v24H0V0z" fill="none" />
-                            <path
-                                d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z" />
-                            <circle cx="16" cy="12" r="1.5" />
-                        </svg>
-                        <span class="nav-item__title">
-                            Balance
-                        </span>
-                        <div class="nav-item__indicator"></div>
-                    </a>
-                </li>
-                <li>
-                    <a class="nav-item interactive" href="#/send">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                            width="24px" fill="#000000">
-                            <path d="M0 0h24v24H0V0z" fill="none"></path>
-                            <path
-                                d="M4.01 6.03l7.51 3.22-7.52-1 .01-2.22m7.5 8.72L4 17.97v-2.22l7.51-1M2.01 3L2 10l15 2-15 2 .01 7L23 12 2.01 3z">
-                            </path>
-                        </svg>
-                        <span class="nav-item__title">
-                            Send
-                        </span>
-                    </a>
-                </li>
-                <li>
-                    <a class="nav-item interactive" href="#/create">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
-                            width="24px" fill="#000000">
-                            <path d="M0 0h24v24H0V0z" fill="none"></path>
-                            <path
-                                d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z">
-                            </path>
-                        </svg>
-                        <span class="nav-item__title">
-                            Create
-                        </span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+    <nav id="main_navbar">
+        <ul>
+            <li>
+                <a class="nav-item nav-item--active interactive" href="#/balance">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                        width="24px" fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z" />
+                        <circle cx="16" cy="12" r="1.5" />
+                    </svg>
+                    <span class="nav-item__title">
+                        Balance
+                    </span>
+                    <div class="nav-item__indicator"></div>
+                </a>
+            </li>
+            <li>
+                <a class="nav-item interactive" href="#/send">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                        width="24px" fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none"></path>
+                        <path
+                            d="M4.01 6.03l7.51 3.22-7.52-1 .01-2.22m7.5 8.72L4 17.97v-2.22l7.51-1M2.01 3L2 10l15 2-15 2 .01 7L23 12 2.01 3z">
+                        </path>
+                    </svg>
+                    <span class="nav-item__title">
+                        Send
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a class="nav-item interactive" href="#/create">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                        width="24px" fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none"></path>
+                        <path
+                            d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z">
+                        </path>
+                    </svg>
+                    <span class="nav-item__title">
+                        Create
+                    </span>
+                </a>
+            </li>
+            <li>
+                <a class="nav-item interactive" href="#/retrieve">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                        width="24px" fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                    </svg>
+                    <span class="nav-item__title">
+                        Retrieve
+                    </span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
         <div id="page_container"></div>
     </main>
     <sm-popup id="transaction_result_popup">
@@ -385,6 +399,7 @@
                     this.routingStart(this.state)
                 }
                 if (this.routes[page]) {
+                    //Actual routing step
                     await this.routes[page](this.state)
                     this.lastPage = page
                 } else {
@@ -411,6 +426,8 @@
                     else
                         page = path
                     this.state = { page, wildcards, lastPage: this.lastPage, params }
+                    
+            
                     if (queryString) {
                         params = new URLSearchParams(queryString)
                         this.state.params = Object.fromEntries(params)
@@ -428,6 +445,39 @@
                 }
             }
         }
+
+//Moving notification draw so that it does not overlap the menu item
+(function placeToasts() {
+  const drawer = document.getElementById('notification_drawer');
+  const panel  = drawer?.shadowRoot?.querySelector('.notification-panel');
+  if (!panel) return;
+
+  const apply = () => {
+    if (window.matchMedia('(min-width: 640px)').matches) {
+      // Desktop: offset from left navbar
+      Object.assign(panel.style, {
+        left: 'calc(10rem + 1rem)',
+        bottom: '1rem',
+        top: 'auto',
+        right: '1rem',   // optional, lets long toasts wrap before content edge
+        zIndex: '1000'
+      });
+    } else {
+      // Mobile: keep top-right or top-left as you prefer
+      Object.assign(panel.style, {
+        left: '0.5rem',
+        top: '0.5rem',
+        right: '0.5rem',
+        bottom: 'auto',
+        zIndex: '1000'
+      });
+    }
+  };
+
+  apply();
+  window.addEventListener('resize', apply);
+})();
+
     </script>
     <script>
         const assetIcons = {
@@ -476,9 +526,6 @@
                 let { page } = state
                 if (!page)
                     page = 'balance'
-                if (page !== 'send') {
-                    taprootScriptTxDetails = {}
-                }
                 const previousTarget = getRef('main_navbar').querySelector('.nav-item--active')
                 if (previousTarget) {
                     previousTarget.classList.remove('nav-item--active')
@@ -501,73 +548,74 @@
             }
 
         }
+      
+        // put this once near the top with your other globals
+        let idbReady;
+
         window.addEventListener('load', () => {
-            router.routeTo(location.hash)
-            document.body.classList.remove('hidden')
-            document.addEventListener('copy', () => {
-                notify('copied', 'success')
-            })
-            document.addEventListener("pointerdown", (e) => {
-                if (e.target.closest("button:not(:disabled), .interactive:not(:disabled)")) {
-                    createRipple(e, e.target.closest("button, .interactive"));
-                }
+          // 1) Initialize IndexedDB BEFORE any routing/reads
+          idbReady = compactIDB.initDB('floEthereum', { contacts: {} })
+            .then((res) => { console.log(res); })
+            .catch((err) => { console.error(err); });
+
+          // 2) After DB is ready, wire listeners and route once
+          idbReady.then(() => {
+            const routeNow = () => router.routeTo(location.hash);
+
+            // Utility/UI listeners
+            document.addEventListener('copy', () => notify('copied', 'success'));
+            document.addEventListener('pointerdown', (e) => {
+              const target = e.target.closest('button:not(:disabled), .interactive:not(:disabled)');
+              if (target) createRipple(e, target);
             });
-            compactIDB.initDB('floEthereum', {
-                contacts: {}
-            }).then((result) => {
-                console.log(result)
-            }).catch((error) => {
-                console.error(error)
-            })
-            // connectToMetaMask().then(() => {
+
+            // Ethereum / MetaMask
             if (window.ethereum) {
-                // setMetaMaskStatus(window.ethereum.isConnected())
-                window.ethereum.on('chainChanged', (chainId) => {
-                    window.currentChainId = chainId
-                    if (chainId !== '0x1') {
-                        renderError('Please switch MetaMask to Ethereum Mainnet')
-                    } else {
-                        router.routeTo(location.hash)
-                    }
+              window.ethereum.on('chainChanged', (chainId) => {
+                window.currentChainId = chainId;
+                if (chainId !== '0x1') {
+                  renderError('Please switch MetaMask to Ethereum Mainnet');
+                } else {
+                  routeNow();
+                }
+              });
+
+              window.ethereum.request({ method: 'eth_chainId' })
+                .then((chainId) => {
+                  window.currentChainId = chainId;
+                  if (chainId !== '0x1') {
+                    renderError('Please switch MetaMask to Ethereum Mainnet');
+                  } else {
+                    routeNow();
+                  }
                 })
-                window.ethereum.request({
-                    "method": "eth_chainId"
-                }).then(chainId => {
-                    window.currentChainId = chainId
-                    if (chainId !== '0x1') {
-                        renderError('Please switch MetaMask to Ethereum Mainnet')
-                    } else {
-                        router.routeTo(location.hash)
-                    }
-                })
+                .catch(() => {
+                  // If reading chain id fails, still render the app
+                  routeNow();
+                });
+
+              // Account status hooks (kept exactly like your current code)
+              ethereum.on('accountsChanged', (accounts) => {
+                getRef('eth_balance_wrapper').classList.add('hidden');
+                setMetaMaskStatus(accounts.length > 0);
+              });
+              ethereum.on('connect', (accounts) => {
+                setMetaMaskStatus(accounts.length > 0);
+              });
+              ethereum.on('disconnect', (accounts) => {
+                setMetaMaskStatus(false);
+              });
+            } else {
+              // no ethereum provider—just route
+              routeNow();
             }
-            // }).catch((error) => {
-            //     setMetaMaskStatus(false)
-            //     if (error.code === 4001) {
-            //         // EIP-1193 userRejectedRequest error
-            //         notify('Please connect to MetaMask to continue', 'error')
-            //     } else {
-            //         if (error === 'MetaMask not installed') {
-            //             getRef('balance_section').classList.add('hidden')
-            //             getRef('error_section').classList.remove('hidden')
-            //         }
-            //         else
-            //             console.error(error)
-            //     }
-            // })
-            if (typeof window.ethereum !== 'undefined') {
-                ethereum.on('accountsChanged', (accounts) => {
-                    getRef('eth_balance_wrapper').classList.add('hidden')
-                    setMetaMaskStatus(accounts.length > 0)
-                });
-                ethereum.on('connect', (accounts) => {
-                    setMetaMaskStatus(accounts.length > 0)
-                });
-                ethereum.on('disconnect', (accounts) => {
-                    setMetaMaskStatus(false)
-                });
-            }
-        })
+
+            // 3) Reveal UI only after we’re safe to render
+            document.body.classList.remove('hidden');
+          });
+        });
+
+        
         router.addRoute('404', () => {
             renderElem(getRef('page_container'), html`
                 <h1>Page not found</h1>
@@ -681,7 +729,7 @@
         }
         function checkBalance(ethAddress, floAddress) {
             if (!ethAddress) {
-                const keyToConvert = document.querySelector('#check_balance_input').value.trim()
+                let keyToConvert = document.querySelector('#check_balance_input').value.trim()
                 if (ethOperator.isValidAddress(keyToConvert)) {
                     ethAddress = keyToConvert
                 } else {
@@ -873,6 +921,7 @@
                 notify(err, 'error')
             })
         }
+        //Handle Sender Input
         function handleSenderInput(e) {
             getRef('check_balance_button').disabled = !e.target.isValid
             if (!e.target.isValid) {
@@ -949,6 +998,7 @@
                 buttonLoader('send_tx_button', false)
             }
         }
+        //Show transaction phase
         function showTransactionResult(status, { txHash, description = '' }) {
             switch (status) {
                 case 'pending':
@@ -996,6 +1046,163 @@
             }
             openPopup('transaction_result_popup')
         }
+        
+        // ROUTE: Retrieve
+        router.addRoute('retrieve', (state) => {
+          const container = getRef('page_container');
+          container.dataset.page = 'retrieve';
+
+          renderElem(container, html`
+            <sm-form id="retrieve_form" style="width: min(32rem, 100%)">
+              <!-- Block 1 (like Sender block) -->
+              <fieldset class="flex flex-direction-column gap-0-5">
+                <div class="flex space-between align-center">
+                  <div class="flex flex-direction-column gap-0-5">
+                    <h4>Private key</h4>
+                    <p>Private key will be wiped out immediately, and page locked</p>
+                  </div>
+                </div>
+
+                <sm-input id="retrieve_key_input" placeholder="FLO/BTC/ETH private key" data-private-key="" class="password-field" type="password" animate required aria-label="FLO/BTC/ETH private key" role="textbox" oninput=${handleRetrieveInput}>
+
+                                    <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
+                                    <label slot="right" class="interact">
+                                        <input type="checkbox" class="hidden" autocomplete="off" readonly="" onchange="togglePrivateKeyVisibility(this)">
+                                        <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"> </path> </svg>
+                                        <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"> </path> </svg>
+                                    </label>
+                </sm-input>
+
+                <!-- Match send: results row -->
+                <div id="retrieve_result" class="flex align-center gap-0-3 hidden"></div>
+              </fieldset>
+
+              <!-- Block 2 (button row) -->
+              <fieldset class="flex flex-direction-column gap-1">
+                <div class="multi-state-button">
+                  <button id="retrieveButton" class="button button--primary w-100" type="button" disabled
+                          onclick=${retrieveAddress}>
+                    Retrieve
+                  </button>
+                </div>
+              </fieldset>
+            </sm-form>
+          `);
+        });
+
+
+        // ACTION: Retrieve/derive addresses based on input
+
+        //Enable the button when valid input is present
+        function handleRetrieveInput(e) {
+            getRef('retrieveButton').disabled = !e.target.isValid
+        }
+
+        function retrieveAddress() {
+          const outEl = getRef('retrieve_result');
+          const inpEl = getRef('retrieve_key_input');
+          let input = getRef('retrieve_key_input').value?.trim();
+          let usedSecret = false;
+            let wif = '';
+            let ethPriv = '';
+
+          if (!input) {
+            notify('Please enter an ETH address, WIF, or 64-hex private key', 'error');
+            renderElem(outEl, html``);
+            outEl.classList.add('hidden');
+            return;
+          }
+
+          try {
+            // Loading hint
+            renderElem(outEl, html`<div class="muted">Resolving…</div>`);
+            outEl.classList.remove('hidden');
+
+            // Detect ETH address (without private key)
+            const isEthAddrRegex = /^0x[0-9a-fA-F]{40}$/;
+            const isEthAddress = (typeof ethOperator !== 'undefined' && ethOperator.isValidAddress?.(input))
+                               || isEthAddrRegex.test(input);
+
+            if (isEthAddress) {
+              // We cannot derive BTC/FLO from an address alone (no private key)
+              const normalizedEth = input.toLowerCase();
+              renderElem(outEl, html`
+                <div class="card grid gap-0-5">
+                  <span class="label">Resolved</span>
+                  <div><strong>ETH address</strong>: <sm-copy value="${normalizedEth}"></sm-copy></div>
+                  <div class="muted">BTC/FLO cannot be derived from an address without the private key.</div>
+                </div>
+              `);
+              return;
+            }
+
+            // Normalize to WIF if the input is a raw 64-hex private key
+            usedSecret = true;
+
+            let wif = input;
+            const is64Hex = /^[0-9a-fA-F]{64}$/.test(input);
+            if (is64Hex) {
+              wif = coinjs.privkey2wif(input); // hex → WIF
+            }
+
+            // From WIF, derive ETH private key (hex)
+            const ethPriv = coinjs.wif2privkey(wif).privkey;
+
+
+            // ETH address from private key
+            const ethAddress = floEthereum.ethAddressFromPrivateKey(ethPriv);
+
+            // BTC bech32 from WIF
+            const btcBech32 = btcOperator.bech32Address(wif);
+            //const btcPriv = btcOperator.convert.wif(wif); 
+            //const floPriv = btcOperator.convert.wif(wif, 0xa3); 
+
+            // FLO from WIF
+            const floAddress = floCrypto.getFloID(wif);
+
+
+            // Render results
+            renderElem(outEl, html`
+              <div class="card grid gap-1">
+                
+
+                <div class="grid gap-0-5">
+                  <div><strong>BTC Address</strong>: <sm-copy value="${btcBech32}"></sm-copy></div>
+                  <div><strong>FLO Address</strong>: <sm-copy value="${floAddress}"></sm-copy></div>
+                  <div><strong>ETH Address</strong>: <sm-copy value="${ethAddress}"></sm-copy></div>
+                </div>
+
+
+              </div>
+            `);
+
+          } catch (e) {
+            notify('Could not retrieve from the provided value', 'error');
+            renderElem(outEl, html``);
+            outEl.classList.add('hidden');
+          }
+
+          finally {
+            if (usedSecret && inpEl) {
+                  const wipe = (s) => (typeof s === 'string' ? s.replace(/./g, '\0') : s);
+                        input   = typeof input === 'string'   && input.length   ? (wipe(input),   null) : input;
+                        wif     = typeof wif === 'string'     && wif.length     ? (wipe(wif),     null) : wif;
+                        ethPriv = typeof ethPriv === 'string' && ethPriv.length ? (wipe(ethPriv), null) : ethPriv;
+
+                  const inner = inpEl.shadowRoot?.querySelector('input[part="input"]');
+                  if (inner) {
+                    inner.value = '';
+                    inner.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+                      if (typeof handleRetrieveInput === 'function') {
+                            handleRetrieveInput({ target: inpEl });
+  }
+                  }
+                }
+           }
+        }
+
+
+
         router.addRoute('create', (state) => {
             getRef('page_container').dataset.page = 'create'
             renderElem(getRef('page_container'), html`
@@ -1051,6 +1258,8 @@
                 </ul>
             `)
         }
+
+
     </script>
 </body>
 

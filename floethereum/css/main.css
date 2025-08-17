@@ -788,20 +788,20 @@ theme-toggle {
   align-self: center;
 }
 
-.label {
-  text-transform: capitalize;
-  font-size: 0.8rem;
-  margin-bottom: 0.3rem;
-  color: rgba(var(--text-color), 0.8);
-  margin-top: 1.5rem;
-  font-weight: 500;
-}
-.label:first-of-type {
-  margin-top: 0;
-}
-.label + :is(h1, h2, h3, h4, h5, h6, p, span, sm-copy, a) {
-  font-weight: 700;
-}
+  .label {
+    text-transform: capitalize;
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+    color: rgba(var(--text-color), 0.8);
+    margin-top: 1.5rem;
+    font-weight: 500;
+  }
+  .label:first-of-type {
+    margin-top: 0;
+  }
+  .label + :is(h1, h2, h3, h4, h5, h6, p, span, sm-copy, a) {
+    font-weight: 700;
+  }
 
 main {
   display: grid;
@@ -822,6 +822,7 @@ main {
   display: flex;
   height: 100%;
   width: 100%;
+  justify-content: space-around;
 }
 #main_navbar ul li {
   width: 100%;
@@ -886,6 +887,13 @@ main {
   gap: 2rem;
   flex-direction: column;
   width: min(100%, 42rem);
+}
+#page_container[data-page=retrieve] {
+  align-items: flex-start;
+}
+#page_container[data-page=retrieve] > * {
+  padding: 1rem;
+  margin: 0 auto;
 }
 
 aside {
