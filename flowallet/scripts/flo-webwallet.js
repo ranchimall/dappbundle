@@ -49,62 +49,79 @@
     }
 
     function formatTx(address, tx) {
-        let result = {
-            time: tx.time,
-            block: tx.blockheight,
-            blockhash: tx.blockhash,
-            txid: tx.txid,
-            floData: tx.floData,
-            confirmations: tx.confirmations
-        }
+      const result = {
+        time: tx.time,
+        block: tx.blockheight,
+        blockhash: tx.blockhash,
+        txid: tx.txid,
+        floData: tx.floData,
+        confirmations: tx.confirmations
+      };
 
-        //format receivers
-        let receivers = {};
-        for (let vout of tx.vout) {
-            if (vout.scriptPubKey.isAddress) {
-                let id = vout.scriptPubKey.addresses[0];
-                if (id in receivers)
-                    receivers[id] += vout.value;
-                else receivers[id] = vout.value;
-            }
+      // ---- Receivers (outputs) ----
+      const receivers = {};
+      for (const vout of tx.vout || []) {
+        const outAddrs =
+          (vout.addresses && vout.addresses.length ? vout.addresses :
+           vout.scriptPubKey && vout.scriptPubKey.addresses ? vout.scriptPubKey.addresses : null);
+        if (outAddrs && outAddrs.length) {
+          const id = outAddrs[0];
+          receivers[id] = (receivers[id] || 0) + Number(vout.value || 0);
         }
-        result.receivers = receivers;
-        //format senders (or mined)
-        if (!tx.vin[0].isAddress) { //mined (ie, coinbase)
-            let coinbase = tx.vin[0].coinbase;
-            result.mine = coinbase;
-            result.mined = { [coinbase]: tx.valueOut }
-        } else {
-            result.sender = tx.vin[0].addresses[0];
-            result.receiver = tx.vout[0].scriptPubKey.addresses[0];
-            result.fees = tx.fees;
-            let senders = {};
-            for (let vin of tx.vin) {
-                if (vin.isAddress) {
-                    let id = vin.addresses[0];
-                    if (id in senders)
-                        senders[id] += vin.value;
-                    else senders[id] = vin.value;
-                }
-            }
-            result.senders = senders;
+      }
+      result.receivers = receivers;
 
-            //remove change amounts
-            for (let id in senders) {
-                if (id in receivers) {
-                    if (senders[id] > receivers[id]) {
-                        senders[id] -= receivers[id];
-                        delete receivers[id];
-                    } else if (senders[id] < receivers[id]) { //&& id != address 
-                        receivers[id] -= senders[id];
-                        delete senders[id];
-                    }
-                }
-            }
-        }
+      // ---- Coinbase vs normal ----
+      const isCoinbase = !!(tx.vin && tx.vin[0] && tx.vin[0].coinbase);
 
+      if (isCoinbase) {
+        const coinbase = tx.vin[0].coinbase; // string
+        result.mine = coinbase;
+        result.mined = { [coinbase]: Number(tx.valueOut || 0) };
         return result;
+      }
+
+      // ---- Normal tx: senders, fees, first-party heuristics ----
+      result.fees = tx.fees;
+
+      const firstInAddr = (tx.vin && tx.vin[0] && tx.vin[0].addresses && tx.vin[0].addresses[0]) || undefined;
+      const firstOutAddrs =
+        (tx.vout && tx.vout[0] &&
+          ((tx.vout[0].addresses && tx.vout[0].addresses[0]) ||
+           (tx.vout[0].scriptPubKey && tx.vout[0].scriptPubKey.addresses && tx.vout[0].scriptPubKey.addresses[0]))) || undefined;
+      if (firstInAddr) result.sender = firstInAddr;
+      if (firstOutAddrs) result.receiver = firstOutAddrs;
+
+      const senders = {};
+      for (const vin of tx.vin || []) {
+        const inAddrs = vin.addresses;
+        if (inAddrs && inAddrs.length) {
+          const id = inAddrs[0];
+          senders[id] = (senders[id] || 0) + Number(vin.value || 0);
+        }
+      }
+      result.senders = senders;
+
+      // ---- Remove change (net flow) ----
+      for (const id of Object.keys(senders)) {
+        if (receivers[id] != null) {
+          if (senders[id] > receivers[id]) {
+            senders[id] -= receivers[id];
+            delete receivers[id];
+          } else if (senders[id] < receivers[id]) {
+            receivers[id] -= senders[id];
+            delete senders[id];
+          } else {
+            // equal -> cancel both
+            delete senders[id];
+            delete receivers[id];
+          }
+        }
+      }
+
+      return result;
     }
+
 
     floWebWallet.listTransactions = function (address, page_options = {}) {
         return new Promise((resolve, reject) => {
