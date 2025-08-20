@@ -2258,52 +2258,86 @@
             }
         }, 100))
 
-        function checkSenderBalance() {
-            renderBalance({ balance: 0, showLoader: true })
-            const senderPrivateKey = getRef('get_private_key_field').value.trim()
-            const senderFloAddr = floCrypto.getFloID(senderPrivateKey)
-            Promise.all([
-                floWebWallet.getBalance(senderFloAddr),
-                fetchJson(`${floGlobals.tokenURL}api/v2/floAddressBalance/${senderFloAddr}`)
-            ]).then(([retrievedBal, { floAddressBalances }]) => {
-                renderBalance({ balance: parseFloat(retrievedBal), address: senderFloAddr })
-                let ownedTokens = []
-                for (const token in floAddressBalances) {
-                    ownedTokens.push(html`
-                                        <label class="token-balance">
-                                            <input type="radio" name="sender-token" data-balance=${(floAddressBalances[token].balance || 0).toFixed(8)} value=${token}/>
-                                            <span>${token} </span><b class="margin-left-auto">${parseFloat((floAddressBalances[token].balance || 0).toFixed(8))}</b>
-                                        </label>
-                                    `)
-                }
-                if (ownedTokens.length) {
-                    ownedTokens.push(html`
-                                        <label class="token-balance">
-                                            <input type="radio" name="sender-token" value="none" checked/>
-                                            <span>Don't send a token</span>
-                                        </label>
-                                    `)
-                    renderElem(getRef('sender_tokens_wrapper'), html.for(getRef('sender_tokens_wrapper'), senderFloAddr)`
-                                        <div class="grid">
-                                            <h5>Tokens</h5>
-                                            <p>Select a token, if you want to send a token.</p>
-                                        </div>
-                                        <fieldset onchange=${handleTokenSelection} class="grid gap-1">
-                                            <div class="grid gap-0-5">
-                                                ${ownedTokens}
-                                            </div>
-                                        </fieldset>
-                                    `)
-                    getRef('sender_tokens_wrapper').classList.remove('hidden')
-                    handleTokenSelection()
-                } else {
-                    getRef('sender_tokens_wrapper').classList.add('hidden')
-                    clearSelection()
-                }
-            }).catch((error) => {
-                notify(error, 'error');
-                resetBalance()
-            })
+        async function checkSenderBalance() {
+          try {
+            renderBalance({ balance: 0, showLoader: true });
+
+            const senderPrivateKey = getRef('get_private_key_field').value.trim();
+            const senderFloAddr = floCrypto.getFloID(senderPrivateKey);
+
+            const [floBalRes, tokenRes] = await Promise.allSettled([
+              floWebWallet.getBalance(senderFloAddr),
+              fetchJson(`${floGlobals.tokenURL}api/v2/floAddressBalance/${senderFloAddr}`)
+            ]);
+
+            // --- FLO coin ---
+            if (floBalRes.status === 'fulfilled') {
+              const retrievedBal = parseFloat(floBalRes.value) || 0;
+              renderBalance({ balance: retrievedBal, address: senderFloAddr });
+            } else {
+              // Show address but 0 balance (or your renderBalance can show a placeholder)
+              renderBalance({ balance: 0, address: senderFloAddr });
+            }
+
+            // --- FLO-based tokens ---
+            if (tokenRes.status === 'fulfilled') {
+              const floAddressBalances = tokenRes.value?.floAddressBalances || {};
+              const ownedTokens = [];
+
+              for (const token in floAddressBalances) {
+                const bal = parseFloat((floAddressBalances[token].balance || 0).toFixed(8));
+                ownedTokens.push(html`
+                  <label class="token-balance">
+                    <input type="radio" name="sender-token" data-balance=${bal.toFixed(8)} value=${token}/>
+                    <span>${token}</span>
+                    <b class="margin-left-auto">${bal}</b>
+                  </label>
+                `);
+              }
+
+              if (ownedTokens.length) {
+                ownedTokens.push(html`
+                  <label class="token-balance">
+                    <input type="radio" name="sender-token" value="none" checked/>
+                    <span>Don't send a token</span>
+                  </label>
+                `);
+
+                renderElem(
+                  getRef('sender_tokens_wrapper'),
+                  html.for(getRef('sender_tokens_wrapper'), senderFloAddr)`
+                    <div class="grid">
+                      <h5>Tokens</h5>
+                      <p>Select a token, if you want to send a token.</p>
+                    </div>
+                    <fieldset onchange=${handleTokenSelection} class="grid gap-1">
+                      <div class="grid gap-0-5">
+                        ${ownedTokens}
+                      </div>
+                    </fieldset>
+                  `
+                );
+                getRef('sender_tokens_wrapper').classList.remove('hidden');
+                handleTokenSelection();
+              } else {
+                getRef('sender_tokens_wrapper').classList.add('hidden');
+                clearSelection();
+              }
+            } else {
+              // Token call failed — just hide token UI and keep going
+              getRef('sender_tokens_wrapper').classList.add('hidden');
+              clearSelection();
+            }
+
+            // Optional: if BOTH failed, notify + reset visual state if you prefer
+            if (floBalRes.status !== 'fulfilled' && tokenRes.status !== 'fulfilled') {
+              notify('Unable to fetch FLO balance and token balances.', 'error');
+              // resetBalance(); // uncomment if you want to clear the address/balance too
+            }
+          } catch (error) {
+            notify(error, 'error');
+            resetBalance();
+          }
         }
         function openAddressSelector(e) {
             floGlobals.addressSelectorTarget = e.target.closest('sm-input')
