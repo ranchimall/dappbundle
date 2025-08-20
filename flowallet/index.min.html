@@ -2500,43 +2500,80 @@
         }
 
         async function checkBalance(address) {
-            try {
-                getRef('address_details_wrapper').classList.remove('hidden')
-                floWebWallet.getLabels().then(allLabels => {
-                    if (allLabels[queriedFloId]) {
-                        getRef('queried_flo_address').innerHTML = `<h4>${allLabels[queriedFloId]}</h4> <sm-copy clip-text value=${queriedFloId}></sm-copy>`;
-                    } else {
-                        getRef('queried_flo_address').innerHTML = `
-                                            <p class="label">FLO Address </p>
-                                            <h4><sm-copy clip-text value=${queriedFloId}></sm-copy></h4>
-                                        `;
-                    }
-                })
-                const queriedFloId = address || getRef('search_query_input').value.trim()
-                getRef('token_list_wrapper').classList.add('hidden')
-                getRef('flo_balance').innerHTML = `<sm-spinner></sm-spinner>`;
-                const [floBalance, tokenBalances] = await Promise.all([
-                    floWebWallet.getBalance(queriedFloId),
-                    fetchJson(`${floGlobals.tokenURL}api/v2/floAddressBalance/${queriedFloId}`).then(({ floAddressBalances }) => floAddressBalances)
-                ])
-                let ownedTokens = []
-                for (const token in tokenBalances) {
-                    ownedTokens.push(html`
-                                                    <li class="token-item">
-                                                        <span>${token}: </span><span>${parseFloat((tokenBalances[token].balance || 0).toFixed(8))}</span>
-                                                    </li>
-                                                `)
-                }
-                if (ownedTokens.length) {
-                    renderElem(getRef('token_list'), html`${ownedTokens}`)
-                    getRef('token_list_wrapper').classList.remove('hidden')
-                }
-                // retrieve FLO balance
-                getRef('flo_balance').textContent = `${parseFloat(floBalance.toFixed(8))} FLO`;
-            } catch (e) {
-                console.error(e)
+          try {
+            const queriedFloId = address || getRef('search_query_input').value.trim();  // define first
+
+            getRef('address_details_wrapper').classList.remove('hidden');
+            getRef('token_list_wrapper').classList.add('hidden');
+            getRef('token_list').innerHTML = '';
+            getRef('flo_balance').innerHTML = `<sm-spinner></sm-spinner>`;
+
+            // Show label (if any)
+            floWebWallet.getLabels().then(allLabels => {
+              if (allLabels?.[queriedFloId]) {
+                getRef('queried_flo_address').innerHTML =
+                  `<h4>${allLabels[queriedFloId]}</h4> <sm-copy clip-text value=${queriedFloId}></sm-copy>`;
+              } else {
+                getRef('queried_flo_address').innerHTML = `
+                  <p class="label">FLO Address</p>
+                  <h4><sm-copy clip-text value=${queriedFloId}></sm-copy></h4>
+                `;
+              }
+            }).catch(() => {
+              // non-fatal
+              getRef('queried_flo_address').innerHTML = `
+                <p class="label">FLO Address</p>
+                <h4><sm-copy clip-text value=${queriedFloId}></sm-copy></h4>
+              `;
+            });
+
+            // Fetch both, but don't let one failure block the other
+            const [floBalRes, tokenRes] = await Promise.allSettled([
+              floWebWallet.getBalance(queriedFloId),
+              fetchJson(`${floGlobals.tokenURL}api/v2/floAddressBalance/${queriedFloId}`)
+            ]);
+
+            // --- FLO coin ---
+            if (floBalRes.status === 'fulfilled') {
+              const floBal = Number(floBalRes.value || 0);
+              getRef('flo_balance').textContent = `${floBal.toFixed(8)} FLO`;
+            } else {
+              // show fallback, but don't throw
+              getRef('flo_balance').textContent = `—`;
             }
+
+            // --- FLO-based tokens ---
+            if (tokenRes.status === 'fulfilled') {
+              const tokenBalances = tokenRes.value?.floAddressBalances || {};
+              const ownedTokens = [];
+
+              for (const token in tokenBalances) {
+                const bal = Number(tokenBalances[token]?.balance || 0);
+                // Only list tokens you want (optionally filter > 0)
+                ownedTokens.push(html`
+                  <li class="token-item">
+                    <span>${token}: </span><span>${bal.toFixed(8)}</span>
+                  </li>
+                `);
+              }
+
+              if (ownedTokens.length) {
+                renderElem(getRef('token_list'), html`${ownedTokens}`);
+                getRef('token_list_wrapper').classList.remove('hidden');
+              } else {
+                getRef('token_list_wrapper').classList.add('hidden');
+              }
+            } else {
+              // token call failed — keep tokens hidden
+              getRef('token_list_wrapper').classList.add('hidden');
+            }
+
+          } catch (e) {
+            console.error(e);
+            // optional: show an error toast / keep current UI as-is
+          }
         }
+
         function categorizeText(text) {
             return new Promise((resolve, reject) => {
                 if (text.length == 34 && floCrypto.validateFloID(text)) {
