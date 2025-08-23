@@ -1569,7 +1569,8 @@
                 floDapps.launchStartUp().then(result => {
                     console.log(`Welcome ${floDapps.user.id}`);
                     floGlobals.myFloID = floCrypto.toFloID(floDapps.user.id);
-                    floGlobals.myBtcID = btcOperator.convert.legacy2bech(floGlobals.myFloID)
+                    floGlobals.myBtcID = btcOperator.convert.legacy2bech(floGlobals.myFloID);
+                    
                     getRef('user_profile_id').textContent = floGlobals.myFloID
                     let showingFloID = true
                     // alternating between floID and btcID every 10 seconds
@@ -3642,6 +3643,10 @@
                             <b>My Bitcoin address</b>
                             <sm-copy class="user-btc-id" clip-text value=${floGlobals.myBtcID}></sm-copy>
                         </div>
+                        <div class="grid gap-0-5">
+                            <b>My Ethereum USDT USDC address</b>
+                            <sm-copy class="user-btc-id" clip-text value=${floGlobals.myEthID}></sm-copy>
+                        </div>
                         <button class="button button--danger justify-self-start" onclick="signOut()">Sign out</button>
                     </div>
                     ${!floGlobals.isPrivKeySecured ? html`
@@ -3880,6 +3885,7 @@ async function refreshBalance(button) {
     if (usdtOut) usdtOut.textContent = '0';
 
     const ethAddr = await getUserEthAddress();
+    floGlobals.myEthID = ethAddr;
     if (ethAddr && window.ethOperator) {
       const [ethBal, usdcBal, usdtBal] = await Promise.all([
         ethOperator.getBalance(ethAddr),
@@ -3905,9 +3911,9 @@ async function refreshBalance(button) {
     // If no ETH stack, placeholders remain
   } catch (e) {
     console.error('ERC-20 balance fetch failed:', e);
-    if (getRef('eth_balance'))  getRef('eth_balance').textContent  = '—';
-    if (getRef('usdc_erc20_balance')) getRef('usdc_erc20_balance').textContent = '—';
-    if (getRef('usdt_erc20_balance')) getRef('usdt_erc20_balance').textContent = '—';
+    if (getRef('eth_balance'))  getRef('eth_balance').textContent  = '0';
+    if (getRef('usdc_erc20_balance')) getRef('usdc_erc20_balance').textContent = '0';
+    if (getRef('usdt_erc20_balance')) getRef('usdt_erc20_balance').textContent = '0';
   }
 }
 
