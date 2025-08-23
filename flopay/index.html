@@ -3871,9 +3871,9 @@ async function refreshBalance(button) {
     const ethOut = getRef('eth_balance');
     const usdcOut = getRef('usdc_erc20_balance');
     const usdtOut = getRef('usdt_erc20_balance');
-    if (ethOut)  ethOut.textContent  = '—';
-    if (usdcOut) usdcOut.textContent = '—';
-    if (usdtOut) usdtOut.textContent = '—';
+    if (ethOut)  ethOut.textContent  = '0';
+    if (usdcOut) usdcOut.textContent = '0';
+    if (usdtOut) usdtOut.textContent = '0';
 
     const ethAddr = await getUserEthAddress();
     if (ethAddr && window.ethOperator) {
