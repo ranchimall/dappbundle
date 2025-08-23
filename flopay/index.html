@@ -3655,34 +3655,60 @@
             })
         }
         function getRupeeTransactions(type = 'all') {
-            return new Promise((resolve, reject) => {
-                if (!floGlobals.myFloID) {
-                    resolve([])
-                    return;
+          return new Promise((resolve, reject) => {
+            if (!floGlobals.myFloID) return resolve([]);
+
+            floTokenAPI.getAllTxs(floGlobals.myFloID)
+              .then(({ transactions }) => {
+                // Support both array and object-shaped payloads
+                const list = Array.isArray(transactions)
+                  ? transactions
+                  : Object.values(transactions || {});
+
+                const shouldFilter = type !== 'all';
+                const me = floGlobals.myFloID;
+                const out = [];
+
+                for (const tx of list) {
+                  // Normalize via helper if available
+                  const details = (floTokenAPI?.util?.parseTxData)
+                    ? floTokenAPI.util.parseTxData(tx)
+                    : tx;
+
+                  // Flexible field picks
+                  const sender   = details.sender   ?? details.senderAddress   ?? tx.senderAddress   ?? tx.sender;
+                  const receiver = details.receiver ?? details.receiverAddress ?? tx.receiverAddress ?? tx.receiver;
+
+                  if (shouldFilter) {
+                    if (type === 'sent'     && sender   !== me) continue;
+                    if (type === 'received' && receiver !== me) continue;
+                  }
+
+                  const txid =
+                    details.txid ??
+                    tx.txid ??
+                    tx.hash ??
+                    tx.transactionTrigger;
+
+                  // Optional: ensure tokenAmount & time are numbers
+                  const tokenAmount = Number(details.tokenAmount ?? tx.tokenAmount ?? 0);
+                  const time = Number(details.time ?? tx.time ?? 0);
+
+                  out.push({
+                    ...details,
+                    sender,
+                    receiver,
+                    tokenAmount,
+                    time,
+                    txid,
+                    asset: 'rupee',
+                  });
                 }
-                floTokenAPI.getAllTxs(floGlobals.myFloID).then(({ transactions }) => {
-                    let rupeeTransactions = [];
-                    let shouldFilter = type !== 'all';
-                    let propToCheck
-                    if (shouldFilter)
-                        propToCheck = type === 'sent' ? 'sender' : 'receiver';
-                    for (const transactionId in transactions) {
-                        const details = floTokenAPI.util.parseTxData(transactions[transactionId])
-                        if (shouldFilter) {
-                            if (details[propToCheck] !== floGlobals.myFloID)
-                                continue;
-                        }
-                        rupeeTransactions.push({
-                            ...details,
-                            txid: transactionId,
-                            asset: 'rupee',
-                        })
-                    }
-                    resolve(rupeeTransactions)
-                }).catch(e => {
-                    reject(e)
-                })
-            })
+
+                resolve(out);
+              })
+              .catch(reject);
+          });
         }
         function getBtcTransactions(type = 'all') {
             return new Promise((resolve, reject) => {
