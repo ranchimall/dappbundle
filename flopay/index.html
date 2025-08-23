@@ -317,7 +317,7 @@
                 <sm-chips id="wallet_section__asset_selector" class="user-element">
                     <sm-chip value="rupee" selected>Rupee</sm-chip>
                     <sm-chip value="btc">BTC</sm-chip>
-                    <sm-chip value="usdt_erc20">USDT ERC20</sm-chip>
+                    <sm-chip value="usdt_erc20">USDT ERC-20</sm-chip>
                 </sm-chips>
                 <div id="asset_actions_wrapper" class="user-element">
                     <div class="grid gap-1-5">
@@ -1279,6 +1279,44 @@
             </div>
         </sm-form>
     </sm-popup>
+    <!-- Send USDT (ERC-20) -->
+    <sm-popup id="send_usdt_erc20_popup">
+      <header slot="header" class="popup__header">
+        <button class="popup__header__close justify-self-start" onclick="closePopup()">
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+        <h3>Send USDT (ERC-20)</h3>
+      </header>
+
+      <sm-form id="send_usdt_erc20_form" skip-submit>
+        <fieldset class="grid gap-1">
+          <div class="grid">
+            <div class="label">From (ETH address)</div>
+            <sm-copy id="usdt_from_eth_address" value=""></sm-copy>
+          </div>
+
+          <sm-input id="usdt_receiver" placeholder="Receiver's ETH address"
+                    pattern="0x[0-9a-fA-F]{40}" error-text='Invalid address. It should look like "0x..."'
+                    animate required></sm-input>
+
+          <sm-input id="usdt_amount" type="number" placeholder="Amount"
+                    min="0.000001" step="0.000001"
+                    error-text="Amount must be greater than 0"
+                    animate required>
+            <div class="asset-symbol" slot="icon">USDT</div>
+          </sm-input>
+
+          <div class="multi-state-button">
+            <button id="usdt_send_btn" class="button button--primary cta" type="submit" onclick="submitUsdtErc20(event)" disabled>
+              Send USDT
+            </button>
+          </div>
+        </fieldset>
+      </sm-form>
+
+      <div id="send_usdt_erc20_status" class="grid gap-1 justify-center text-center hidden"></div>
+    </sm-popup>
+
     <sm-popup id="txid_popup">
         <header slot="header" class="popup__header">
             <button class="popup__header__close" onclick="closePopup()">
@@ -1738,12 +1776,33 @@
                 case 'send_btc_popup':
                     calculateFees()
                     break;
+                case 'send_usdt_erc20_popup':
+                    try {
+                        const privateKeyWIF = await floDapps.user.private;
+                        if (!privateKeyWIF) {
+                          notify('No private key found for this account', 'error');
+                          break;
+                        }
+                        const { privkey } = coinjs.wif2privkey(privateKeyWIF);
+                        const fromEth = floEthereum.ethAddressFromPrivateKey(privkey);
+
+                        getRef('usdt_from_eth_address').value = fromEth;
+
+                        const form = getRef('send_usdt_erc20_form');
+                        form.dataset.ethPriv = privkey;     // raw hex private key
+                        form.dataset.fromEth = fromEth;     // derived ETH address
+                      } catch (err) {
+                        notify(err.message || 'Could not derive ETH address from key', 'error');
+                      }
+                    break;
+
                 case 'profile_popup':
                     renderElem(getRef('profile_popup__content'), render.profile())
                     renderSavedUpiIds('saved_upi_ids_list')
                     break;
             }
         })
+        
         document.addEventListener('popupclosed', e => {
             switch (e.target.id) {
                 case 'saved_ids_popup':
@@ -2878,12 +2937,16 @@
         }
 
         getRef('wallet_section__asset_selector').addEventListener('change', (e) => {
-            if (e.target.value === 'rupee') {
+            const v = e.target.value;
+            if (v === 'rupee') {
                 showChildElement('asset_actions_wrapper', 0, { entry: slideInRight, exit: slideOutRight });
-            } else {
+            } else if (v === 'btc') {
                 showChildElement('asset_actions_wrapper', 1, { entry: slideInLeft, exit: slideOutLeft });
+            } else if (v === 'usdt_erc20') {
+                showChildElement('asset_actions_wrapper', 2, { entry: slideInLeft, exit: slideOutLeft });
             }
-        })
+        });
+
 
         async function renderSavedUpiIds(target) {
             let savedUpiIds = []
