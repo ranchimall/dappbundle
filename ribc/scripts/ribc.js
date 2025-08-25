@@ -216,6 +216,65 @@
         _.internRating[floID] = parseInt(totalScore / (completedTasks + failedTasks) || 1);
         return true;
     }
+        // Record a "reopened" event for a task (append-only)
+    Admin.addReopenedTask = function (floID, taskKey, details = {}) {
+      if (!(floID in _.internList)) return false;
+      Admin.initInternRecord(floID);
+
+      if (!_.internRecord[floID].reopenedTasks)
+        _.internRecord[floID].reopenedTasks = {};
+
+      const reopenedDate = details.reopenedDate || Date.now();
+      _.internRecord[floID].reopenedTasks[taskKey] = { reopenedDate };
+      return true;
+    }
+
+    // Recompute rating, ignoring completions that were reopened later
+    Admin.recomputeRating = function (floID) {
+      const rec = _.internRecord[floID];
+      if (!rec) return;
+
+      let totalScore = 0;
+      let denom = 0;
+
+      // Count completed tasks that were NOT superseded by a later reopen
+      for (const key in (rec.completedTasks || {})) {
+        const comp = rec.completedTasks[key];
+        const compDate = comp.completionDate || 0;
+        const reopenedDate = rec.reopenedTasks?.[key]?.reopenedDate || 0;
+        if (reopenedDate > compDate) continue; // reopened later ⇒ ignore this completion in rating
+        totalScore += Number(comp.points) || 0;
+        denom += 1;
+      }
+
+      // Keep your existing policy of including failed tasks in denominator
+      denom += Object.keys(rec.failedTasks || {}).length;
+
+      _.internRating[floID] = Math.floor(denom ? (totalScore / denom) : 1) || 1;
+    }
+
+    // Resolve per-intern task status by latest timestamp (assigned/completed/failed/reopened)
+    Ribc.getLatestTaskStatus = function (floID, taskId) {
+      const rec = Ribc.getInternRecord(floID) || {};
+      const events = [];
+
+      const assignedOn = rec.assignedTasks?.[taskId]?.assignedOn;
+      if (assignedOn) events.push({ s: 'active', t: assignedOn });
+
+      const compDate = rec.completedTasks?.[taskId]?.completionDate;
+      if (compDate) events.push({ s: 'completed', t: compDate });
+
+      const failDate = rec.failedTasks?.[taskId]?.failedDate;
+      if (failDate) events.push({ s: 'failed', t: failDate });
+
+      const reopenDate = rec.reopenedTasks?.[taskId]?.reopenedDate;
+      if (reopenDate) events.push({ s: 'active', t: reopenDate });
+
+      if (!events.length) return 'active';
+      events.sort((a, b) => a.t - b.t);
+      return events[events.length - 1].s; // latest wins
+    }
+
     Admin.addFailedTask = function (floID, taskKey, details = {}) {
         if (!(floID in _.internList))
             return false;
