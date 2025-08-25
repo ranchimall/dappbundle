@@ -3277,19 +3277,30 @@
             return `${year}-${month < 10 ? '0' : ''}${month}-${day < 10 ? '0' : ''}${day}`;
         }
         function markTaskAsCompleted() {
-            getConfirmation('Mark this task as completed?', { confirmText: 'Mark as completed' }).then(res => {
-                if (res) {
-                    RIBC.admin.putTaskStatus('completed', appState.params.id, appState.params.branch, currentTask.dataset.taskId)
-                    // remove task from displayed list
-                    const taskId = `${appState.params.id}_${appState.params.branch}_${currentTask.dataset.taskId}`;
-                    const filteredTasks = RIBC.getDisplayedTasks().filter(task => task !== taskId)
-                    RIBC.admin.setDisplayedTasks(filteredTasks)
-                    renderBranchTasks()
-                    adminDataChanged();
-                    notify('Task marked as completed', 'success')
-                }
-            })
+          getConfirmation('Mark this task as completed?', { confirmText: 'Mark as completed' }).then(res => {
+            if (!res) return;
+
+            RIBC.admin.putTaskStatus('completed', appState.params.id, appState.params.branch, currentTask.dataset.taskId);
+
+            const taskId = `${appState.params.id}_${appState.params.branch}_${currentTask.dataset.taskId}`;
+
+            // safer lookup before calling
+            const getAssigned = RIBC.getAssignedInterns || RIBC.admin?.getAssignedInterns;
+            const assignedInterns = (typeof getAssigned === 'function' ? getAssigned(taskId) : []) || [];
+            const completionDate = Date.now();
+
+            assignedInterns.forEach(internId => {
+              RIBC.admin.addCompletedTask(internId, taskId, 0, { completionDate });
+            });
+
+            const filteredTasks = RIBC.getDisplayedTasks().filter(task => task !== taskId);
+            RIBC.admin.setDisplayedTasks(filteredTasks);
+            renderBranchTasks();
+            adminDataChanged();
+            notify('Task marked as completed', 'success');
+          });
         }
+
         function saveTaskChanges() {
             const changedDetails = {
                 title: getRef('edit_task_title').value.trim(),
