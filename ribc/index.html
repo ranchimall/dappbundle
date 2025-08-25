@@ -39,6 +39,10 @@
     <script src="scripts/ribc.min.js" defer></script>
     <script id="onLoadStartUp">
         function onLoadStartUp() {
+            if (!window.location.hash || window.location.hash === '#') {
+                    window.location.hash = '#/dashboard_page'; // or '#/landing'
+            }
+
             routeTo('loading')
             document.body.classList.remove('hidden')
             floDapps.setCustomPrivKeyInput(getSignedIn);
@@ -48,7 +52,7 @@
                         .then(() => {
                             resolve()
                             setTimeout(() => {
-                                if (!floGlobals.loaded) {
+                                if (!floGlobals.loaded && window.location.hash && window.location.hash !== '#') {
                                     routeTo(window.location.hash);
                                 }
                             }, 0);
@@ -88,6 +92,7 @@
                 RIBC.init(floGlobals.isSubAdmin).then(result => {
                     console.log(result)
                     renderAllElements()
+                    if (!window.location.hash) window.location.hash = '#/dashboard_page'; // or '#/landing'
                     routeTo(window.location.hash, { firstLoad: true })
                 }).catch(error => console.error(error))
             }).catch(error => console.error(error))
