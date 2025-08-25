@@ -15,6 +15,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/main.min.css">
+    <script src="scripts/compactIDB.js" defer></script>
     <script id="floGlobals">
         /* Constants for FLO blockchain operations !!Make sure to add this at beginning!! */
         const floGlobals = {
@@ -32,7 +33,7 @@
     <script src="scripts/lib.js" defer></script>
     <script src="scripts/floCrypto.js" defer></script>
     <script src="scripts/floBlockchainAPI.js" defer></script>
-    <script src="scripts/compactIDB.js" defer></script>
+    
     <script src="scripts/floCloudAPI.js" defer></script>
     <script src="scripts/floDapps.js" defer></script>
     <script src="scripts/fn_pay.js" defer></script>
@@ -1621,16 +1622,19 @@
                         upiIds: {}
                     }
                     floGlobals.isSubAdmin = floGlobals.subAdmins.includes(myFloID)
-                    Promise.all([floExchangeAPI.getSink(floExchangeAPI.serviceList.EXCHANGE), floExchangeAPI.getSink(floExchangeAPI.serviceList.CONVERT)])
-                        .then(([exchangeSink, convertSink]) => {
-                            floGlobals.exchangeSink = exchangeSink
-                            floGlobals.convertSink = convertSink
-                            console.log('Exchange sink: ', exchangeSink)
-                            console.log('Convert sink: ', convertSink)
-                        }).catch(error => {
-                            console.error(error)
-                        })
-                    refreshBalance()
+                    Promise.all([
+                      floExchangeAPI.getSink(floExchangeAPI.serviceList.EXCHANGE)
+                        .catch(e => { console.error('EXCHANGE sink error:', e); return null; }),
+                      floExchangeAPI.getSink(floExchangeAPI.serviceList.CONVERT)
+                        .catch(e => { console.error('CONVERT sink error:', e); return null; })
+                    ]).then(([exchangeSink, convertSink]) => {
+                      floGlobals.exchangeSink = exchangeSink;
+                      floGlobals.convertSink = convertSink;
+                      console.log('Exchange sink: ', exchangeSink);
+                      console.log('Convert sink: ', convertSink);
+                    });
+
+                    refreshBalance().catch(console.error);
                     if (floGlobals.isSubAdmin) {
                         cashierUI.renderRequests(Cashier.Requests);
                         Cashier.init().then(result => {
@@ -1655,7 +1659,7 @@
                             floGlobals.loaded = true
                         }).catch(error => {
                             console.error(error)
-                            //detectAdBlocker(error)
+                            detectAdBlocker(error)
                         })
                     }
                 }).catch(error => {
@@ -1676,8 +1680,8 @@
     <script>
         /*jshint esversion: 9 */
         // Global variables
-        const { html, render: renderElem, svg } = uhtml;
-        const domRefs = {};
+        var { html, render: renderElem, svg } = uhtml;
+        var domRefs = {};
         floGlobals.connectionErrorNotifications = []
         let transactionsHistoryLoader = null;
         let walletHistoryLoader = null;
@@ -1695,6 +1699,40 @@
             floGlobals.connectionErrorNotifications = []
             notify('We are back online.', 'success')
         })
+
+        // ---- Balance cache helpers (IDB + localStorage fallback) ----
+        const BAL_STORE = 'lastBalances';
+        function balKey() { return (window.floGlobals && floGlobals.myFloID) || 'anon'; }
+
+        async function readCachedBalances() {
+          try {
+            // compactIDB.readData(store, key)
+            const data = await compactIDB.readData(BAL_STORE, balKey());
+            if (data && typeof data === 'object') return data;
+          } catch (_) {}
+          // fallback
+          try {
+            const raw = localStorage.getItem(`${BAL_STORE}:${balKey()}`);
+            return raw ? JSON.parse(raw) : null;
+          } catch (_) {}
+          return null;
+        }
+
+        async function writeCachedBalances(partial) {
+          try {
+            const prev = (await readCachedBalances()) || {};
+            const merged = { ...prev, ...partial, ts: Date.now() };
+            await compactIDB.writeData(BAL_STORE, merged, balKey());
+            try { localStorage.setItem(`${BAL_STORE}:${balKey()}`, JSON.stringify(merged)); } catch(_) {}
+          } catch (e) {
+            // If IDB write fails, at least keep localStorage
+            try {
+              const prev = JSON.parse(localStorage.getItem(`${BAL_STORE}:${balKey()}`) || '{}');
+              const merged = { ...prev, ...partial, ts: Date.now() };
+              localStorage.setItem(`${BAL_STORE}:${balKey()}`, JSON.stringify(merged));
+            } catch(_) {}
+          }
+        }
 
         // Use instead of document.getElementById
         function getRef(elementId) {
@@ -1733,7 +1771,7 @@
         }
 
         // Use when a function needs to be executed after user finishes changes
-        const debounce = (callback, wait) => {
+        var debounce = (callback, wait) => {
             let timeoutId = null;
             return (...args) => {
                 window.clearTimeout(timeoutId);
@@ -2147,11 +2185,11 @@
             }
         ]
 
-        const appState = {
+        var appState = {
             params: {},
             openedPages: new Set(),
         }
-        const generalPages = ['sign_up', 'sign_in', 'loading', 'landing']
+        var generalPages = ['sign_up', 'sign_in', 'loading', 'landing']
         async function routeTo(targetPage, options = {}) {
             console.log('route to', targetPage)
             const { firstLoad, hashChange } = options
@@ -2778,7 +2816,7 @@
             User.cashToToken(cashier, amount, floGlobals.txCode/* , upiId */).then(result => {
                 console.log(result);
                 showChildElement('topup_wallet_process', 2);
-                refreshBalance()
+                refreshBalance().catch(console.error)
             }).catch(error => {
                 console.error(error)
                 getRef('topup_failed_reason').textContent = error;
@@ -2804,7 +2842,7 @@
                 console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
                 User.tokenToCash(cashier, amount, txid, upiId).then(result => {
                     showChildElement('withdraw_wallet_process', 1);
-                    refreshBalance();
+                    refreshBalance().catch(console.error);
                     getRef('withdrawal_blockchain_link').classList.remove('hidden');
                     getRef('withdrawal_blockchain_link').href = `${floBlockchainAPI.current_server}tx/${txid}`
                     console.log(result);
@@ -3903,82 +3941,156 @@
         }
 
 
-async function refreshBalance(button) {
-  if (button) buttonLoader(button, true);
+        async function refreshBalance(button) {
+          const online = !(typeof navigator !== 'undefined' && navigator.onLine === false);
 
-  // Rupee (unchanged)
-  floTokenAPI.getBalance(floGlobals.myFloID).then((balance = 0) => {
-    getRef('rupee_balance').textContent = formatAmount(balance);
-    if (button) buttonLoader(button, false);
-  });
+          // turn on once
+          if (button) buttonLoader(button, true);
 
-  // BTC (unchanged)
-  btcOperator.getBalance(floGlobals.myBtcID).then((btcBalance = 0) => {
-    getRef('btc_balance').textContent = formatAmount(btcBalance, 'btc');
-  });
+          // helper: race with timeout → fallback
+          const pTimeout = (p, ms, fallback) => Promise.race([
+            Promise.resolve(p).catch(() => fallback),
+            new Promise(res => setTimeout(() => res(fallback), ms))
+          ]);
 
-  // FLO (unchanged)
-  try {
-    const [floBal, floRates] = await Promise.all([
-      floBlockchainAPI.getBalance(floGlobals.myFloID),
-      floExchangeAPI.getRates('FLO')
-    ]);
-    getRef('flo_balance').textContent = formatAmount(floBal, 'flo');
-    if (floBal < floGlobals.settings.user_flo_threshold) {
-      getRef('low_user_flo_warning').textContent =
-        `Your FLO balance is low. You will receive ${floGlobals.settings.send_user_flo} ` +
-        `FLO of worth ₹${parseFloat(floRates.rate.toFixed(2))} deducted from top-up amount.`;
-      getRef('low_user_flo_warning').classList.remove('hidden');
-    } else {
-      getRef('low_user_flo_warning').classList.add('hidden');
-    }
-    if (button) buttonLoader(button, false);
-  } catch (e) {
-    console.error(e);
-  }
+          // refs
+          const refs = {
+            rupee: getRef('rupee_balance'),
+            btc:   getRef('btc_balance'),
+            flo:   getRef('flo_balance'),
+            warn:  getRef('low_user_flo_warning'),
+            eth:   getRef('eth_balance'),
+            usdc:  getRef('usdc_erc20_balance'),
+            usdt:  getRef('usdt_erc20_balance'),
+          };
 
-  // === NEW: ETH + USDC + USDT (ERC-20) ===
-  try {
-    // neutral placeholders while fetching
-    const ethOut = getRef('eth_balance');
-    const usdcOut = getRef('usdc_erc20_balance');
-    const usdtOut = getRef('usdt_erc20_balance');
-    if (ethOut)  ethOut.textContent  = '0';
-    if (usdcOut) usdcOut.textContent = '0';
-    if (usdtOut) usdtOut.textContent = '0';
+          // ------------- PAINT CACHED FIRST (instant) -------------
+          try {
+            const cached = await readCachedBalances();
+            if (cached) {
+              if (refs.rupee && cached.rupee != null) refs.rupee.textContent = formatAmount(Number(cached.rupee));
+              if (refs.btc   && cached.btc   != null) refs.btc.textContent   = formatAmount(Number(cached.btc), 'btc');
+              if (refs.flo   && cached.flo   != null) refs.flo.textContent   = formatAmount(Number(cached.flo), 'flo');
+              if (refs.eth   && cached.eth   != null) refs.eth.textContent   = formatAmount(Number(cached.eth), 'eth');
+              if (refs.usdc  && cached.usdc  != null) refs.usdc.textContent  = formatAmount(Number(cached.usdc), 'usd');
+              if (refs.usdt  && cached.usdt  != null) refs.usdt.textContent  = formatAmount(Number(cached.usdt), 'usd');
+            } else {
+              // gentle placeholders if nothing cached yet
+              if (refs.rupee && !refs.rupee.textContent) refs.rupee.textContent = '0';
+              if (refs.btc   && !refs.btc.textContent)   refs.btc.textContent   = '0';
+              if (refs.flo   && !refs.flo.textContent)   refs.flo.textContent   = '0';
+              if (refs.eth)   refs.eth.textContent   = refs.eth.textContent   || '0';
+              if (refs.usdc)  refs.usdc.textContent  = refs.usdc.textContent  || '0';
+              if (refs.usdt)  refs.usdt.textContent  = refs.usdt.textContent  || '0';
+            }
+          } catch (e) {
+            console.warn('readCachedBalances failed', e);
+          }
 
-    const ethAddr = await getUserEthAddress();
-    floGlobals.myEthID = ethAddr;
-    if (ethAddr && window.ethOperator) {
-      const [ethBal, usdcBal, usdtBal] = await Promise.all([
-        ethOperator.getBalance(ethAddr),
-        ethOperator.getTokenBalance(ethAddr, 'usdc'),
-        ethOperator.getTokenBalance(ethAddr, 'usdt'),
-      ]);
+          // ------------- FETCH LIVE IN PARALLEL (soft timeouts) -------------
+          const newVals = {}; // we’ll persist whatever we successfully get
 
-      // ETH
-      if (ethOut)  ethOut.textContent  = formatAmount(
-        typeof ethBal === 'string' ? Number(ethBal) : (ethBal || 0), 'eth'
-      );
+          const jobs = [];
 
-      // USDC (6 decimals typically; assume helper already returns display units)
-      if (usdcOut) usdcOut.textContent = formatAmount(
-        typeof usdcBal === 'string' ? Number(usdcBal) : (usdcBal || 0), 'usd'
-      );
+          // RUPEE
+          jobs.push(
+            pTimeout(floTokenAPI.getBalance(floGlobals.myFloID), 2500, null).then(bal => {
+              if (bal != null) {
+                newVals.rupee = Number(bal) || 0;
+                if (refs.rupee) refs.rupee.textContent = formatAmount(newVals.rupee);
+              }
+            })
+          );
 
-      // USDT
-      if (usdtOut) usdtOut.textContent = formatAmount(
-        typeof usdtBal === 'string' ? Number(usdtBal) : (usdtBal || 0), 'usd'
-      );
-    }
-    // If no ETH stack, placeholders remain
-  } catch (e) {
-    console.error('ERC-20 balance fetch failed:', e);
-    if (getRef('eth_balance'))  getRef('eth_balance').textContent  = '0';
-    if (getRef('usdc_erc20_balance')) getRef('usdc_erc20_balance').textContent = '0';
-    if (getRef('usdt_erc20_balance')) getRef('usdt_erc20_balance').textContent = '0';
-  }
-}
+          // BTC (skip offline)
+          if (online) {
+            jobs.push(
+              pTimeout(btcOperator.getBalance(floGlobals.myBtcID), 2500, null).then(bal => {
+                if (bal != null) {
+                  newVals.btc = Number(bal) || 0;
+                  if (refs.btc) refs.btc.textContent = formatAmount(newVals.btc, 'btc');
+                }
+              }).catch(()=>{})
+            );
+          }
+
+
+
+          // FLO (balance + rate)
+          {
+            const floBalP   = pTimeout(floBlockchainAPI.getBalance(floGlobals.myFloID), 3000, null);
+            const floRatesP = pTimeout(floExchangeAPI.getRates('FLO'), 2000, null);
+
+            jobs.push(
+              Promise.allSettled([floBalP, floRatesP]).then(([balRes, rateRes]) => {
+                const floBal = balRes.status === 'fulfilled' ? balRes.value : null;
+                const rates  = rateRes.status === 'fulfilled' ? rateRes.value : null;
+
+                if (floBal != null) {
+                  newVals.flo = Number(floBal) || 0;
+                  if (refs.flo) refs.flo.textContent = formatAmount(newVals.flo, 'flo');
+
+                  if (refs.warn) {
+                    const th = (floGlobals.settings && floGlobals.settings.user_flo_threshold) || 0;
+                    if (newVals.flo < th) {
+                      const sendAmt = floGlobals.settings?.send_user_flo ?? 0;
+                      const rateStr = Number(rates?.rate || 0).toFixed(2);
+                      refs.warn.textContent =
+                        `Your FLO balance is low. You will receive ${sendAmt} FLO of worth ₹${rateStr} deducted from top-up amount.`;
+                      refs.warn.classList.remove('hidden');
+                    } else {
+                      refs.warn.classList.add('hidden');
+                    }
+                  }
+                }
+              })
+            );
+          }
+
+          // ETH + ERC-20 (skip offline and only if stack exists)
+          if (online && window.ethOperator) {
+            jobs.push((async () => {
+              try {
+                const ethAddr = await pTimeout(getUserEthAddress(), 1000, null);
+                if (!ethAddr) return;
+                floGlobals.myEthID = ethAddr;
+
+                const [ethBal, usdcBal, usdtBal] = await Promise.all([
+                  pTimeout(ethOperator.getBalance(ethAddr),              3000, null),
+                  pTimeout(ethOperator.getTokenBalance(ethAddr, 'usdc'), 3000, null),
+                  pTimeout(ethOperator.getTokenBalance(ethAddr, 'usdt'), 3000, null),
+                ]);
+
+                if (ethBal != null) {
+                  newVals.eth = Number(ethBal) || 0;
+                  if (refs.eth) refs.eth.textContent = formatAmount(newVals.eth, 'eth');
+                }
+                if (usdcBal != null) {
+                  newVals.usdc = Number(usdcBal) || 0;
+                  if (refs.usdc) refs.usdc.textContent = formatAmount(newVals.usdc, 'usd');
+                }
+                if (usdtBal != null) {
+                  newVals.usdt = Number(usdtBal) || 0;
+                  if (refs.usdt) refs.usdt.textContent = formatAmount(newVals.usdt, 'usd');
+                }
+              } catch (e) {
+                console.warn('ERC-20 balances failed', e);
+              }
+            })());
+          }
+
+          // ------------- SAVE WHATEVER WE GOT -------------
+          const all = Promise.allSettled(jobs).then(async () => {
+            if (Object.keys(newVals).length) {
+              try { await writeCachedBalances(newVals); } catch (e) { console.warn('writeCachedBalances failed', e); }
+            }
+          });
+
+          // turn loader off once: fastest of (all done OR 3.5s)
+          pTimeout(all, 3500, null).then(() => { if (button) buttonLoader(button, false); });
+        }
+
+        window.addEventListener('online',  () => refreshBalance());
 
 
 
@@ -4507,7 +4619,10 @@ async function refreshBalance(button) {
         const assetIcons = {
             btc: ` <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z"> </path> </g> </svg> `,
             usd: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>`,
-            rupee: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z"/></g></g></svg>`
+            rupee: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z"/></g></g></svg>`,
+            ether: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"> <g clip-path="url(#clip0_201_2)"> <path d="M12 0L19.6368 12.4368L12.1633 16.8L4.36325 12.4368L12 0Z"/> <path d="M12 24L4.36325 13.6099L11.8367 18L19.6368 13.6099L12 24Z"/> </g> <defs> <clipPath id="clip0_201_2"> <rect width="24" height="24" fill="white"/> </clipPath> </defs> </svg>`,
+            usdc: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" data-name="86977684-12db-4850-8f30-233a7c267d11" viewBox="0 0 2000 2000"> <path d="M1000 2000c554.17 0 1000-445.83 1000-1000S1554.17 0 1000 0 0 445.83 0 1000s445.83 1000 1000 1000z" fill="#2775ca"/> <path d="M1275 1158.33c0-145.83-87.5-195.83-262.5-216.66-125-16.67-150-50-150-108.34s41.67-95.83 125-95.83c75 0 116.67 25 137.5 87.5 4.17 12.5 16.67 20.83 29.17 20.83h66.66c16.67 0 29.17-12.5 29.17-29.16v-4.17c-16.67-91.67-91.67-162.5-187.5-170.83v-100c0-16.67-12.5-29.17-33.33-33.34h-62.5c-16.67 0-29.17 12.5-33.34 33.34v95.83c-125 16.67-204.16 100-204.16 204.17 0 137.5 83.33 191.66 258.33 212.5 116.67 20.83 154.17 45.83 154.17 112.5s-58.34 112.5-137.5 112.5c-108.34 0-145.84-45.84-158.34-108.34-4.16-16.66-16.66-25-29.16-25h-70.84c-16.66 0-29.16 12.5-29.16 29.17v4.17c16.66 104.16 83.33 179.16 220.83 200v100c0 16.66 12.5 29.16 33.33 33.33h62.5c16.67 0 29.17-12.5 33.34-33.33v-100c125-20.84 208.33-108.34 208.33-220.84z" fill="#fff"/> <path d="M787.5 1595.83c-325-116.66-491.67-479.16-370.83-800 62.5-175 200-308.33 370.83-370.83 16.67-8.33 25-20.83 25-41.67V325c0-16.67-8.33-29.17-25-33.33-4.17 0-12.5 0-16.67 4.16-395.83 125-612.5 545.84-487.5 941.67 75 233.33 254.17 412.5 487.5 487.5 16.67 8.33 33.34 0 37.5-16.67 4.17-4.16 4.17-8.33 4.17-16.66v-58.34c0-12.5-12.5-29.16-25-37.5zM1229.17 295.83c-16.67-8.33-33.34 0-37.5 16.67-4.17 4.17-4.17 8.33-4.17 16.67v58.33c0 16.67 12.5 33.33 25 41.67 325 116.66 491.67 479.16 370.83 800-62.5 175-200 308.33-370.83 370.83-16.67 8.33-25 20.83-25 41.67V1700c0 16.67 8.33 29.17 25 33.33 4.17 0 12.5 0 16.67-4.16 395.83-125 612.5-545.84 487.5-941.67-75-237.5-258.34-416.67-487.5-491.67z" fill="#fff"/></svg>`,
+            usdt: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 339.43 295.27"><title>tether-usdt-logo</title><path d="M62.15,1.45l-61.89,130a2.52,2.52,0,0,0,.54,2.94L167.95,294.56a2.55,2.55,0,0,0,3.53,0L338.63,134.4a2.52,2.52,0,0,0,.54-2.94l-61.89-130A2.5,2.5,0,0,0,275,0H64.45a2.5,2.5,0,0,0-2.3,1.45h0Z" style="fill:#50af95;fill-rule:evenodd"/><path d="M191.19,144.8v0c-1.2.09-7.4,0.46-21.23,0.46-11,0-18.81-.33-21.55-0.46v0c-42.51-1.87-74.24-9.27-74.24-18.13s31.73-16.25,74.24-18.15v28.91c2.78,0.2,10.74.67,21.74,0.67,13.2,0,19.81-.55,21-0.66v-28.9c42.42,1.89,74.08,9.29,74.08,18.13s-31.65,16.24-74.08,18.12h0Zm0-39.25V79.68h59.2V40.23H89.21V79.68H148.4v25.86c-48.11,2.21-84.29,11.74-84.29,23.16s36.18,20.94,84.29,23.16v82.9h42.78V151.83c48-2.21,84.12-11.73,84.12-23.14s-36.09-20.93-84.12-23.15h0Zm0,0h0Z" style="fill:#fff;fill-rule:evenodd"/><script xmlns=""/></svg>`,
         }
         function convertCurrency(amount) {
             let convertedAmount = 0;
