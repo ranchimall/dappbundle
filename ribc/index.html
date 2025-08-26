@@ -3870,7 +3870,7 @@
                                             Will be listed after confirmation on the blockchain.    
                                         </p>
                                     </div>
-                                    <a href=${`https://blockbook.ranchimall.net/tx/${txid}`} target="_blank" class="button button--primary">View on explorer</a>
+                                    <a href="${floBlockchainAPI.apiURL.replace(/\/$/, '')}/tx/${txid}" target="_blank" class="button button--primary">View on explorer</a>
                                 </div>
                             `)
                         }).catch((error) => {
