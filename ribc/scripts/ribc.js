@@ -149,6 +149,41 @@
         return internRequests;
     }
 
+        // Resolve per-intern task status by latest timestamp (assigned/completed/failed/reopened)
+    Ribc.getLatestTaskStatus = function (floID, taskId) {
+      const rec = Ribc.getInternRecord(floID) || {};
+      const events = [];
+
+      const assignedOn = rec.assignedTasks?.[taskId]?.assignedOn;
+      if (assignedOn) events.push({ s: 'active', t: assignedOn });
+
+      const compDate = rec.completedTasks?.[taskId]?.completionDate;
+      if (compDate) events.push({ s: 'completed', t: compDate });
+
+      const failDate = rec.failedTasks?.[taskId]?.failedDate;
+      if (failDate) events.push({ s: 'failed', t: failDate });
+
+      const reopenDate = rec.reopenedTasks?.[taskId]?.reopenedDate;
+      if (reopenDate) events.push({ s: 'active', t: reopenDate });
+
+      if (!events.length) return 'active';
+      events.sort((a, b) => a.t - b.t);
+      return events[events.length - 1].s; // latest wins
+    }
+    // Aggregate latest status across assigned interns
+    Ribc.getAggregateTaskStatus = function (taskId) {
+      const internIds = Ribc.getAssignedInterns(taskId) || [];
+      if (!internIds.length) return Ribc.getTaskStatus(taskId) || 'active';
+
+      const states = internIds.map(id => Ribc.getLatestTaskStatus(id, taskId)); // 'active'|'completed'|'failed'
+
+      if (states.length && states.every(s => s === 'completed')) return 'completed';
+      if (states.some(s => s === 'active')) return 'active';
+      if (states.every(s => s === 'failed')) return 'failed';
+      return 'mixed';
+    };
+
+
     Admin.processInternRequest = function (vectorClock, accept = true) {
         let request = floGlobals.generalDataset("InternRequests")[vectorClock];
         if (!request)
@@ -216,7 +251,9 @@
         _.internRating[floID] = parseInt(totalScore / (completedTasks + failedTasks) || 1);
         return true;
     }
-        // Record a "reopened" event for a task (append-only)
+
+
+    // (existing) Append-only "reopened" stamp
     Admin.addReopenedTask = function (floID, taskKey, details = {}) {
       if (!(floID in _.internList)) return false;
       Admin.initInternRecord(floID);
@@ -227,9 +264,21 @@
       const reopenedDate = details.reopenedDate || Date.now();
       _.internRecord[floID].reopenedTasks[taskKey] = { reopenedDate };
       return true;
-    }
+    };
 
-    // Recompute rating, ignoring completions that were reopened later
+    // (new) Remove a completion entry when a task is made incomplete
+    Admin.removeCompletedTask = function (floID, taskKey) {
+      if (!(floID in _.internList)) return false;
+      Admin.initInternRecord(floID);
+      const rec = _.internRecord[floID];
+      if (rec?.completedTasks && taskKey in rec.completedTasks) {
+        delete rec.completedTasks[taskKey];
+        return true;
+      }
+      return false;
+    };
+
+    // (existing) Recompute rating, ignoring completions superseded by later reopen
     Admin.recomputeRating = function (floID) {
       const rec = _.internRecord[floID];
       if (!rec) return;
@@ -237,43 +286,48 @@
       let totalScore = 0;
       let denom = 0;
 
-      // Count completed tasks that were NOT superseded by a later reopen
       for (const key in (rec.completedTasks || {})) {
         const comp = rec.completedTasks[key];
         const compDate = comp.completionDate || 0;
         const reopenedDate = rec.reopenedTasks?.[key]?.reopenedDate || 0;
-        if (reopenedDate > compDate) continue; // reopened later ⇒ ignore this completion in rating
+        if (reopenedDate > compDate) continue; // reopened later ⇒ ignore this completion
         totalScore += Number(comp.points) || 0;
         denom += 1;
       }
 
-      // Keep your existing policy of including failed tasks in denominator
+      // keep failed tasks in denominator (your current policy)
       denom += Object.keys(rec.failedTasks || {}).length;
 
       _.internRating[floID] = Math.floor(denom ? (totalScore / denom) : 1) || 1;
-    }
+    };
 
-    // Resolve per-intern task status by latest timestamp (assigned/completed/failed/reopened)
-    Ribc.getLatestTaskStatus = function (floID, taskId) {
-      const rec = Ribc.getInternRecord(floID) || {};
-      const events = [];
+    // (optional) One-shot reconciliation if you want extra safety
+    Admin.syncInternRecordWithTaskStatus = function (taskId) {
+      const getAssigned = RIBC.getAssignedInterns || RIBC.admin?.getAssignedInterns;
+      const assignedInterns = (typeof getAssigned === 'function' ? getAssigned(taskId) : []) || [];
+      const status = RIBC.getTaskStatus?.(taskId) || RIBC.getAggregateTaskStatus?.(taskId);
+      if (!status) return;
 
-      const assignedOn = rec.assignedTasks?.[taskId]?.assignedOn;
-      if (assignedOn) events.push({ s: 'active', t: assignedOn });
+      if (status === 'completed') {
+        const completionDate = Date.now();
+        assignedInterns.forEach(internId => {
+          const rec = _.internRecord?.[internId];
+          const has = !!(rec && rec.completedTasks && rec.completedTasks[taskId]);
+          if (!has) RIBC.admin.addCompletedTask(internId, taskId, 0, { completionDate });
+          RIBC.admin.recomputeRating?.(internId);
+        });
+      } else if (status === 'incomplete') {
+        const reopenedDate = Date.now();
+        assignedInterns.forEach(internId => {
+          RIBC.admin.addReopenedTask(internId, taskId, { reopenedDate });
+          RIBC.admin.removeCompletedTask?.(internId, taskId);
+          RIBC.admin.recomputeRating?.(internId);
+        });
+      }
+    };
 
-      const compDate = rec.completedTasks?.[taskId]?.completionDate;
-      if (compDate) events.push({ s: 'completed', t: compDate });
 
-      const failDate = rec.failedTasks?.[taskId]?.failedDate;
-      if (failDate) events.push({ s: 'failed', t: failDate });
 
-      const reopenDate = rec.reopenedTasks?.[taskId]?.reopenedDate;
-      if (reopenDate) events.push({ s: 'active', t: reopenDate });
-
-      if (!events.length) return 'active';
-      events.sort((a, b) => a.t - b.t);
-      return events[events.length - 1].s; // latest wins
-    }
 
     Admin.addFailedTask = function (floID, taskKey, details = {}) {
         if (!(floID in _.internList))
