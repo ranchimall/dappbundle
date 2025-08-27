@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -25,18 +26,18 @@
             certificateIssuerAddress: "FFCpiaZi31TpbYw5q5VNk8qJMeDiTLgsrE"
         }
     </script>
-    <script src="scripts/lib.min.js" defer></script>
-    <script src="scripts/floCrypto.min.js" defer></script>
-    <script src="scripts/floBlockchainAPI.min.js" defer></script>
-    <script src="scripts/compactIDB.min.js" defer></script>
-    <script src="scripts/floCloudAPI.min.js" defer></script>
-    <script src="scripts/floDapps.min.js" defer></script>
-    <script src="scripts/btcOperator.min.js" defer></script>
+    <script src="scripts/lib.js" defer></script>
+    <script src="scripts/floCrypto.js" defer></script>
+    <script src="scripts/floBlockchainAPI.js" defer></script>
+    <script src="scripts/compactIDB.js" defer></script>
+    <script src="scripts/floCloudAPI.js" defer></script>
+    <script src="scripts/floDapps.js" defer></script>
+    <script src="scripts/btcOperator.js" defer></script>
     <script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.0/purify.min.js"
         integrity="sha512-/hVAZO5POxCKdZMSLefw30xEVwjm94PAV9ynjskGbIpBvHO9EBplEcdUlBdCKutpZsF+La8Ag4gNrG0gAOn3Ig=="
         crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
-    <script src="scripts/ribc.min.js" defer></script>
+    <script src="scripts/ribc.js" defer></script>
     <script id="onLoadStartUp">
         function onLoadStartUp() {
             if (!window.location.hash || window.location.hash === '#') {
@@ -3287,16 +3288,49 @@
                 </sm-form>
             `)
         }
+        //Fixing the earlier incomplete marking
         function markTaskAsIncomplete(e) {
-            currentTask = e.target.closest('.admin-task');
-            getConfirmation('Mark this task as incomplete?', { message: 'Score given to participants regarding this task will also be removed', confirmText: 'Mark as incomplete', danger: true }).then(res => {
-                if (res) {
-                    RIBC.admin.putTaskStatus('incomplete', appState.params.id, appState.params.branch, currentTask.dataset.taskId)
-                    // TODO: remove task scores from intern rating
-                    renderBranchTasks()
-                    adminDataChanged();
-                }
-            })
+          const card = e?.target?.closest?.('.admin-task');
+          if (!card) return;
+          currentTask = card;
+
+          getConfirmation('Mark this task as incomplete?', {
+            message: 'Any completion scores for this task will be removed from intern ratings.',
+            confirmText: 'Mark as incomplete',
+            danger: true
+          }).then(res => {
+            if (!res) return;
+
+            // 1) Source of truth
+            RIBC.admin.putTaskStatus('incomplete', appState.params.id, appState.params.branch, currentTask.dataset.taskId);
+
+            // Full task id
+            const taskId = `${appState.params.id}_${appState.params.branch}_${currentTask.dataset.taskId}`;
+
+            // 3) Who was assigned?
+            const getAssigned = RIBC.getAssignedInterns || RIBC.admin?.getAssignedInterns;
+            const assignedInterns = (typeof getAssigned === 'function' ? getAssigned(taskId) : []) || [];
+            const reopenedDate = Date.now();
+
+            // 4) Append-only reopen + remove completion + recompute rating
+            assignedInterns.forEach(internId => {
+              RIBC.admin.addReopenedTask(internId, taskId, { reopenedDate });
+              RIBC.admin.removeCompletedTask?.(internId, taskId);
+              RIBC.admin.recomputeRating?.(internId);
+            });
+
+            // 5) Ensure it appears back in the admin's "displayed" list as pending
+            const shown = new Set(RIBC.getDisplayedTasks?.() || []);
+            shown.add(taskId);
+            RIBC.admin.setDisplayedTasks?.(Array.from(shown));
+
+            // (optional safety) keep internRecord/taskStatus fully consistent
+            RIBC.admin.syncInternRecordWithTaskStatus?.(taskId);
+
+            renderBranchTasks();
+            adminDataChanged();
+            notify('Task marked as incomplete', 'success');
+          });
         }
 
         delegate(getRef('rating_wrapper'), 'click', '.rate-intern-button', e => {
@@ -3321,31 +3355,44 @@
             const day = date.getDate();
             return `${year}-${month < 10 ? '0' : ''}${month}-${day < 10 ? '0' : ''}${day}`;
         }
-        function markTaskAsCompleted() {
-          getConfirmation('Mark this task as completed?', { confirmText: 'Mark as completed' }).then(res => {
-            if (!res) return;
+        function markTaskAsCompleted(e) {
+          const card = e?.target?.closest?.('.admin-task');
+          if (!card) return;
+          currentTask = card;
 
-            RIBC.admin.putTaskStatus('completed', appState.params.id, appState.params.branch, currentTask.dataset.taskId);
+          getConfirmation('Mark this task as completed?', { confirmText: 'Mark as completed' })
+            .then(res => {
+              if (!res) return;
 
-            const taskId = `${appState.params.id}_${appState.params.branch}_${currentTask.dataset.taskId}`;
+              // 1) Source of truth
+              RIBC.admin.putTaskStatus('completed', appState.params.id, appState.params.branch, currentTask.dataset.taskId);
 
-            // safer lookup before calling
-            const getAssigned = RIBC.getAssignedInterns || RIBC.admin?.getAssignedInterns;
-            const assignedInterns = (typeof getAssigned === 'function' ? getAssigned(taskId) : []) || [];
-            const completionDate = Date.now();
+              // 2) Full task id
+              const taskId = `${appState.params.id}_${appState.params.branch}_${currentTask.dataset.taskId}`;
 
-            assignedInterns.forEach(internId => {
-              RIBC.admin.addCompletedTask(internId, taskId, 0, { completionDate });
+              // 3) Who was assigned?
+              const getAssigned = RIBC.getAssignedInterns || RIBC.admin?.getAssignedInterns;
+              const assignedInterns = (typeof getAssigned === 'function' ? getAssigned(taskId) : []) || [];
+              const completionDate = Date.now();
+
+              // 4) Record completion for each intern + recompute rating
+              assignedInterns.forEach(internId => {
+                RIBC.admin.addCompletedTask(internId, taskId, 0, { completionDate });
+                RIBC.admin.recomputeRating?.(internId);
+              });
+
+              // 5) Remove from displayed "pending" list
+              const filteredTasks = (RIBC.getDisplayedTasks?.() || []).filter(t => t !== taskId);
+              RIBC.admin.setDisplayedTasks?.(filteredTasks);
+
+              // (optional safety) keep internRecord/taskStatus fully consistent
+              RIBC.admin.syncInternRecordWithTaskStatus?.(taskId);
+
+              renderBranchTasks();
+              adminDataChanged();
+              notify('Task marked as completed', 'success');
             });
-
-            const filteredTasks = RIBC.getDisplayedTasks().filter(task => task !== taskId);
-            RIBC.admin.setDisplayedTasks(filteredTasks);
-            renderBranchTasks();
-            adminDataChanged();
-            notify('Task marked as completed', 'success');
-          });
         }
-
         function saveTaskChanges() {
             const changedDetails = {
                 title: getRef('edit_task_title').value.trim(),
