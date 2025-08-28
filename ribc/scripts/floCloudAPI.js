@@ -1,4 +1,4 @@
-(function (EXPORTS) { //floCloudAPI v2.4.5
+(function (EXPORTS) { //floCloudAPI v2.4.5a
     /* FLO Cloud operations to send/request application data*/
     'use strict';
     const floCloudAPI = EXPORTS;
@@ -195,14 +195,24 @@
     floCloudAPI.init = function startCloudProcess(nodes) {
         return new Promise((resolve, reject) => {
             try {
+                // accept only plain-ish objects
+                nodes = (nodes && typeof nodes === 'object' && !Array.isArray(nodes)) ? nodes : {};
+
                 supernodes = nodes;
+
+                // reset liveness bookkeeping for the new set
+                if (_inactive && typeof _inactive.clear === 'function') _inactive.clear();
+
+                // (re)build the bucket with current IDs
                 kBucket = new K_Bucket(DEFAULT.SNStorageID, Object.keys(supernodes));
+
                 resolve('Cloud init successful');
             } catch (error) {
                 reject(error);
             }
-        })
-    }
+        });
+    };
+
 
     Object.defineProperty(floCloudAPI, 'kBucket', {
         get: () => kBucket
@@ -227,23 +237,26 @@
 
     function ws_activeConnect(snID, reverse = false) {
         return new Promise((resolve, reject) => {
-            if (_inactive.size === kBucket.list.length)
+            // Safe guard: uninitialized kBucket, empty list, or all inactive
+            if (!kBucket || !kBucket.list || !kBucket.list.length || _inactive.size === kBucket.list.length)
                 return reject('Cloud offline');
-            if (!(snID in supernodes))
-                snID = kBucket.closestNode(proxyID(snID));
+
+            if (!(snID in supernodes)) {
+                var closest = kBucket.closestNode(proxyID(snID));
+                if (!closest) return reject('Cloud offline'); // no candidate to try
+                snID = closest;
+            }
+
             ws_connect(snID)
                 .then(node => resolve(node))
                 .catch(error => {
-                    if (reverse)
-                        var nxtNode = kBucket.prevNode(snID);
-                    else
-                        var nxtNode = kBucket.nextNode(snID);
-                    ws_activeConnect(nxtNode, reverse)
-                        .then(node => resolve(node))
-                        .catch(error => reject(error))
-                })
-        })
+                    var nxtNode = reverse ? kBucket.prevNode(snID) : kBucket.nextNode(snID);
+                    if (!nxtNode || nxtNode === snID) return reject('Cloud offline'); // nothing else to try
+                    ws_activeConnect(nxtNode, reverse).then(resolve).catch(reject);
+                });
+        });
     }
+
 
     function fetch_API(snID, data) {
         return new Promise((resolve, reject) => {
@@ -265,24 +278,27 @@
 
     function fetch_ActiveAPI(snID, data, reverse = false) {
         return new Promise((resolve, reject) => {
-            if (_inactive.size === kBucket.list.length)
+            // Safe guard: uninitialized kBucket, empty list, or all inactive
+            if (!kBucket || !kBucket.list || !kBucket.list.length || _inactive.size === kBucket.list.length)
                 return reject('Cloud offline');
-            if (!(snID in supernodes))
-                snID = kBucket.closestNode(proxyID(snID));
+
+            if (!(snID in supernodes)) {
+                var closest = kBucket.closestNode(proxyID(snID));
+                if (!closest) return reject('Cloud offline'); // no candidate available
+                snID = closest;
+            }
+
             fetch_API(snID, data)
-                .then(result => resolve(result))
+                .then(resolve)
                 .catch(error => {
-                    _inactive.add(snID)
-                    if (reverse)
-                        var nxtNode = kBucket.prevNode(snID);
-                    else
-                        var nxtNode = kBucket.nextNode(snID);
-                    fetch_ActiveAPI(nxtNode, data, reverse)
-                        .then(result => resolve(result))
-                        .catch(error => reject(error));
-                })
-        })
+                    _inactive.add(snID);
+                    var nxtNode = reverse ? kBucket.prevNode(snID) : kBucket.nextNode(snID);
+                    if (!nxtNode || nxtNode === snID) return reject('Cloud offline'); // nothing else to try
+                    fetch_ActiveAPI(nxtNode, data, reverse).then(resolve).catch(reject);
+                });
+        });
     }
+
 
     function singleRequest(floID, data_obj, method = "POST") {
         return new Promise((resolve, reject) => {
@@ -374,13 +390,31 @@
 
     const util = floCloudAPI.util = {};
 
+    //Updating encoding/Decoding to modern standards
     const encodeMessage = util.encodeMessage = function (message) {
-        return btoa(unescape(encodeURIComponent(JSON.stringify(message))))
-    }
+        const bytes = new TextEncoder().encode(JSON.stringify(message));
+        let bin = "";
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+    };
 
     const decodeMessage = util.decodeMessage = function (message) {
-        return JSON.parse(decodeURIComponent(escape(atob(message))))
-    }
+        try {
+            // try modern decode first
+            const bin = atob(message);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            return JSON.parse(new TextDecoder().decode(bytes));
+        } catch (e1) {
+            try {
+                // fallback to legacy decode
+                return JSON.parse(decodeURIComponent(escape(atob(message))));
+            } catch (e2) {
+                // final fallback: return raw string to avoid hard crash
+                return message;
+            }
+        }
+    };
 
     const filterKey = util.filterKey = function (type, options = {}) {
         return type + (options.comment ? ':' + options.comment : '') +
@@ -468,20 +502,58 @@
 
     function storeGeneral(fk, dataSet) {
         try {
-            console.log(dataSet)
-            if (typeof generalData[fk] !== "object")
-                generalData[fk] = {}
-            for (let vc in dataSet) {
-                generalData[fk][vc] = dataSet[vc];
-                if (dataSet[vc].log_time > lastVC[fk])
-                    lastVC[fk] = dataSet[vc].log_time;
+            if (!dataSet || typeof dataSet !== "object") return;
+
+            // Ensure containers exist
+            if (typeof generalData[fk] !== "object" || generalData[fk] === null)
+                generalData[fk] = {};
+            if (typeof lastVC[fk] !== "number")
+                lastVC[fk] = 0;
+
+            // Merge data and track latest log_time
+            let updated = false;
+            let newLast = lastVC[fk];
+
+            for (const vc in dataSet) {
+                const rec = dataSet[vc];
+                // Skip bad records
+                if (!rec || typeof rec !== "object") continue;
+
+                // Assign only if changed reference (cheap check)
+                if (generalData[fk][vc] !== rec) {
+                    generalData[fk][vc] = rec;
+                    updated = true;
+                }
+                if (typeof rec.log_time === "number" && rec.log_time > newLast) {
+                    newLast = rec.log_time;
+                    updated = true;
+                }
             }
-            compactIDB.writeData("lastVC", lastVC[fk], fk)
-            compactIDB.writeData("generalData", generalData[fk], fk)
+
+            if (!updated) return; // nothing new, avoid IDB writes
+
+            lastVC[fk] = newLast;
+
+            // --- Debounce writes per fk to avoid IDB thrash ---
+            storeGeneral._pending = storeGeneral._pending || Object.create(null);
+            const pend = storeGeneral._pending;
+
+            clearTimeout(pend[fk]);
+            pend[fk] = setTimeout(() => {
+                try {
+                    // Fire-and-forget; callers don’t wait on these
+                    compactIDB.writeData("lastVC", lastVC[fk], fk);
+                    compactIDB.writeData("generalData", generalData[fk], fk);
+                } catch (e) {
+                    console.error(e);
+                }
+            }, 50);
+
         } catch (error) {
-            console.error(error)
+            console.error(error);
         }
     }
+
 
     function objectifier(data) {
         if (!Array.isArray(data))
@@ -551,7 +623,7 @@
     }
 
     //request any data from supernode cloud
-    const requestApplicationData = floCloudAPI.requestApplicationData = function (type, options = {}) {
+    const _requestApplicationData = function (type, options = {}) {
         return new Promise((resolve, reject) => {
             var request = {
                 receiverID: options.receiverID || DEFAULT.adminID,
@@ -579,6 +651,17 @@
                 singleRequest(request.receiverID, request, options.method || "GET")
                     .then(data => resolve(data)).catch(error => reject(error))
             }
+        })
+    }
+
+    floCloudAPI.requestApplicationData = function (type, options = {}) {
+        return new Promise((resolve, reject) => {
+            let single_request_mode = !(options.callback instanceof Function);
+            _requestApplicationData(type, options).then(data => {
+                if (single_request_mode)
+                    resolve(objectifier(data))
+                else resolve(data);
+            }).catch(error => reject(error))
         })
     }
 
@@ -615,7 +698,7 @@
             //request the data from cloud for resigning
             let req_options = Object.assign({}, options);
             req_options.atVectorClock = vectorClock;
-            requestApplicationData(undefined, req_options).then(result => {
+            _requestApplicationData(undefined, req_options).then(result => {
                 if (!result.length)
                     return reject("Data not found");
                 let data = result[0];
@@ -709,11 +792,11 @@
                     storeGeneral(fk, d);
                     options.callback(d, e)
                 }
-                requestApplicationData(type, new_options)
+                _requestApplicationData(type, new_options)
                     .then(result => resolve(result))
                     .catch(error => reject(error))
             } else {
-                requestApplicationData(type, options).then(dataSet => {
+                _requestApplicationData(type, options).then(dataSet => {
                     storeGeneral(fk, objectifier(dataSet))
                     resolve(dataSet)
                 }).catch(error => reject(error))
@@ -738,7 +821,7 @@
                 }
                 delete options.callback;
             }
-            requestApplicationData(objectName, options).then(dataSet => {
+            _requestApplicationData(objectName, options).then(dataSet => {
                 updateObject(objectName, objectifier(dataSet));
                 delete options.comment;
                 options.lowerVectorClock = lastVC[objectName] + 1;
@@ -746,11 +829,11 @@
                 if (callback) {
                     let new_options = Object.create(options);
                     new_options.callback = callback;
-                    requestApplicationData(objectName, new_options)
+                    _requestApplicationData(objectName, new_options)
                         .then(result => resolve(result))
                         .catch(error => reject(error))
                 } else {
-                    requestApplicationData(objectName, options).then(dataSet => {
+                    _requestApplicationData(objectName, options).then(dataSet => {
                         updateObject(objectName, objectifier(dataSet))
                         resolve(appObjects[objectName])
                     }).catch(error => reject(error))
@@ -825,7 +908,7 @@
     floCloudAPI.downloadFile = function (vectorClock, options = {}) {
         return new Promise((resolve, reject) => {
             options.atVectorClock = vectorClock;
-            requestApplicationData(options.type, options).then(result => {
+            _requestApplicationData(options.type, options).then(result => {
                 if (!result.length)
                     return reject("File not found");
                 result = result[0];
