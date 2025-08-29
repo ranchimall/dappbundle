@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -463,21 +464,6 @@
                                 <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                             </svg>
                             Send USDT
-                        </button>
-                        <button class="wallet-action" onclick="initConversion('rupee')">
-                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
-                                height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
-                                <g>
-                                    <rect fill="none" height="24" width="24" />
-                                </g>
-                                <g>
-                                    <g>
-                                        <path
-                                            d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z" />
-                                    </g>
-                                </g>
-                            </svg>
-                            Request USDT
                         </button>
                     </div>
 
@@ -1284,31 +1270,82 @@
     <sm-popup id="send_usdt_erc20_popup">
       <header slot="header" class="popup__header">
         <button class="popup__header__close justify-self-start" onclick="closePopup()">
-          <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24">
+            <path d="M0 0h24v24H0V0z" fill="none"/>
+            <path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
+          </svg>
         </button>
         <h3>Send USDT (ERC-20)</h3>
       </header>
 
       <sm-form id="send_usdt_erc20_form" skip-submit>
         <fieldset class="grid gap-1">
+          <!-- From -->
           <div class="grid">
-            <div class="label">From (ETH address)</div>
-            <sm-copy id="usdt_from_eth_address" value=""></sm-copy>
+            <div class="label">From ETH address</div>
+            <sm-copy id="usdt_from_eth_address"></sm-copy>
           </div>
 
-          <sm-input id="usdt_receiver" placeholder="Receiver's ETH address"
-                    pattern="0x[0-9a-fA-F]{40}" error-text='Invalid address. It should look like "0x..."'
-                    animate required></sm-input>
+          <!-- To -->
+          <sm-input
+            id="usdt_receiver"
+            placeholder="Receiver's ETH address"
+            pattern="0x[0-9a-fA-F]{40}"
+            error-text='Invalid address. It should look like "0x..."'
+            animate
+            required>
+          </sm-input>
 
-          <sm-input id="usdt_amount" type="number" placeholder="Amount"
-                    min="0.000001" step="0.000001"
-                    error-text="Amount must be greater than 0"
-                    animate required>
+          <!-- Amount -->
+          <sm-input
+            id="usdt_amount"
+            type="number"
+            placeholder="Amount"
+            min="0.000001"
+            step="0.000001"
+            error-text="Amount must be greater than 0"
+            animate
+            required>
             <div class="asset-symbol" slot="icon">USDT</div>
           </sm-input>
 
+          <!-- Sender balances -->
+          <div id="usdt_balances" class="grid gap-0-25 muted">
+            <div class="flex space-between">
+              <span>ETH balance</span>
+              <span id="eth_balance_text">—</span>
+            </div>
+            <div class="flex space-between">
+              <span>USDT balance</span>
+              <span id="usdt_balance_text">—</span>
+            </div>
+          </div>
+
+          <!-- Estimated gas / fee -->
+          <div id="usdt_fee_estimate" class="grid gap-0-25 muted">
+            <div class="flex space-between">
+              <span>Estimated gas (limit)</span>
+              <span id="usdt_gas_limit">—</span>
+            </div>
+            <div class="flex space-between">
+              <span>Gas price</span>
+              <span id="usdt_gas_price">—</span>
+            </div>
+            <div class="flex space-between">
+              <span>Estimated fee</span>
+              <span id="usdt_fee_eth">—</span>
+            </div>
+            <p id="usdt_send_hint" class="text-small" style="opacity:.8"></p>
+          </div>
+
+          <!-- CTA -->
           <div class="multi-state-button">
-            <button id="usdt_send_btn" class="button button--primary cta" type="submit" onclick="submitUsdtErc20(event)" disabled>
+            <button
+              id="usdt_send_btn"
+              class="button button--primary cta w-100"
+              type="submit"
+              onclick="submitUsdtErc20(event)"
+              disabled>
               Send USDT
             </button>
           </div>
@@ -1317,6 +1354,7 @@
 
       <div id="send_usdt_erc20_status" class="grid gap-1 justify-center text-center hidden"></div>
     </sm-popup>
+
 
     <sm-popup id="txid_popup">
         <header slot="header" class="popup__header">
@@ -1815,24 +1853,36 @@
                     calculateFees()
                     break;
                 case 'send_usdt_erc20_popup':
-                    try {
-                        const privateKeyWIF = await floDapps.user.private;
-                        if (!privateKeyWIF) {
-                          notify('No private key found for this account', 'error');
-                          break;
-                        }
-                        const { privkey } = coinjs.wif2privkey(privateKeyWIF);
-                        const fromEth = floEthereum.ethAddressFromPrivateKey(privkey);
+                  try {
+                    const privateKeyWIF = await floDapps.user.private;
+                    if (!privateKeyWIF) {
+                      notify('No private key found for this account', 'error');
+                      break;
+                    }
+                    const { privkey } = coinjs.wif2privkey(privateKeyWIF);
+                    const fromEth = floEthereum.ethAddressFromPrivateKey(privkey);
 
-                        getRef('usdt_from_eth_address').value = fromEth;
+                    getRef('usdt_from_eth_address').value = fromEth;
 
-                        const form = getRef('send_usdt_erc20_form');
-                        form.dataset.ethPriv = privkey;     // raw hex private key
-                        form.dataset.fromEth = fromEth;     // derived ETH address
-                      } catch (err) {
-                        notify(err.message || 'Could not derive ETH address from key', 'error');
-                      }
-                    break;
+                    const form = getRef('send_usdt_erc20_form');
+                    form.dataset.ethPriv = privkey;   // raw hex private key
+                    form.dataset.fromEth = fromEth;   // derived ETH address
+
+                    // 1) attach validation listeners (changes -> estimate gas -> reevaluate)
+                    initUsdtValidation(async () => {
+                      await estimateUsdtGas();
+                      reevaluateUsdtSendEnabled();
+                    });
+
+                    // 2) initial data pass (balances, estimate, enable/disable)
+                    await refreshUsdtBalances();
+                    await estimateUsdtGas();
+                    reevaluateUsdtSendEnabled();
+
+                  } catch (err) {
+                    notify(err?.message || 'Could not derive ETH address from key', 'error');
+                  }
+                  break;
 
                 case 'profile_popup':
                     renderElem(getRef('profile_popup__content'), render.profile())
@@ -2216,6 +2266,7 @@
                 if (floDapps.user.id && (generalPages.includes(pageId))) {
                     history.replaceState(null, null, '#/home');
                     pageId = 'home'
+                    return;
                 }
             } catch (e) {
                 if (!(generalPages.includes(pageId))) return
@@ -3918,7 +3969,7 @@
                 if (potentialTarget) potentialTarget.remove();
             }
         }
-        
+            
         // Best-effort derivation of user's Ethereum address
         async function getUserEthAddress() {
           try {
@@ -4172,6 +4223,7 @@
                 }
             });
         }
+        
         const savedIdsObserver = new MutationObserver((mutationList) => {
             mutationList.forEach(mutation => {
                 conditionalClassToggle(getRef('saved_ids_tip'), 'hidden', !mutation.target.children.length);
@@ -4181,6 +4233,7 @@
         savedIdsObserver.observe(getRef('saved_ids_list'), {
             childList: true,
         })
+        
         function insertElementAlphabetically(name, elementToInsert) {
             const elementInserted = [...getRef('saved_ids_list').children].some(child => {
                 const floID = child.dataset.floId;
@@ -4220,6 +4273,7 @@
                 }
             }
         }, 100))
+
         getRef('search_saved_ids_picker').addEventListener('keydown', e => {
             if (e.key === 'Enter') {
                 const potentialTarget = getRef('saved_ids_picker_list').firstElementChild
@@ -4228,6 +4282,7 @@
                 }
             }
         })
+
         delegate(getRef('saved_ids_picker_list'), 'click', '.saved-id', e => {
             getRef('token_transfer__receiver').value = e.delegateTarget.dataset.floId
             getRef('token_transfer__receiver').focusIn()
@@ -4779,7 +4834,7 @@
                 notify(`Could not initialize conversion: ${e.message}`, 'error')
             }
         }
-
+        //Asset Conversion
         function convertAsset() {
             getConfirmation('Are you sure you want to convert?', { confirmText: 'Convert' }).then(async (res) => {
                 if (!res) return;
@@ -4815,6 +4870,338 @@
                 }
             })
         }
+
+
+        // === USDT (ERC-20) SEND — UTILITIES & SHARED STATE ===
+
+        // Lightweight formatters (display only)
+        const usdtFmt = {
+          eth(x)  { return (Number(x) || 0).toFixed(6) + ' ETH'; },
+          usdt(x) { return (Number(x) || 0).toFixed(6) + ' USDT'; },
+          gwei(x) { return (Number(x) || 0).toFixed(2) + ' gwei'; },
+          gas(x)  { return String(x ?? '—'); }
+        };
+
+        // Convert wei → ETH (accepts number|string|bigint)
+        function usdtFeeWeiToEth(wei) {
+          const bn = (typeof wei === 'bigint') ? wei : BigInt(String(wei || 0));
+          return Number(bn) / 1e18;
+        }
+
+        // Centralized element refs for the USDT popup
+        function getUsdtFormRefs() {
+          const form    = document.getElementById('send_usdt_erc20_form');
+          const toEth   = document.getElementById('usdt_receiver');
+          const amt     = document.getElementById('usdt_amount');
+          const sendBtn = document.getElementById('usdt_send_btn');
+
+          const lbl = {
+            ethBal:   document.getElementById('eth_balance_text'),
+            usdtBal:  document.getElementById('usdt_balance_text'),
+            gasLimit: document.getElementById('usdt_gas_limit'),
+            gasPrice: document.getElementById('usdt_gas_price'),
+            feeEth:   document.getElementById('usdt_fee_eth'),
+            hint:     document.getElementById('usdt_send_hint'),
+          };
+          return { form, toEth, amt, sendBtn, lbl };
+        }
+
+        // In-memory state (avoids flicker; used by guards)
+        const usdtSendState = {
+          ethBalance: 0,     // number (ETH)
+          usdtBalance: 0,    // number (USDT)
+          gasLimit: 0,       // number
+          gasPriceWei: 0n,   // bigint
+          feeEth: 0          // number (ETH)
+        };
+
+        // === USDT (ERC-20) SEND — VALIDATION & ENABLE/DISABLE ===
+
+        // Small, local debounce to avoid collisions with any global debounce
+        function usdtDebounce(fn, ms = 300) {
+          let t;
+          return (...args) => {
+            clearTimeout(t);
+            t = setTimeout(() => fn(...args), ms);
+          };
+        }
+
+        // Re-checks if we can enable "Send" based on field validity and cached state
+        function reevaluateUsdtSendEnabled() {
+          const { toEth, amt, sendBtn, lbl } = getUsdtFormRefs();
+
+          const validFields = Boolean(toEth?.isValid && amt?.isValid);
+          const wantUsdt    = Number(amt?.value || 0);
+
+          const enoughUsdt  = usdtSendState.usdtBalance >= wantUsdt;
+          const enoughEth   = usdtSendState.feeEth > 0 && usdtSendState.ethBalance >= usdtSendState.feeEth;
+
+          let hint = '';
+          if (validFields) {
+            if (!enoughUsdt) hint = 'Insufficient USDT balance.';
+            else if (!enoughEth) hint = 'Insufficient ETH for gas.';
+          }
+          if (lbl?.hint) lbl.hint.textContent = hint;
+
+          if (sendBtn) sendBtn.disabled = !(validFields && enoughUsdt && enoughEth);
+        }
+
+        /**
+         * Attach input validation + change handlers for the USDT popup.
+         * - Prevents duplicate listeners if popup opens multiple times.
+         * - Returns a teardown function to remove listeners if you need it.
+         *
+         * Usage (inside `popupopened` -> 'send_usdt_erc20_popup'):
+         *   const stop = initUsdtValidation(async () => {
+         *     await estimateUsdtGas();
+         *     reevaluateUsdtSendEnabled();
+         *   });
+         */
+        function initUsdtValidation(onInputsChanged) {
+          const { form, toEth, amt } = getUsdtFormRefs();
+          if (!form || !toEth || !amt) return () => {};
+
+          // Prevent duplicate bindings on re-open
+          if (form.dataset.usdtValidation === 'attached') return () => {};
+          form.dataset.usdtValidation = 'attached';
+
+          const debounced = usdtDebounce(() => {
+            try { onInputsChanged && onInputsChanged(); }
+            catch (e) { console.warn('USDT inputs change handler failed:', e); }
+          }, 300);
+
+          // Listeners
+          const onInput = () => debounced();
+
+          toEth.addEventListener('input', onInput);
+          amt.addEventListener('input', onInput);
+
+          // Kick one evaluation when you call this (do NOT call automatically here)
+
+          // Provide a teardown if you ever want to remove listeners on close
+          return function teardownUsdtValidation() {
+            try {
+              toEth.removeEventListener('input', onInput);
+              amt.removeEventListener('input', onInput);
+              delete form.dataset.usdtValidation;
+            } catch {}
+          };
+        }
+
+        // === USDT (ERC-20) SEND — BALANCES LOADER ===
+        //
+        // Depends on: getUsdtFormRefs(), usdtFmt, usdtSendState
+
+        async function refreshUsdtBalances() {
+          const { form, lbl } = getUsdtFormRefs();
+          if (!form?.dataset?.fromEth) return;
+
+          const from = form.dataset.fromEth;
+
+          try {
+            // Parallel fetch ETH & USDT balances
+            const [ethBalRaw, usdtBalRaw] = await Promise.all([
+              ethOperator.getBalance(from),                                 // -> number|string (ETH)
+              ethOperator.getTokenBalance({ address: from, token: 'usdt' }) // -> number|string (USDT)
+            ]);
+
+            const ethBal  = Number(ethBalRaw)  || 0;
+            const usdtBal = Number(usdtBalRaw) || 0;
+
+            // Cache in state
+            usdtSendState.ethBalance  = ethBal;
+            usdtSendState.usdtBalance = usdtBal;
+
+            // Paint UI
+            if (lbl?.ethBal)  lbl.ethBal.textContent  = usdtFmt.eth(ethBal);
+            if (lbl?.usdtBal) lbl.usdtBal.textContent = usdtFmt.usdt(usdtBal);
+          } catch (e) {
+            console.warn('refreshUsdtBalances failed:', e);
+            // Keep state but indicate unknown in UI
+            if (lbl?.ethBal)  lbl.ethBal.textContent  = '—';
+            if (lbl?.usdtBal) lbl.usdtBal.textContent = '—';
+          }
+        }
+
+        // === USDT (ERC-20) SEND — GAS ESTIMATE ===
+        //
+        // Depends on: getUsdtFormRefs(), usdtSendState, usdtFmt, usdtFeeWeiToEth
+        // Requires:   ethOperator.getGasPrice(), ethOperator.estimateTokenTransferGas({...}),
+        //             ethOperator.isValidAddress(addr)
+
+        async function estimateUsdtGas() {
+          const { form, toEth, amt, lbl } = getUsdtFormRefs();
+          if (!form?.dataset?.fromEth) return;
+
+          const from   = form.dataset.fromEth;
+          const to     = String(toEth?.value || '').trim();
+          const amount = Number(amt?.value || 0);
+
+          // Clear UI when inputs are not ready
+          const clearUi = () => {
+            if (lbl?.gasLimit) lbl.gasLimit.textContent = '—';
+            if (lbl?.gasPrice) lbl.gasPrice.textContent = '—';
+            if (lbl?.feeEth)   lbl.feeEth.textContent   = '—';
+            usdtSendState.gasLimit   = 0;
+            usdtSendState.gasPriceWei = 0n;
+            usdtSendState.feeEth     = 0;
+          };
+
+          if (!ethOperator.isValidAddress(to) || !(amount > 0)) {
+            clearUi();
+            return;
+          }
+
+          try {
+            // Fetch price + limit in parallel
+            const [gasPriceWeiRaw, gasLimitRaw] = await Promise.all([
+              ethOperator.getGasPrice(), // → wei (string|number|bigint)
+              ethOperator.estimateTokenTransferGas({
+                from,
+                receiver: to,
+                amount,
+                token: 'usdt'
+              }) // → integer gas limit
+            ]);
+
+            const gasLimit = Number(gasLimitRaw) || 0;
+            const gasPriceWei = (typeof gasPriceWeiRaw === 'bigint')
+              ? gasPriceWeiRaw
+              : BigInt(String(gasPriceWeiRaw || 0));
+
+            // Total fee in wei & ETH
+            const feeWei = gasPriceWei * BigInt(gasLimit || 0);
+            const feeEth = usdtFeeWeiToEth(feeWei);
+
+            // Cache in state
+            usdtSendState.gasLimit    = gasLimit;
+            usdtSendState.gasPriceWei = gasPriceWei;
+            usdtSendState.feeEth      = feeEth;
+
+            // Render UI
+            const gasPriceGwei = Number(gasPriceWei) / 1e9;
+            if (lbl?.gasLimit) lbl.gasLimit.textContent = usdtFmt.gas(gasLimit);
+            if (lbl?.gasPrice) lbl.gasPrice.textContent = usdtFmt.gwei(gasPriceGwei);
+            if (lbl?.feeEth)   lbl.feeEth.textContent   = usdtFmt.eth(feeEth);
+          } catch (e) {
+            console.warn('estimateUsdtGas failed:', e);
+            clearUi();
+          }
+        }
+
+        // === USDT (ERC-20) SEND — SUBMIT HANDLER ===
+        //
+        // Depends on: getUsdtFormRefs(), reevaluateUsdtSendEnabled(),
+        //             estimateUsdtGas(), refreshUsdtBalances(),
+        //             usdtSendState, notify(), buttonLoader(), getConfirmation(),
+        //             openPopup(), ethOperator (sendToken, isValidAddress)
+
+        async function submitUsdtErc20(evt) {
+          evt?.preventDefault?.();
+
+          const { form, toEth, amt, sendBtn } = getUsdtFormRefs();
+          if (!form) {
+            notify('Form not found', 'error');
+            return;
+          }
+
+          const privkey = form.dataset.ethPriv; // raw hex (no 0x)
+          const fromEth = form.dataset.fromEth;
+          const to      = String(toEth?.value || '').trim();
+          const amount  = Number(amt?.value || 0);
+
+          // Basic guards (component-level validation already runs)
+          if (!privkey) {
+            notify('No private key available for signing', 'error');
+            return;
+          }
+          if (!ethOperator.isValidAddress(to)) {
+            notify('Invalid receiver address', 'error');
+            return;
+          }
+          if (!(amount > 0)) {
+            notify('Amount must be greater than 0', 'error');
+            return;
+          }
+
+          // Secondary guards using current cached balances / fee
+          const enoughUsdt = usdtSendState.usdtBalance >= amount;
+          const enoughEth  = usdtSendState.feeEth > 0 && usdtSendState.ethBalance >= usdtSendState.feeEth;
+          if (!enoughUsdt) {
+            notify('Insufficient USDT balance.', 'error');
+            return;
+          }
+          if (!enoughEth) {
+            notify('Insufficient ETH for gas.', 'error');
+            return;
+          }
+
+          // User confirmation
+          const ok = await getConfirmation('Send USDT (ERC-20)', {
+            message: `You are about to send ${amount} USDT\nTo: ${to}\nFrom: ${fromEth}`,
+            confirmText: 'Send'
+          });
+          if (!ok) return;
+
+          try {
+            buttonLoader(sendBtn, true);
+
+            // Broadcast ERC-20 transfer
+            const tx = await ethOperator.sendToken({
+              privateKey: privkey,
+              receiver: to,
+              amount,
+              token: 'usdt'
+            });
+
+            // Success UI
+            openPopup('txid_popup');
+            const txidEl = document.getElementById('txid');
+            if (txidEl) txidEl.value = tx.hash;
+
+            // Optional: update "View on Etherscan" link if you added it
+            const link = document.getElementById('txid_link');
+            if (link) link.href = `https://etherscan.io/tx/${tx.hash}`;
+
+            // Reset inputs
+            const formEl = document.getElementById('send_usdt_erc20_form');
+            formEl?.reset?.();
+
+            // Refresh balances and recompute UI (non-blocking)
+            refreshUsdtBalances().catch(()=>{});
+            estimateUsdtGas().catch(()=>{});
+            reevaluateUsdtSendEnabled();
+
+            // Optionally notify when confirmed (don’t block UI)
+            tx.wait?.()
+              .then(() => notify('USDT transfer confirmed on Ethereum', 'success'))
+              .catch(() => { /* ignore */ });
+
+          } catch (e) {
+            // Map common JSON-RPC error (-32000) to a friendly message
+            const msg = String(e && (e.message || e));
+            try {
+              const m = msg.match(/\(error=({.*?}),/);
+              if (m && m[1]) {
+                const parsed = JSON.parse(m[1]);
+                if (parsed?.code === -32000) {
+                  notify('Insufficient balance (ETH for gas or USDT).', 'error');
+                } else {
+                  notify(msg, 'error');
+                }
+              } else {
+                notify(msg, 'error');
+              }
+            } catch {
+              notify(msg, 'error');
+            }
+          } finally {
+            buttonLoader(sendBtn, false);
+          }
+        }
+
+
+
     </script>
 </body>
 
