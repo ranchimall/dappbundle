@@ -2,7 +2,7 @@
     /* FLO Blockchain Operator to send/receive data from blockchain using API calls via FLO Blockbook*/
     'use strict';
     const floBlockchainAPI = EXPORTS;
-
+    //Change here for Blockbook
     const DEFAULT = {
         blockchain: floGlobals.blockchain,
         apiURL: {
