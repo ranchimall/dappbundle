@@ -1128,7 +1128,7 @@
                 </div>
                 <div class="multi-state-button">
                     <button id="withdraw_rupee_button" class="button button--primary cta"
-                        onclick="withdrawMoneyFromWallet()" type="submit">Withdraw</button>
+                        onclick="withdrawMoneyFromWallet()" type="button">Withdraw</button>
                 </div>
             </sm-form>
             <div class="grid gap-0-5 hidden justify-center text-center">
@@ -2879,37 +2879,57 @@
 
         getRef('topup_wallet__qr_wrapper').addEventListener('toggle', e => render.conditionalSteps())
 
-        function withdrawMoneyFromWallet() {
+        let withdrawInProgress = false;
+        async function withdrawMoneyFromWallet() {
+            if (withdrawInProgress) {
+                console.warn("Withdraw already in progress, ignoring duplicate call.");
+                return;
+            }
+            withdrawInProgress = true;
+
             let cashier = User.findCashier();
-            if (!cashier)
+            if (!cashier) {
+                withdrawInProgress = false;
                 return notify("No cashier online. Please try again in a while.", 'error');
+            }
+
             let amount = parseFloat(getRef('send_cashier_amount').value.trim());
             const upiId = getRef('select_withdraw_upi_id').value;
-            if (!upiId)
+            if (!upiId) {
+                withdrawInProgress = false;
                 return notify("Please add an UPI ID to continue", 'error');
+            }
+
             buttonLoader('withdraw_rupee_button', true);
             getRef('withdrawal_blockchain_link').classList.add('hidden');
-            User.sendToken(cashier, amount, 'for token-to-cash').then(txid => {
-                console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
-                User.tokenToCash(cashier, amount, txid, upiId).then(result => {
-                    showChildElement('withdraw_wallet_process', 1);
-                    refreshBalance().catch(console.error);
-                    getRef('withdrawal_blockchain_link').classList.remove('hidden');
-                    getRef('withdrawal_blockchain_link').href = `${floBlockchainAPI.current_server}tx/${txid}`
-                    console.log(result);
-                }).catch(error => {
-                    getRef('withdrawal_failed_reason').textContent = error;
-                    showChildElement('withdraw_wallet_process', 2);
-                    console.error(error)
-                }).finally(() => {
+
+            try {
+                // 🔑 Live balance check (just before sendToken)
+                const rupeeBalance = Number(await floTokenAPI.getBalance(floGlobals.myFloID)) || 0;
+                if (amount > rupeeBalance) {
+                    withdrawInProgress = false;
                     buttonLoader('withdraw_rupee_button', false);
-                });
-            }).catch(error => {
+                    return notify(`Insufficient balance. You only have ₹${rupeeBalance}.`, 'error');
+                }
+
+                // Proceed with token transfer
+                const txid = await User.sendToken(cashier, amount, 'for token-to-cash');
+                console.warn(`Withdraw ${amount} from cashier ${cashier}`, txid);
+
+                await User.tokenToCash(cashier, amount, txid, upiId);
+
+                showChildElement('withdraw_wallet_process', 1);
+                refreshBalance().catch(console.error);
+                getRef('withdrawal_blockchain_link').classList.remove('hidden');
+                getRef('withdrawal_blockchain_link').href = `${floBlockchainAPI.current_server}tx/${txid}`;
+            } catch (error) {
                 getRef('withdrawal_failed_reason').textContent = error;
                 showChildElement('withdraw_wallet_process', 2);
+                console.error(error);
+            } finally {
+                withdrawInProgress = false;        // release latch
                 buttonLoader('withdraw_rupee_button', false);
-                console.error(error)
-            })
+            }
         }
         function openExternalTransferPopup(type) {
             let title = ``;
