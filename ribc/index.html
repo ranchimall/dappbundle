@@ -4321,7 +4321,7 @@
           return outs;
         }
 
-        // strict: require ALL inputs come from the cashier
+        // strict: require ALL inputs come from the payer/internship distribution address
         function isFromPayer(tx, payer) {
           const ins = getInputAddresses(tx);
           return ins.length > 0 && ins.every(a => a === payer);
@@ -4346,7 +4346,7 @@
                     if (!floGlobals.payments) floGlobals.payments = Object.create(null);
 
                     items.forEach((tx) => {
-                      // sender must be the cashier
+                      // sender must be the payer/internship distribution address
                       if (!isFromPayer(tx, floGlobals.payer)) return;
 
                       // pick the true receiver (first non-payer vout address)
