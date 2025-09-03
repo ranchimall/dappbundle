@@ -4298,43 +4298,97 @@
             })
         }
         floGlobals.payments = {};
+        floGlobals.payer = "FThgnJLcuStugLc24FJQggmp2WgaZjrBSn";
         let fetchPaymentsState = signal('idle');
+        // ---- helpers (put once, top-level) ----
+        function getReceiverAddress(vout, payer) {
+          if (!Array.isArray(vout)) return undefined;
+          for (const o of vout) {
+            const addrs = o?.scriptPubKey?.addresses || [];
+            for (const a of addrs) {
+              if (a && a !== payer) return a; // first non-payer output = payee
+            }
+          }
+          return undefined;
+        }
+
+        function getInputAddresses(tx) {
+          const outs = [];
+          for (const vin of (tx?.vin || [])) {
+            const addrs = vin?.addresses || (vin?.addr ? [vin.addr] : []);
+            for (const a of addrs) if (a) outs.push(a);
+          }
+          return outs;
+        }
+
+        // strict: require ALL inputs come from the cashier
+        function isFromPayer(tx, payer) {
+          const ins = getInputAddresses(tx);
+          return ins.length > 0 && ins.every(a => a === payer);
+        }
+
+        function parseFloAmount(floData) {
+          // Handles "send 3000 rupee#" or "Send 8000.0000000000 rupee# ..."
+          const m = /send\s+([\d.]+)\s+[A-Za-z0-9#]+/i.exec(floData || "");
+          return m ? parseFloat(m[1]) : 0;
+        }
+
+        function isRupeeSend(floData) {
+          return /send\s+[\d.]+\s+rupee#/i.test(floData || "");
+        }
+
         function fetchPayments() {
             fetchPaymentsState.value = 'fetching'
-            floBlockchainAPI
-                .readAllTxs("FThgnJLcuStugLc24FJQggmp2WgaZjrBSn")
-                .then(({ items }) => {
+                floBlockchainAPI
+                  .readAllTxs(floGlobals.payer)
+                  .then(({ items }) => {
+                    const internList = RIBC.getInternList() || {};
+                    if (!floGlobals.payments) floGlobals.payments = Object.create(null);
+
                     items.forEach((tx) => {
-                        // Errorfix 1 - Ensure tx.vout exists and has the expected structure
-                        if (!tx.vout || !tx.vout[0] || !tx.vout[0].scriptPubKey || !tx.vout[0].scriptPubKey.addresses) return;
+                      // sender must be the cashier
+                      if (!isFromPayer(tx, floGlobals.payer)) return;
 
-                        const floId = tx.vout[0].scriptPubKey.addresses[0];
+                      // pick the true receiver (first non-payer vout address)
+                      const floId = getReceiverAddress(tx?.vout, floGlobals.payer);
+                      if (!floId) return;
 
-                        //Errorfix 2 - Making sure FLO ID is in the intern list
-                        const internList = RIBC.getInternList();
-                        // Ensure internList is defined and floId exists in it
-                        if (!internList || !(floId in internList)) return; // check if floId is of an intern
+                      // only count recognized interns
+                      if (!internList[floId]) return;
 
-                        if (!RIBC.getInternList()[floId]) return; // check if floId is of an intern
-                        const { txid, floData, time } = tx
-                        if (!floGlobals.payments[floId])
-                            floGlobals.payments[floId] = {
-                                total: 0,
-                                txs: []
-                            };
-                        const amount = parseFloat(floData.match(/([0-9]+)/)[1]) || 0; // get amount from floData
-                        floGlobals.payments[floId].total += amount;
-                        floGlobals.payments[floId].txs.push({
-                            txid,
-                            amount,
-                            time
-                        });
+                      // only count rupee# sends
+                      if (!isRupeeSend(tx.floData)) return;
+
+                      const amount = parseFloAmount(tx.floData);
+                      const txid   = tx.txid;
+                      const time   = Number(tx.time) || 0;
+
+                      // init bucket
+                      if (!floGlobals.payments[floId]) {
+                        floGlobals.payments[floId] = { total: 0, txs: [] };
+                      }
+
+                      // prevent duplicates (in case readAllTxs returns same tx in multiple pages later)
+                      const rec = floGlobals.payments[floId];
+                      if (!rec._seen) rec._seen = new Set();
+                      if (rec._seen.has(txid)) return;
+                      rec._seen.add(txid);
+
+                      rec.total += amount;
+                      rec.txs.push({ txid, amount, time });
                     });
-                    fetchPaymentsState.value = 'done'
-                }).catch((err) => {
-                    notify(err, 'error')
-                    fetchPaymentsState.value = 'idle'
-                });
+
+                    // sort each intern’s payments by time desc (optional)
+                    for (const k in floGlobals.payments) {
+                      floGlobals.payments[k].txs.sort((a, b) => b.time - a.time);
+                    }
+
+                    fetchPaymentsState.value = 'done';
+                  })
+                  .catch((err) => {
+                    notify(err, 'error');
+                    fetchPaymentsState.value = 'idle';
+                  });
         }
     </script>
 </body>
