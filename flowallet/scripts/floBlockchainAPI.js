@@ -9,9 +9,9 @@
             FLO: ['https://blockbook.ranchimall.net/'],
             FLO_TEST: ['https://blockbook-testnet.ranchimall.net/']
         },
-        sendAmt: 0.0003,
-        fee: 0.0002,
-        minChangeAmt: 0.0002,
+        sendAmt: 0.00001,
+        fee: 0.00001,
+        minChangeAmt: 0.00001,
         receiverID: floGlobals.adminID
     };
 
