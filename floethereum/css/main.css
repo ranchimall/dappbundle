@@ -822,7 +822,6 @@ main {
   display: flex;
   height: 100%;
   width: 100%;
-  justify-content: space-around;
 }
 #main_navbar ul li {
   width: 100%;
