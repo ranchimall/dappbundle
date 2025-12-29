@@ -11,6 +11,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap"
         rel="stylesheet">
+   
 </head>
 
 <body class="hidden">
@@ -170,7 +171,7 @@
         <div id="transaction_result_popup__content" class="grid gap-2"></div>
     </sm-popup>
     <script>
-        /* Constants for FLO blockchain operations !!Make sure to add this at beginning!! */
+        /* FLO blockchain configuration - These constants must be defined before loading FLO scripts */
         const floGlobals = {
             blockchain: "FLO",
             tokenURL: 'https://ranchimallflo.ranchimall.net/',
@@ -195,7 +196,7 @@
         const uiGlobals = {}
         const { html, svg, render: renderElem } = uhtml;
         uiGlobals.connectionErrorNotification = []
-        //Checks for internet connection status
+        // Check for internet connection status and show notification if offline
         if (!navigator.onLine)
             uiGlobals.connectionErrorNotification.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
         window.addEventListener('offline', () => {
@@ -207,12 +208,12 @@
             })
             notify('We are back online.', 'success')
         })
-        // Use instead of document.getElementById
+        // Helper function to get element by ID (shorthand for document.getElementById)
         function getRef(elementId) {
             return document.getElementById(elementId)
         }
         let zIndex = 50
-        // function required for popups or modals to appear
+        // Opens a popup/modal and manages the popup stack for proper layering
         function openPopup(popupId, pinned) {
             if (popupStack.peek() === undefined) {
                 document.addEventListener('keydown', (e) => {
@@ -243,7 +244,7 @@
             switch (e.target.id) {
             }
         })
-        //Function for displaying toast notifications. pass in error for mode param if you want to show an error.
+        // Display toast notifications. Pass 'error' or 'success' as mode parameter
         function notify(message, mode, options = {}) {
             let icon
             switch (mode) {
@@ -258,7 +259,20 @@
             if (mode === 'error') {
                 console.error(message)
             }
-            return getRef("notification_drawer").push(message, { icon, ...options });
+            
+            // Ensure notification drawer element exists and is fully initialized
+            const notificationDrawer = getRef("notification_drawer");
+            if (!notificationDrawer || typeof notificationDrawer.push !== 'function') {
+                console.warn('Notification drawer not ready, logging message:', message);
+                // Queue the notification to show later when drawer is ready
+                if (!window._pendingNotifications) {
+                    window._pendingNotifications = [];
+                }
+                window._pendingNotifications.push({ message, mode, options, icon });
+                return null;
+            }
+            
+            return notificationDrawer.push(message, { icon, ...options });
         }
         // displays a popup for asking permission. Use this instead of JS confirm
         /**
@@ -399,7 +413,7 @@
                     this.routingStart(this.state)
                 }
                 if (this.routes[page]) {
-                    //Actual routing step
+                    // Execute the route handler for the current page
                     await this.routes[page](this.state)
                     this.lastPage = page
                 } else {
@@ -549,27 +563,27 @@
 
         }
       
-        // put this once near the top with your other globals
+        // Initialize IndexedDB for storing contact addresses
         let idbReady;
 
         window.addEventListener('load', () => {
-          // 1) Initialize IndexedDB BEFORE any routing/reads
+          // Initialize the database before any routing or data reads
           idbReady = compactIDB.initDB('floEthereum', { contacts: {} })
             .then((res) => { console.log(res); })
             .catch((err) => { console.error(err); });
 
-          // 2) After DB is ready, wire listeners and route once
+          // Set up event listeners and routing after database is ready
           idbReady.then(() => {
             const routeNow = () => router.routeTo(location.hash);
 
-            // Utility/UI listeners
+            // Set up UI event listeners for copy notifications and ripple effects
             document.addEventListener('copy', () => notify('copied', 'success'));
             document.addEventListener('pointerdown', (e) => {
               const target = e.target.closest('button:not(:disabled), .interactive:not(:disabled)');
               if (target) createRipple(e, target);
             });
 
-            // Ethereum / MetaMask
+            // Handle Ethereum provider and MetaMask connection
             if (window.ethereum) {
               window.ethereum.on('chainChanged', (chainId) => {
                 window.currentChainId = chainId;
@@ -594,7 +608,7 @@
                   routeNow();
                 });
 
-              // Account status hooks (kept exactly like your current code)
+              // Listen for MetaMask account changes
               ethereum.on('accountsChanged', (accounts) => {
                 getRef('eth_balance_wrapper').classList.add('hidden');
                 setMetaMaskStatus(accounts.length > 0);
@@ -606,7 +620,7 @@
                 setMetaMaskStatus(false);
               });
             } else {
-              // no ethereum provider—just route
+              // No MetaMask detected, proceed with normal routing
               routeNow();
             }
 
@@ -614,6 +628,19 @@
             document.body.classList.remove('hidden');
           });
         });
+
+        // Process pending notifications after a delay to ensure custom elements are ready
+        setTimeout(() => {
+          if (window._pendingNotifications && window._pendingNotifications.length > 0) {
+            const notificationDrawer = getRef("notification_drawer");
+            if (notificationDrawer && typeof notificationDrawer.push === 'function') {
+              window._pendingNotifications.forEach(({ message, icon, options }) => {
+                notificationDrawer.push(message, { icon, ...options });
+              });
+              window._pendingNotifications = [];
+            }
+          }
+        }, 1000); // Give custom elements time to fully initialize
 
         
         router.addRoute('404', () => {
@@ -638,8 +665,8 @@
                     </h2>
                     <sm-form oninvalid="handleInvalidSearch()">
                         <div id="input_wrapper">
-                            <sm-input id="check_balance_input" class="password-field flex-1" placeholder="FLO/BTC private key or Eth address"
-                                type="password" animate required>
+                            <sm-input id="check_balance_input" class="password-field flex-1" placeholder="Address, private key, or tx hash"
+                                type="password" animate>
                                 <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
                                 <label slot="right" class="interact">
                                     <input type="checkbox" class="hidden" autocomplete="off" readonly
@@ -649,8 +676,8 @@
                                 </label>
                             </sm-input>
                             <div class="multi-state-button">
-                                <button id="check_balance_button" class="button button--primary h-100 w-100" type="submit" onclick=${() => checkBalance()} disabled>
-                                    Check balance
+                                <button id="check_balance_button" class="button button--primary h-100 w-100" type="submit" onclick=${() => checkBalance()}>
+                                    Search
                                 </button>
                             </div>
                         </div>
@@ -662,6 +689,12 @@
                 renderError('Please switch MetaMask to Ethereum Mainnet')
             }
             renderSearchedAddressList()
+            
+            // Handle URL parameters after page is rendered
+            // Use setTimeout to ensure DOM is fully ready
+            setTimeout(() => {
+                handleUrlParams();
+            }, 100);
         }
         function renderError(title, description) {
             if (!title)
@@ -727,88 +760,465 @@
                 console.error(error)
             })
         }
+        // Track current page and address for transaction pagination
+        let currentPage = 1;
+        let currentAddress = '';
+        let currentFloAddress = '';
+        let allTransactions = [];
+        const TRANSACTIONS_PER_PAGE = 10;
+
         function checkBalance(ethAddress, floAddress) {
             if (!ethAddress) {
                 let keyToConvert = document.querySelector('#check_balance_input').value.trim()
+                
+                // Check if input is empty
+                if (!keyToConvert) {
+                    notify('Please enter an Ethereum address, private key, or transaction hash', 'error');
+                    return;
+                }
+                
+                // Check if it's a valid Ethereum address
                 if (ethOperator.isValidAddress(keyToConvert)) {
                     ethAddress = keyToConvert
-                } else {
-                    if (/^[0-9a-fA-F]{64}$/.test(keyToConvert)) {
-                        keyToConvert = coinjs.privkey2wif(keyToConvert)
+                } 
+                // Check if it's a transaction hash (0x followed by 64 hex characters)
+                else if (/^0x[0-9a-fA-F]{64}$/.test(keyToConvert)) {
+                    viewTransactionDetails(keyToConvert);
+                    return;
+                }
+                // Otherwise, try to convert as private key
+                else {
+                    try {
+                        if (/^[0-9a-fA-F]{64}$/.test(keyToConvert)) {
+                            keyToConvert = coinjs.privkey2wif(keyToConvert)
+                        }
+                        const ethPrivateKey = coinjs.wif2privkey(keyToConvert).privkey;
+                        ethAddress = floEthereum.ethAddressFromPrivateKey(ethPrivateKey)
+                        floAddress = floCrypto.getFloID(keyToConvert)
+                    } catch (error) {
+                        notify('Invalid input. Please enter a valid Ethereum address or private key.', 'error');
+                        return;
                     }
-                    const ethPrivateKey = coinjs.wif2privkey(keyToConvert).privkey;
-                    ethAddress = floEthereum.ethAddressFromPrivateKey(ethPrivateKey)
-                    floAddress = floCrypto.getFloID(keyToConvert)
                 }
             }
             if (!ethAddress) return
-            buttonLoader('check_balance_button', true)
-            Promise.all([
-                ethOperator.getBalance(ethAddress),
-                ethOperator.getTokenBalance(ethAddress, 'usdc'),
-                ethOperator.getTokenBalance(ethAddress, 'usdt')
-            ])
-                .then(([etherBalance, usdcBalance, usdtBalance]) => {
-                    compactIDB.readData('contacts', floAddress || ethAddress).then(result => {
-                        if (result) return
-                        compactIDB.addData('contacts', {
-                            ethAddress,
-                        }, floAddress || ethAddress).then(() => {
-                            renderSearchedAddressList()
-                        }).catch((error) => {
-                            console.error(error)
-                        })
-                    })
-                    renderElem(getRef('eth_balance_wrapper'), html`
-                        <div class="grid">
-                            <div class="label">ETH address</div>
-                            <sm-copy id="eth_address" value=${ethAddress}></sm-copy>
-                        </div>
-                        ${floAddress && floAddress !== ethAddress ? html`
-                            <div class="grid">
-                                <div class="label">FLO address</div>
-                                <sm-copy id="flo_address" value=${floAddress}></sm-copy>
-                            </div>
-                        `: ''}
-                        <div class="grid gap-1">
-                            <h4>Balance</h4>
-                            <ul id="eth_address_balance" class="flex flex-direction-column gap-0-5">
-                                <li class="flex align-center space-between">
-                                    <p>Ether</p>
-                                    <b id="ether_balance">${etherBalance} ETH</b>
-                                </li>
-                                <li class="flex align-center space-between">
-                                    <p>USDC</p>
-                                    <b id="usdc_balance">${usdcBalance} USDC</b>
-                                </li>
-                                <li class="flex align-center space-between">
-                                    <p>USDT</p>
-                                    <b id="usdt_balance">${usdtBalance} USDT</b>
-                                </li>
-                            </ul>
-                        </div>
-                    `)
-                    getRef('eth_balance_wrapper').classList.remove('hidden')
-                    getRef('eth_balance_wrapper').animate([
-                        {
-                            transform: 'translateY(-1rem)',
-                            opacity: 0
-                        },
-                        {
-                            transform: 'none',
-                            opacity: 1
-                        }
-                    ], {
-                        easing: 'ease',
-                        duration: 300,
-                        fill: 'forwards'
-                    })
-                }).catch((error) => {
-                    notify(error, 'error')
-                }).finally(() => {
-                    buttonLoader('check_balance_button', false)
-                })
+            
+            // Reset pagination when checking new address
+            currentPage = 1;
+            currentAddress = ethAddress;
+            currentFloAddress = floAddress;
+            
+            loadTransactionsPage(ethAddress, floAddress, currentPage);
         }
+
+        async function loadTransactionsPage(ethAddress, floAddress, page) {
+            buttonLoader('check_balance_button', true);
+            
+            try {
+                const results = await Promise.allSettled([
+                    ethOperator.getBalance(ethAddress),
+                    ethOperator.getTokenBalance(ethAddress, 'usdc'),
+                    ethOperator.getTokenBalance(ethAddress, 'usdt'),
+                    ethOperator.getTransactionHistory(ethAddress, { 
+                        page: page,
+                        offset: TRANSACTIONS_PER_PAGE,
+                        sort: 'desc'
+                    })
+                ]);
+
+                // Extract balance and transaction data, using defaults if any request failed
+                const etherBalance = results[0].status === 'fulfilled' ? results[0].value : '0';
+                const usdcBalance = results[1].status === 'fulfilled' ? results[1].value : '0';
+                const usdtBalance = results[2].status === 'fulfilled' ? results[2].value : '0';
+                const transactions = results[3].status === 'fulfilled' ? results[3].value : [];
+
+                // Store transactions for filtering
+                allTransactions = transactions;
+
+                // Log warnings if any API requests failed
+                if (results[0].status === 'rejected') {
+                    console.warn('Failed to fetch ETH balance:', results[0].reason);
+                }
+                if (results[1].status === 'rejected') {
+                    console.warn('Failed to fetch USDC balance:', results[1].reason);
+                }
+                if (results[2].status === 'rejected') {
+                    console.warn('Failed to fetch USDT balance:', results[2].reason);
+                }
+                if (results[3].status === 'rejected') {
+                    console.warn('Failed to fetch transaction history:', results[3].reason);
+                }
+
+                compactIDB.readData('contacts', floAddress || ethAddress).then(result => {
+                    if (result) return
+                    compactIDB.addData('contacts', {
+                        ethAddress,
+                    }, floAddress || ethAddress).then(() => {
+                        renderSearchedAddressList()
+                    }).catch((error) => {
+                        console.error(error)
+                    })
+                })
+                
+                renderBalanceAndTransactions(ethAddress, floAddress, etherBalance, usdcBalance, usdtBalance, transactions, page);
+                
+            } catch (error) {
+                notify(error.message || error, 'error');
+            } finally {
+                buttonLoader('check_balance_button', false);
+            }
+        }
+
+        function renderBalanceAndTransactions(ethAddress, floAddress, etherBalance, usdcBalance, usdtBalance, transactions, page) {
+            // Update URL to reflect the current address being viewed
+            const url = new URL(window.location);
+            url.searchParams.set('address', ethAddress);
+            url.searchParams.delete('tx');
+            url.searchParams.delete('page');
+            // Update browser URL without reloading the page
+            window.history.pushState({}, '', url.pathname + url.search + url.hash);
+            
+            // Determine if pagination buttons should be enabled
+            const hasNextPage = transactions.length >= TRANSACTIONS_PER_PAGE;
+            const hasPrevPage = page > 1;
+
+            renderElem(getRef('eth_balance_wrapper'), html`
+                <div class="grid">
+                    <div class="label">ETH address</div>
+                    <sm-copy id="eth_address" value=${ethAddress}></sm-copy>
+                </div>
+                ${floAddress && floAddress !== ethAddress ? html`
+                    <div class="grid">
+                        <div class="label">FLO address</div>
+                        <sm-copy id="flo_address" value=${floAddress}></sm-copy>
+                    </div>
+                `: ''}
+                <div class="grid gap-1">
+                    <h4>Balance</h4>
+                    <ul id="eth_address_balance" class="flex flex-direction-column gap-0-5">
+                        <li class="flex align-center space-between">
+                            <p>Ether</p>
+                            <b id="ether_balance">${etherBalance} ETH</b>
+                        </li>
+                        <li class="flex align-center space-between">
+                            <p>USDC</p>
+                            <b id="usdc_balance">${usdcBalance} USDC</b>
+                        </li>
+                        <li class="flex align-center space-between">
+                            <p>USDT</p>
+                            <b id="usdt_balance">${usdtBalance} USDT</b>
+                        </li>
+                    </ul>
+                </div>
+                <div class="grid gap-1 margin-top-1">
+                    <div class="flex align-center space-between">
+                        <h4>Transactions</h4>
+                        <sm-chips id="tx_filter_chips" onchange=${(e) => {
+                            const selectedValue = e.detail?.value || e.target.value || 'all';
+                            filterTransactions(selectedValue, transactions, ethAddress);
+                        }}>
+                            <sm-chip value="all" selected>All</sm-chip>
+                            <sm-chip value="sent">Sent</sm-chip>
+                            <sm-chip value="received">Received</sm-chip>
+                        </sm-chips>
+                    </div>
+                    <ul id="transaction_list" class="grid gap-0-5">
+                        ${renderTransactionList(transactions, ethAddress, 'all')}
+                    </ul>
+                    <div class="flex align-center space-between gap-1 margin-top-1">
+                        <button 
+                            class="button button--small" 
+                            onclick=${() => loadPreviousPage()}
+                            ?disabled=${!hasPrevPage}
+                        >
+                             Previous
+                        </button>
+                        <span class="color-0-7">Page ${page}</span>
+                        <button 
+                            class="button button--small" 
+                            onclick=${() => loadNextPage()}
+                            ?disabled=${!hasNextPage}
+                        >
+                            Next 
+                        </button>
+                    </div>
+                </div>
+            `);
+            
+            getRef('eth_balance_wrapper').classList.remove('hidden');
+            getRef('eth_balance_wrapper').animate([
+                {
+                    transform: 'translateY(-1rem)',
+                    opacity: 0
+                },
+                {
+                    transform: 'none',
+                    opacity: 1
+                }
+            ], {
+                easing: 'ease',
+                duration: 300,
+                fill: 'forwards'
+            });
+        }
+
+        function loadNextPage() {
+            currentPage++;
+            loadTransactionsPage(currentAddress, currentFloAddress, currentPage);
+        }
+
+        function loadPreviousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadTransactionsPage(currentAddress, currentFloAddress, currentPage);
+            }
+        }
+
+        function renderTransactionList(transactions, userAddress, filter = 'all') {
+            if (!transactions || transactions.length === 0) {
+                return html`<li class="text-center color-0-8"><p>No transactions found</p></li>`;
+            }
+
+            let filteredTxs = transactions;
+            if (filter === 'sent') {
+                filteredTxs = transactions.filter(tx => tx.isSent);
+            } else if (filter === 'received') {
+                filteredTxs = transactions.filter(tx => tx.isReceived);
+            }
+
+            if (filteredTxs.length === 0) {
+                return html`<li class="text-center color-0-8"><p>No ${filter} transactions found</p></li>`;
+            }
+
+            return filteredTxs.map(tx => {
+                const date = new Date(tx.timestamp * 1000);
+                const formattedDate = date.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const isReceived = tx.isReceived;
+                const type = isReceived ? 'in' : 'out';
+                const amountClass = isReceived ? 'tx-received' : 'tx-sent';
+                const amountPrefix = isReceived ? '+' : '-';
+                const displayAddress = isReceived ? tx.from : tx.to;
+                const directionText = isReceived ? 'Received from' : 'Sent to';
+                
+                // Arrow icons matching BTC wallet
+                const icon = isReceived 
+                    ? svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`
+                    : svg`<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
+
+                const className = `transaction grid ${type}`;
+
+                return html`
+                    <li class=${className}>
+                        <div class="transaction__icon">${icon}</div>
+                        <div class="grid gap-0-5">
+                            <div class="flex gap-1">
+                                <time class="transaction__time">${formattedDate}</time>
+                                <div class="transaction__amount">${amountPrefix}${tx.value.toFixed(8)} ${tx.symbol}</div>
+                            </div>
+                            <div class="transaction__receiver">
+                                ${directionText} <a href="#" class="tx-participant wrap-around">${displayAddress}</a>
+                            </div>
+                            <div class="flex gap-0-5 flex-wrap align-center">
+                                <button class="button button--small gap-0-3 align-center button--colored transaction__id" onclick=${() => viewTransactionDetails(tx.hash)}>
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                                    View details
+                                </button>
+                            </div>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        function filterTransactions(filter, transactions, userAddress) {
+            const txList = getRef('transaction_list');
+            if (txList) {
+                const renderedList = renderTransactionList(transactions, userAddress, filter);
+                renderElem(txList, html`${renderedList}`);
+            }
+        }
+
+        async function viewTransactionDetails(txHash, preserveAddress = false) {
+            try {
+                buttonLoader('check_balance_button', true);
+                
+                // Update URL to show the transaction hash
+                const url = new URL(window.location);
+                url.searchParams.set('tx', txHash);
+                url.searchParams.delete('page');
+                
+                // Remove address from URL unless viewing from transaction history
+                if (!preserveAddress) {
+                    url.searchParams.delete('address');
+                }
+                
+                // Update browser URL without reloading the page
+                window.history.pushState({}, '', url.pathname + url.search + url.hash);
+                
+                const txDetails = await ethOperator.getTransactionDetails(txHash);
+                
+                let formattedDate = 'Pending';
+                if (txDetails.timestamp) {
+                    const date = new Date(txDetails.timestamp * 1000);
+                    formattedDate = date.toLocaleString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                }
+
+                const statusClass = txDetails.status === 'success' ? 'tx-success' : txDetails.status === 'pending' ? 'color-0-7' : 'tx-failed';
+                const statusText = txDetails.status === 'success' ? 'Success' : txDetails.status === 'pending' ? 'Pending' : 'Failed';
+
+                // Show transaction details
+                renderElem(getRef('eth_balance_wrapper'), html`
+                    <div class="grid gap-1">
+                        <div class="flex align-center space-between">
+                            <h3>Transaction Details</h3>
+                            <button class="button button--small" onclick=${() => {
+                                const url = new URL(window.location);
+                                url.searchParams.delete('tx');
+                                window.history.pushState({}, '', url.pathname + url.search + url.hash);
+                                
+                                // Go back to address view
+                                handleUrlParams();
+                            }}>
+                                Back
+                            </button>
+                        </div>
+                        
+                        <div class="grid gap-0-5">
+                            <div class="label">Status</div>
+                            <strong class=${statusClass}>${statusText}</strong>
+                        </div>
+
+                        <div class="grid gap-0-5">
+                            <div class="label">Transaction Hash</div>
+                            <sm-copy value=${txDetails.hash}></sm-copy>
+                        </div>
+
+                        <div class="grid gap-0-5">
+                            <div class="label">From</div>
+                            <sm-copy value=${txDetails.from}></sm-copy>
+                        </div>
+
+                        <div class="grid gap-0-5">
+                            <div class="label">To</div>
+                            <sm-copy value=${txDetails.to}></sm-copy>
+                        </div>
+
+                        ${txDetails.tokenTransfer ? html`
+                            <div class="grid gap-0-5">
+                                <div class="label">Token Transfer</div>
+                                <strong>${txDetails.tokenTransfer.value} ${txDetails.tokenTransfer.symbol}</strong>
+                            </div>
+                        ` : html`
+                            <div class="grid gap-0-5">
+                                <div class="label">Value</div>
+                                <strong>${txDetails.value} ETH</strong>
+                            </div>
+                        `}
+
+                        <div class="grid gap-0-5">
+                            <div class="label">Gas Fee</div>
+                            <strong>${txDetails.gasFee ? txDetails.gasFee.toFixed(8) : 'N/A'} ETH</strong>
+                        </div>
+
+                        <div class="grid gap-0-5">
+                            <div class="label">Block Number</div>
+                            <strong>${txDetails.blockNumber || 'Pending'}</strong>
+                        </div>
+
+                        <div class="grid gap-0-5">
+                            <div class="label">Confirmations</div>
+                            <strong>${txDetails.confirmations}</strong>
+                        </div>
+
+                        <div class="grid gap-0-5">
+                            <div class="label">Timestamp</div>
+                            <strong>${formattedDate}</strong>
+                        </div>
+
+                        <a class="button button--primary" target="_blank" href=${'https://etherscan.io/tx/' + txHash}>
+                            View on Etherscan
+                        </a>
+                    </div>
+                `);
+
+                getRef('eth_balance_wrapper').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error in viewTransactionDetails:', error);
+                notify(error.message || 'Failed to fetch transaction details', 'error');
+            } finally {
+                buttonLoader('check_balance_button', false);
+            }
+        }
+
+        // Function to handle URL parameters and load appropriate data
+        function handleUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Check for transaction hash parameter
+            const txHash = urlParams.get('tx');
+            if (txHash && /^0x[0-9a-fA-F]{64}$/.test(txHash)) {
+                // Populate input with tx hash
+                const searchInput = document.querySelector('#check_balance_input');
+                if (searchInput) {
+                    searchInput.value = txHash;
+                    const nativeInput = searchInput.querySelector('input');
+                    if (nativeInput) {
+                        nativeInput.value = txHash;
+                    }
+                }
+                // viewTransactionDetails handles its own loading state
+                viewTransactionDetails(txHash);
+                return;
+            }
+            
+            // Check for address parameter
+            const address = urlParams.get('address');
+            if (address && ethOperator.isValidAddress(address)) {
+                // Populate the input field - target both custom element and native input
+                const searchInput = document.querySelector('#check_balance_input');
+                const nativeInput = searchInput?.querySelector('input');
+                
+                if (nativeInput) {
+                    nativeInput.value = address;
+                    nativeInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                if (searchInput) {
+                    searchInput.value = address;
+                    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                
+                // Load the address (checkBalance handles its own loading state)
+                checkBalance(address);
+            } else {
+                // No parameters, hide the balance wrapper
+                const balanceWrapper = getRef('eth_balance_wrapper');
+                if (balanceWrapper) {
+                    balanceWrapper.classList.add('hidden');
+                }
+            }
+        }
+
+        // Handle browser back/forward navigation
+        window.addEventListener('popstate', () => {
+            // Check if we're on the balance page
+            if (window.location.hash.includes('balance') || window.location.hash === '#/' || window.location.hash === '') {
+                handleUrlParams();
+            }
+        });
         function handleInvalidSearch() {
             if (document.startViewTransition)
                 document.startViewTransition(() => {
@@ -861,7 +1271,7 @@
                             <div class="grid gap-0-5">
                                 <sm-input class="receiver-address" placeholder="Receiver's Ethereum address" data-eth-address animate required ></sm-input>
                                 <div class="flex flex-direction-column gap-0-5">
-                                    <sm-input class="receiver-amount amount-shown flex-1" placeholder="Amount" type="number" step="0.000001" min="0.000001" error-text="Amount should be grater than 0.000001 ETHER" animate required>
+                                    <sm-input class="receiver-amount amount-shown flex-1" placeholder="Amount" type="number" step="0.000001" min="0.000001" error-text="Amount should be greater than 0.000001 ETHER" animate required>
                                         <div class="asset-symbol flex" slot="icon">
                                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"> <g clip-path="url(#clip0_201_2)"> <path d="M12 0L19.6368 12.4368L12.1633 16.8L4.36325 12.4368L12 0Z"/> <path d="M12 24L4.36325 13.6099L11.8367 18L19.6368 13.6099L12 24Z"/> </g> <defs> <clipPath id="clip0_201_2"> <rect width="24" height="24" fill="white"/> </clipPath> </defs> </svg>
                                         </div>
@@ -932,7 +1342,7 @@
             const asset = e.target.value
             const amountInput = getRef('send_tx_form').querySelector('.receiver-amount')
             amountInput.value = ''
-            amountInput.setAttribute('error-text', `Amount should be grater than 0.000001 ${asset.toUpperCase()}`)
+            amountInput.setAttribute('error-text', `Amount should be greater than 0.000001 ${asset.toUpperCase()}`)
             document.querySelectorAll('.asset-symbol').forEach(elem => {
                 elem.innerHTML = assetIcons[asset]
             })
@@ -942,60 +1352,229 @@
             const receiver = getRef('send_tx_form').querySelector('.receiver-address').value.trim();
             const amount = getRef('send_tx_form').querySelector('.receiver-amount').value.trim();
             const asset = getRef('asset_selector').value;
+            
             try {
-                const confirmation = await getConfirmation('Send transaction', {
-                    message: `You are about to send ${amount} ${asset.toUpperCase()} to ${receiver}`,
-                    confirmText: 'Send',
-                })
-                buttonLoader('send_tx_button', true)
-                if (!confirmation) return
-                let privateKey = getRef('private_key_input').value.trim()
+                // First, get basic confirmation
+                const initialConfirmation = await getConfirmation('Confirm transaction', {
+                    message: `Calculating gas fees for sending ${amount} ${asset.toUpperCase()} to ${receiver}...`,
+                    confirmText: 'Continue',
+                });
+                
+                if (!initialConfirmation) return;
+                
+                // Show loading state while calculating gas
+                buttonLoader('send_tx_button', true);
+                
+                // Get private key
+                let privateKey = getRef('private_key_input').value.trim();
                 if (/^[0-9a-fA-F]{64}$/.test(privateKey)) {
-                    privateKey = coinjs.privkey2wif(privateKey)
+                    privateKey = coinjs.privkey2wif(privateKey);
                 }
                 privateKey = coinjs.wif2privkey(privateKey).privkey;
-                switch (asset) {
-                    case 'ether': {
-                        const tx = await ethOperator.sendTransaction({
+                
+                // Calculate gas fees
+                let gasEstimate, feeData, estimatedGasFee, maxGasFee, totalCostETH;
+                
+                try {
+                    // Get provider for gas estimation
+                    const provider = ethOperator.getProvider(true);
+                    
+                    if (!provider) throw new Error('Provider not available');
+                    
+                    // Get fee data
+                    feeData = await provider.getFeeData();
+                    
+                    // Estimate gas limit
+                    if (asset === 'ether') {
+                        gasEstimate = await ethOperator.estimateGas({
                             privateKey,
                             receiver,
-                            amount,
-                        })
-                        showTransactionResult('pending', { txHash: tx.hash })
-                        await tx.wait()
-                        showTransactionResult('confirmed', { txHash: tx.hash })
-                        break;
+                            amount
+                        });
+                    } else {
+                        // For token transfers, estimate is typically higher
+                        gasEstimate = ethers.BigNumber.from('65000'); // Typical ERC20 transfer gas
                     }
-                    case 'usdc':
-                    case 'usdt': {
-                        const tx = await ethOperator.sendToken({
-                            privateKey,
-                            receiver,
-                            amount,
-                            token: asset
-                        })
-                        showTransactionResult('pending', { txHash: tx.hash })
-                        await tx.wait()
-                        showTransactionResult('confirmed', { txHash: tx.hash })
-                        break;
+                    
+                    // Calculate priority fee and max fee
+                    const priorityFee = feeData.maxPriorityFeePerGas || ethers.utils.parseUnits("1.5", "gwei");
+                    let maxFee = feeData.maxFeePerGas;
+                    
+                    if (!maxFee || maxFee.lt(priorityFee)) {
+                        const block = await provider.getBlock("latest");
+                        const baseFee = block.baseFeePerGas || ethers.utils.parseUnits("1", "gwei");
+                        maxFee = baseFee.mul(2).add(priorityFee);
                     }
+                    
+                    const minMaxFee = priorityFee.mul(15).div(10);
+                    if (maxFee.lt(minMaxFee)) {
+                        maxFee = minMaxFee;
+                    }
+                    
+                    // Calculate estimated gas fee (using base fee + priority fee for estimation)
+                    const block = await provider.getBlock("latest");
+                    const baseFee = block.baseFeePerGas || ethers.utils.parseUnits("1", "gwei");
+                    const estimatedGasPrice = baseFee.add(priorityFee);
+                    estimatedGasFee = parseFloat(ethers.utils.formatEther(gasEstimate.mul(estimatedGasPrice)));
+                    
+                    // Calculate max possible gas fee
+                    maxGasFee = parseFloat(ethers.utils.formatEther(gasEstimate.mul(maxFee)));
+                    
+                    // Calculate total cost in ETH
+                    totalCostETH = asset === 'ether' ? (parseFloat(amount) + estimatedGasFee) : estimatedGasFee;
+                    
+                } catch (gasError) {
+                    console.error('Gas estimation error:', gasError);
+                    buttonLoader('send_tx_button', false);
+                    notify('Failed to estimate gas fees. Please try again.', 'error');
+                    return;
                 }
-                getRef('send_tx_form').reset()
-                getRef('sender_balance_container').classList.add('hidden')
+                
+                buttonLoader('send_tx_button', false);
+                
+                // Show detailed confirmation with gas fees
+                const gasConfirmationPopup = html.node`
+                    <sm-popup id="gas_confirmation_popup">
+                        <header slot="header" class="popup__header">
+                            <h4>Review Transaction</h4>
+                        </header>
+                        <div class="grid gap-1-5" style="padding: 1.5rem;">
+                            <div class="grid gap-1">
+                                <h5>Transaction Details</h5>
+                                <div class="grid gap-0-5" style="padding: 1rem; border-radius: 0.5rem; background: rgba(var(--text-color), 0.06);">
+                                    <div class="flex space-between">
+                                        <span class="label">Amount:</span>
+                                        <strong class="amount-shown">${amount} ${asset.toUpperCase()}</strong>
+                                    </div>
+                                    <div class="flex space-between">
+                                        <span class="label">To:</span>
+                                        <span style="font-family: monospace; font-size: 0.9rem;">${receiver.slice(0, 10)}...${receiver.slice(-8)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid gap-1">
+                                <h5>Gas Fee Estimate</h5>
+                                <div class="grid gap-0-5" style="padding: 1rem; border-radius: 0.5rem; background: rgba(var(--text-color), 0.06);">
+                                    <div class="flex space-between">
+                                        <span class="label">Estimated Gas:</span>
+                                        <strong class="amount-shown">${estimatedGasFee.toFixed(6)} ETH</strong>
+                                    </div>
+                                    <div class="flex space-between">
+                                        <span class="label">Max Gas Fee:</span>
+                                        <span class="amount-shown" style="color: rgba(var(--text-color), 0.7);">${maxGasFee.toFixed(6)} ETH</span>
+                                    </div>
+                                    <div class="flex space-between">
+                                        <span class="label">Gas Limit:</span>
+                                        <span>${gasEstimate.toString()}</span>
+                                    </div>
+                                    <hr style="border: none; border-top: 1px solid rgba(var(--text-color), 0.1); margin: 0.5rem 0;">
+                                    <div class="flex space-between">
+                                        <strong>Total Cost (Est.):</strong>
+                                        <strong class="amount-shown">${totalCostETH.toFixed(6)} ETH</strong>
+                                    </div>
+                                </div>
+                                <p style="font-size: 0.875rem; color: rgba(var(--text-color), 0.7);">
+                                    <svg class="icon" style="width: 16px; height: 16px; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                                    Gas fees vary based on network congestion. The actual fee may be lower than estimated.
+                                </p>
+                            </div>
+                            
+                            <div class="flex gap-0-5">
+                                <button class="button flex-1" onclick="closeGasConfirmation()">Cancel</button>
+                                <button class="button button--primary flex-1" onclick="confirmAndSend()">Confirm & Send</button>
+                            </div>
+                        </div>
+                    </sm-popup>
+                `;
+                
+                document.body.appendChild(gasConfirmationPopup);
+                
+                // Store transaction data for confirmation
+                window.pendingTxData = {
+                    receiver,
+                    amount,
+                    asset,
+                    privateKey
+                };
+                
+                // Define close function
+                window.closeGasConfirmation = () => {
+                    closePopup();
+                    setTimeout(() => {
+                        gasConfirmationPopup.remove();
+                        delete window.pendingTxData;
+                        delete window.closeGasConfirmation;
+                        delete window.confirmAndSend;
+                    }, 300);
+                };
+                
+                // Define confirm and send function
+                window.confirmAndSend = async () => {
+                    closePopup();
+                    gasConfirmationPopup.remove();
+                    
+                    const { receiver, amount, asset, privateKey } = window.pendingTxData;
+                    delete window.pendingTxData;
+                    delete window.closeGasConfirmation;
+                    delete window.confirmAndSend;
+                    
+                    buttonLoader('send_tx_button', true);
+                    
+                    try {
+                        switch (asset) {
+                            case 'ether': {
+                                const tx = await ethOperator.sendTransaction({
+                                    privateKey,
+                                    receiver,
+                                    amount,
+                                });
+                                showTransactionResult('pending', { txHash: tx.hash });
+                                await tx.wait();
+                                showTransactionResult('confirmed', { txHash: tx.hash });
+                                break;
+                            }
+                            case 'usdc':
+                            case 'usdt': {
+                                const tx = await ethOperator.sendToken({
+                                    privateKey,
+                                    receiver,
+                                    amount,
+                                    token: asset
+                                });
+                                showTransactionResult('pending', { txHash: tx.hash });
+                                await tx.wait();
+                                showTransactionResult('confirmed', { txHash: tx.hash });
+                                break;
+                            }
+                        }
+                        getRef('send_tx_form').reset();
+                        getRef('sender_balance_container').classList.add('hidden');
+                    } catch (e) {
+                        console.error(e.message);
+                        const regex = /\(error=({.*?}),/;
+                        const match = e.message.match(regex);
+                        if (match && match[1]) {
+                            const { code } = JSON.parse(match[1]);
+                            if (code === -32000)
+                                showTransactionResult('failed', { description: `Insufficient ${asset.toUpperCase()} balance` });
+                            else {
+                                showTransactionResult('failed', { description: e.message });
+                            }
+                        } else {
+                            showTransactionResult('failed', { description: e.message });
+                        }
+                    } finally {
+                        buttonLoader('send_tx_button', false);
+                    }
+                };
+                
+                openPopup('gas_confirmation_popup');
+                
             } catch (e) {
-                console.error(e.message)
-                const regex = /\(error=({.*?}),/;
-                const match = e.message.match(regex);
-                if (match && match[1]) {
-                    const { code } = JSON.parse(match[1]);
-                    if (code === -32000)
-                        showTransactionResult('failed', { description: `Insufficient ${asset.toUpperCase()} balance` })
-                    else {
-                        showTransactionResult('failed', { description: e.message })
-                    }
-                }
-            } finally {
-                buttonLoader('send_tx_button', false)
+                console.error(e);
+                notify(e.message || 'Transaction failed', 'error');
+                buttonLoader('send_tx_button', false);
             }
         }
         //Show transaction phase

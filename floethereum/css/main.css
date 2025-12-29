@@ -895,6 +895,7 @@ main {
   margin: 0 auto;
 }
 
+
 aside {
   view-transition-name: search-history;
   padding-bottom: 1.5rem;
@@ -956,6 +957,101 @@ aside h4 {
 #eth_balance_wrapper li:not(:last-of-type) {
   border-bottom: solid thin rgba(var(--text-color), 0.3);
   padding-bottom: 0.5rem;
+}
+
+/* Transaction list styling matching BTC wallet */
+.transaction {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.8rem;
+  padding: 1rem;
+  border-bottom: solid thin rgba(var(--text-color), 0.1);
+}
+
+.transaction:last-child {
+  border-bottom: none;
+}
+
+.transaction__icon {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 0.2rem;
+}
+
+.transaction__icon .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: rgba(var(--text-color), 0.7);
+}
+
+.transaction.in .icon {
+  fill: var(--green);
+}
+
+.transaction.out .icon.sent {
+  fill: var(--danger-color);
+}
+
+.transaction__time {
+  font-size: 0.85rem;
+  color: rgba(var(--text-color), 0.7);
+}
+
+.transaction__amount {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.transaction.in .transaction__amount {
+  color: var(--green);
+}
+
+.transaction.out .transaction__amount {
+  color: var(--danger-color);
+}
+
+.transaction__receiver {
+  font-size: 0.9rem;
+  color: rgba(var(--text-color), 0.9);
+  word-break: break-all;
+}
+
+.tx-participant {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.tx-participant:hover {
+  text-decoration: underline;
+}
+
+.wrap-around {
+  word-break: break-all;
+}
+
+.transaction__id {
+  display: inline-flex;
+  align-items: center;
+}
+
+.transaction__id .icon {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+
+#transaction_list {
+  max-height: 500px;
+  overflow-y: auto;
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+#transaction_list::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }
 
 #error_section {
@@ -1178,4 +1274,18 @@ aside h4 {
     -webkit-animation: none !important;
             animation: none !important;
   }
+}
+.transaction__time {
+   font-size: 0.75rem;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   flex-shrink: 1;
+   min-width: 0;
+}
+.transaction__amount {
+   font-size: 0.75rem;
+   margin-left: auto;
+   white-space: nowrap;
+   flex-shrink: 0;
 }
