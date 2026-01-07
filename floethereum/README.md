@@ -1,1 +1,1 @@
-# Check your USDC and USDT balance on Ethereum mainnet with you FLO/BTC private key (WIF)
+# Check balance and send USDC and USDT on Ethereum mainnet with your FLO/BTC private key (WIF)
