@@ -1,0 +1,3288 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ton Wallet</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <script src="lib.toncoin.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tweetnacl/1.0.3/nacl.min.js"></script>
+    <script src="https://unpkg.com/tonweb/dist/tonweb.js"></script>
+    <script src="tonCrypto.js"></script>
+    <script src="tonBlockchainAPI.js"></script>
+    <script src="tonSearchDB.js"></script>
+  </head>
+  <body>
+    <!-- Confirmation Popup -->
+    <div id="confirmationPopup" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="confirmTitle">Confirm Transaction</h3>
+          <span class="modal-close" onclick="closeConfirmationPopup()"
+            >&times;</span
+          >
+        </div>
+        <div class="modal-body">
+          <div class="confirm-details">
+            <div class="detail-group">
+              <label><i class="fas fa-coins"></i> Amount:</label>
+              <div id="confirmAmount" class="confirm-value"></div>
+            </div>
+            <div class="detail-group">
+              <label><i class="fas fa-wallet"></i> From:</label>
+              <div id="confirmFrom" class="confirm-value address-value"></div>
+            </div>
+            <div class="detail-group">
+              <label><i class="fas fa-user"></i> To:</label>
+              <div id="confirmTo" class="confirm-value address-value"></div>
+            </div>
+            <div class="detail-group">
+              <label><i class="fas fa-money-bill-wave"></i> Fee:</label>
+              <div class="confirm-value">~0.01 TON (Network Fee)</div>
+            </div>
+            <div class="detail-group warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              <div>
+                Please verify all details carefully. Cryptocurrency transactions
+                cannot be reversed once confirmed.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeConfirmationPopup()">
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirmSendBtn">
+            Confirm & Send
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <header class="header">
+      <div class="header-content">
+        <div id="logo" class="app-brand">
+          <svg id="main_logo" class="icon" viewBox="0 0 27.25 32">
+            <title>RanchiMall</title>
+            <path
+              d="M27.14,30.86c-.74-2.48-3-4.36-8.25-6.94a20,20,0,0,1-4.2-2.49,6,6,0,0,1-1.25-1.67,4,4,0,0,1,0-2.26c.37-1.08.79-1.57,3.89-4.55a11.66,11.66,0,0,0,3.34-4.67,6.54,6.54,0,0,0,.05-2.82C20,3.6,18.58,2,16.16.49c-.89-.56-1.29-.64-1.3-.24a3,3,0,0,1-.3.72l-.3.55L13.42.94C13,.62,12.4.26,12.19.15c-.4-.2-.73-.18-.72.05a9.39,9.39,0,0,1-.61,1.33s-.14,0-.27-.13C8.76.09,8-.27,8,.23A11.73,11.73,0,0,1,6.76,2.6C4.81,5.87,2.83,7.49.77,7.49c-.89,0-.88,0-.61,1,.22.85.33.92,1.09.69A5.29,5.29,0,0,0,3,8.33c.23-.17.45-.29.49-.26a2,2,0,0,1,.22.63A1.31,1.31,0,0,0,4,9.34a5.62,5.62,0,0,0,2.27-.87L7,8l.13.55c.19.74.32.82,1,.65a7.06,7.06,0,0,0,3.46-2.47l.6-.71-.06.64c-.17,1.63-1.3,3.42-3.39,5.42L6.73,14c-3.21,3.06-3,5.59.6,8a46.77,46.77,0,0,0,4.6,2.41c.28.13,1,.52,1.59.87,3.31,2,4.95,3.92,4.95,5.93a2.49,2.49,0,0,0,.07.77h0c.09.09,0,.1.9-.14a2.61,2.61,0,0,0,.83-.32,3.69,3.69,0,0,0-.55-1.83A11.14,11.14,0,0,0,17,26.81a35.7,35.7,0,0,0-5.1-2.91C9.37,22.64,8.38,22,7.52,21.17a3.53,3.53,0,0,1-1.18-2.48c0-1.38.71-2.58,2.5-4.23,2.84-2.6,3.92-3.91,4.67-5.65a3.64,3.64,0,0,0,.42-2A3.37,3.37,0,0,0,13.61,5l-.32-.74.29-.48c.17-.27.37-.63.46-.8l.15-.3.44.64a5.92,5.92,0,0,1,1,2.81,5.86,5.86,0,0,1-.42,1.94c0,.12-.12.3-.15.4a9.49,9.49,0,0,1-.67,1.1,28,28,0,0,1-4,4.29C8.62,15.49,8.05,16.44,8,17.78a3.28,3.28,0,0,0,1.11,2.76c.95,1,2.07,1.74,5.25,3.32,3.64,1.82,5.22,2.9,6.41,4.38A4.78,4.78,0,0,1,21.94,31a3.21,3.21,0,0,0,.14.92,1.06,1.06,0,0,0,.43-.05l.83-.22.46-.12-.06-.46c-.21-1.53-1.62-3.25-3.94-4.8a37.57,37.57,0,0,0-5.22-2.82A13.36,13.36,0,0,1,11,21.19a3.36,3.36,0,0,1-.8-4.19c.41-.85.83-1.31,3.77-4.15,2.39-2.31,3.43-4.13,3.43-6a5.85,5.85,0,0,0-2.08-4.29c-.23-.21-.44-.43-.65-.65A2.5,2.5,0,0,1,15.27.69a10.6,10.6,0,0,1,2.91,2.78A4.16,4.16,0,0,1,19,6.16a4.91,4.91,0,0,1-.87,3c-.71,1.22-1.26,1.82-4.27,4.67a9.47,9.47,0,0,0-2.07,2.6,2.76,2.76,0,0,0-.33,1.54,2.76,2.76,0,0,0,.29,1.47c.57,1.21,2.23,2.55,4.65,3.73a32.41,32.41,0,0,1,5.82,3.24c2.16,1.6,3.2,3.16,3.2,4.8a1.94,1.94,0,0,0,.09.76,4.54,4.54,0,0,0,1.66-.4C27.29,31.42,27.29,31.37,27.14,30.86ZM6.1,7h0a3.77,3.77,0,0,1-1.46.45L4,7.51l.68-.83a25.09,25.09,0,0,0,3-4.82A12,12,0,0,1,8.28.76c.11-.12.77.32,1.53,1l.63.58-.57.84A10.34,10.34,0,0,1,6.1,7Zm5.71-1.78A9.77,9.77,0,0,1,9.24,7.18h0a5.25,5.25,0,0,1-1.17.28l-.58,0,.65-.78a21.29,21.29,0,0,0,2.1-3.12c.22-.41.42-.76.44-.79s.5.43.9,1.24L12,5ZM13.41,3a2.84,2.84,0,0,1-.45.64,11,11,0,0,1-.9-.91l-.84-.9.19-.45c.34-.79.39-.8,1-.31A9.4,9.4,0,0,1,13.8,2.33q-.18.34-.39.69Z"
+            />
+          </svg>
+          <div class="app-name">
+            <div class="app-name__company">RanchiMall</div>
+            <h4 class="app-name__title">Ton Wallet</h4>
+          </div>
+        </div>
+
+        <!-- Header Actions -->
+        <div class="header-actions">
+          <!-- Theme Toggle Button -->
+          <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+            <i class="fas fa-moon" id="themeIcon"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="container">
+      <!-- Sidebar Navigation -->
+      <nav class="sidebar" id="sidebar">
+        <ul class="sidebar-menu">
+          <li>
+            <a href="#" class="nav-link active" data-page="generate">
+              <i class="fas fa-wallet"></i>
+              Generate
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-page="send">
+              <i class="fas fa-paper-plane"></i>
+              Send
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-page="transactions">
+              <i class="fas fa-exchange-alt"></i>
+              Transactions
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-page="recover">
+              <i class="fas fa-sync-alt"></i>
+              Recover
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Generate Page -->
+        <div id="generatePage" class="page">
+          <div class="page-header">
+            <h2>
+              <i class="fas fa-wallet"></i> Generate Multi-Blockchain Addresses
+            </h2>
+            <p>
+              Generate addresses for TON, FLO, BTC from a single private key
+            </p>
+          </div>
+
+          <!-- Generate Wallet Intro -->
+          <div class="generate-wallet-intro">
+            <div class="intro-icon">
+              <i class="fas fa-wallet"></i>
+            </div>
+            <div class="intro-content">
+              <h3>One Key, Multiple Blockchains</h3>
+              <p>
+                Generate a single private key that works across TON, FLO, BTC
+                networks. This creates a unified experience across multiple
+                blockchains.
+              </p>
+            </div>
+          </div>
+
+          <!-- Generate Actions -->
+          <div class="card generate-actions">
+            <button
+              class="btn btn-primary btn-block"
+              onclick="generateWallet()"
+            >
+              <i class="fas fa-wallet"></i>
+              Generate
+            </button>
+          </div>
+
+          <!-- Output Container -->
+          <div id="generateOutput" class="output"></div>
+
+          <!-- Wallet Security Notice -->
+          <div class="wallet-security-notice">
+            <div class="notice-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="notice-content">
+              <h4>Security Notice</h4>
+              <p>
+                Your private keys are generated locally and never leave your
+                device. Make sure to backup your keys securely before using.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Send Page -->
+        <div id="sendPage" class="page hidden">
+          <div class="page-header">
+            <h2><i class="fas fa-paper-plane"></i> Send Transaction</h2>
+            <p>Send TON to another address</p>
+          </div>
+
+          <div class="card">
+            <form id="sendForm">
+              <div class="form-group">
+                <label for="privateKey"
+                  ><i class="fas fa-key"></i> Private Key (TON/FLO/BTC)</label
+                >
+                <div class="input-with-actions">
+                  <input
+                    type="password"
+                    id="privateKey"
+                    class="form-input"
+                    placeholder="Enter TON/FLO/BTC private key"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn password-toggle"
+                    onclick="togglePasswordVisibility('privateKey')"
+                    title="Show/Hide Password"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('privateKey')"
+                    title="Clear"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Balance Display for Sender -->
+              <div
+                id="senderBalanceDisplay"
+                class="balance-info card"
+                style="display: none; margin-bottom: 1.5rem"
+              >
+                <div class="balance-header">
+                  <h3><i class="fas fa-wallet"></i> Sender Balance</h3>
+                </div>
+                <div class="balance-display">
+                  <div class="balance-amount" id="senderTonBalance">
+                    0 <span class="currency">TON</span>
+                  </div>
+                </div>
+                <div
+                  class="address-display"
+                  style="display: block; margin-top: 0.5rem"
+                >
+                  <span class="address-label">Address:</span>
+                  <span class="address-value" id="senderAddress">-</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="recipientAddress"
+                  ><i class="fas fa-user"></i> To Address</label
+                >
+                <div class="input-with-actions">
+                  <input
+                    type="text"
+                    id="recipientAddress"
+                    class="form-input"
+                    placeholder="Enter recipient address"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('recipientAddress')"
+                    title="Clear"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="sendAmount"
+                  ><i class="fas fa-coins"></i> Amount (TON)</label
+                >
+                <div class="input-with-actions">
+                  <input
+                    type="number"
+                    id="sendAmount"
+                    class="form-input"
+                    placeholder="Enter the amount to send"
+                    min="0.0001"
+                    step="0.0000000001"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('sendAmount')"
+                    title="Clear"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block">
+                <i class="fas fa-paper-plane"></i>
+                Send Transaction
+              </button>
+            </form>
+          </div>
+
+          <!-- Send Output -->
+          <div id="sendOutput" class="output"></div>
+        </div>
+
+        <!-- Transactions Page -->
+        <div id="transactionsPage" class="page hidden">
+          <div class="page-header">
+            <h2><i class="fas fa-exchange-alt"></i> Ton Transactions</h2>
+            <p>Check balance and transaction history for any Ton address</p>
+          </div>
+
+          <div class="card">
+            <!-- Search Type Selector -->
+            <div class="search-type-selector">
+              <div class="search-type-label">Search Type</div>
+              <div class="search-type-options">
+                <label
+                  class="radio-button-container active"
+                  id="addressSearchType"
+                >
+                  <input
+                    type="radio"
+                    name="searchType"
+                    value="address"
+                    checked
+                  />
+                  <div class="radio-icon">
+                    <i class="fas fa-wallet"></i>
+                  </div>
+                  <span>TON Address</span>
+                </label>
+                <label class="radio-button-container" id="hashSearchType">
+                  <input type="radio" name="searchType" value="hash" />
+                  <div class="radio-icon">
+                    <i class="fas fa-fingerprint"></i>
+                  </div>
+                  <span>Transaction Hash</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="transactionInput" id="inputLabel"
+                >TON Address or Private Key</label
+              >
+              <div class="input-with-actions">
+                <input
+                  type="text"
+                  id="transactionInput"
+                  class="form-input"
+                  placeholder="Enter TON address or private key (TON/FLO/BTC)"
+                />
+                <button
+                  type="button"
+                  class="input-action-btn clear-btn"
+                  onclick="clearInput('transactionInput')"
+                  title="Clear"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="form-text" id="inputHelp">
+                Enter a TON address to view transactions, or use TON/FLO/BTC
+                private key to derive address
+              </div>
+            </div>
+
+            <button
+              class="btn btn-primary btn-block"
+              onclick="handleSearch()"
+              id="searchButton"
+            >
+              <i class="fas fa-search"></i>
+              Search
+            </button>
+          </div>
+
+          <!-- Balance Display -->
+          <div
+            id="transactionBalance"
+            class="balance-info card"
+            style="display: none"
+          >
+            <div class="balance-header">
+              <h3><i class="fas fa-wallet"></i> Balance</h3>
+              <div class="balance-actions">
+                <button
+                  id="shareAddressBtn"
+                  class="btn-icon share-btn"
+                  onclick="shareAddress()"
+                  title="Share Address Link"
+                  style="display: none"
+                >
+                  <i class="fas fa-share-alt"></i>
+                </button>
+                <div class="toggle-container">
+                  <button
+                    class="toggle-btn active"
+                    data-currency="TON"
+                    onclick="toggleTransactionBalance('TON')"
+                  >
+                    TON
+                  </button>
+                  <button
+                    class="toggle-btn"
+                    data-currency="USDT"
+                    onclick="toggleTransactionBalance('USDT')"
+                  >
+                    USDT
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="balance-display">
+              <div class="balance-amount" id="tonBalance">
+                0 <span class="currency">TON</span>
+              </div>
+              <div
+                class="balance-amount"
+                id="usdtBalance"
+                style="display: none"
+              >
+                0 <span class="currency">USDT</span>
+              </div>
+            </div>
+            <div
+              class="address-display"
+              id="transactionAddressDisplay"
+              style="display: none"
+            >
+              <span class="address-label">Address:</span>
+              <span class="address-value" id="displayedAddress"></span>
+            </div>
+          </div>
+
+          <!-- Transaction Filter Section -->
+          <div
+            id="transactionFilterSection"
+            class="transaction-section"
+            style="display: none"
+          >
+            <div class="transaction-header">
+              <h3><i class="fas fa-history"></i> Transactions</h3>
+              <div class="filter-buttons">
+                <button
+                  class="filter-btn active"
+                  data-filter="all"
+                  onclick="filterTransactions('all')"
+                >
+                  All
+                </button>
+                <button
+                  class="filter-btn"
+                  data-filter="received"
+                  onclick="filterTransactions('received')"
+                >
+                  Received
+                </button>
+                <button
+                  class="filter-btn"
+                  data-filter="sent"
+                  onclick="filterTransactions('sent')"
+                >
+                  Sent
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction Loading Section -->
+          <div
+            id="transactionLoading"
+            class="transaction-loading"
+            style="display: none"
+          >
+            <div class="loading-container">
+              <div class="loading-spinner">
+                <i class="fas fa-spin"></i>
+              </div>
+              <div class="loading-text">Loading transaction history...</div>
+            </div>
+          </div>
+
+          <!-- Transactions Output -->
+          <div id="transactionsOutput" class="output"></div>
+
+          <!-- Pagination Section -->
+          <div
+            id="paginationSection"
+            class="pagination-section"
+            style="display: none"
+          >
+            <div class="pagination-info">
+              <span id="paginationInfo">Showing 1-10 of 0 transactions</span>
+            </div>
+            <div class="pagination-controls">
+              <button
+                class="pagination-btn"
+                id="prevBtn"
+                onclick="changePage(-1)"
+                disabled
+              >
+                <i class="fas fa-chevron-left"></i> Previous
+              </button>
+              <div class="page-numbers" id="pageNumbers">
+                <!-- Page numbers will be generated dynamically -->
+              </div>
+              <button
+                class="pagination-btn"
+                id="nextBtn"
+                onclick="changePage(1)"
+              >
+                Next <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Searched Addresses History -->
+          <div
+            id="searchedAddressesContainer"
+            class="card searched-addresses-card"
+            style="display: none"
+          >
+            <div class="searched-addresses-header">
+              <h3><i class="fas fa-history"></i> Recent Addresses</h3>
+              <button
+                onclick="clearAllSearchedAddresses()"
+                class="btn-clear-all"
+                title="Clear all"
+              >
+                <i class="fas fa-trash"></i> Clear All
+              </button>
+            </div>
+            <div class="searched-addresses-list" id="searchedAddressesList">
+              <!-- Searched addresses will be displayed here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Recover Page -->
+        <div id="recoverPage" class="page hidden">
+          <div class="page-header">
+            <h2>
+              <i class="fas fa-sync-alt"></i> Recover Multi-Blockchain Addresses
+            </h2>
+            <p>
+              Recover all blockchain addresses (TON, FLO, BTC) from a single
+              private key
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="form-group">
+              <label for="recoverPrivateKey"
+                ><i class="fas fa-key"></i> Private Key</label
+              >
+              <div class="input-with-actions">
+                <input
+                  type="password"
+                  id="recoverPrivateKey"
+                  class="form-input"
+                  placeholder="Enter your private key (TON/BTC/FLO)"
+                  required
+                />
+                <button
+                  type="button"
+                  class="input-action-btn password-toggle"
+                  onclick="togglePasswordVisibility('recoverPrivateKey')"
+                  title="Show/Hide Password"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button
+                  type="button"
+                  class="input-action-btn clear-btn"
+                  onclick="clearInput('recoverPrivateKey')"
+                  title="Clear"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="form-text">
+                Supported formats: TON, BTC, or FLO private key
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-block" onclick="recoverWallet()">
+              <i class="fas fa-sync-alt"></i>
+              Recover
+            </button>
+          </div>
+
+          <!-- Recover Output -->
+          <div id="recoverOutput" class="output"></div>
+
+          <!-- Wallet Security Notice -->
+          <div class="wallet-security-notice">
+            <div class="notice-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="notice-content">
+              <h4>Privacy Notice</h4>
+              <p>
+                Your private key is processed locally and never transmitted to
+                any server. Make sure you're entering the correct key format.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="nav-box">
+      <button class="nav-btn active" data-page="generate">
+        <i class="fas fa-wallet"></i>
+        <span>Generate</span>
+      </button>
+      <button class="nav-btn" data-page="send">
+        <i class="fas fa-paper-plane"></i>
+        <span>Send</span>
+      </button>
+      <button class="nav-btn" data-page="transactions">
+        <i class="fas fa-exchange-alt"></i>
+        <span>Transactions</span>
+      </button>
+      <button class="nav-btn" data-page="recover">
+        <i class="fas fa-sync-alt"></i>
+        <span>Recover</span>
+      </button>
+    </nav>
+
+    <!-- Notification Container -->
+    <div class="notification-drawer" id="notificationDrawer"></div>
+
+    <script>
+      // Theme management
+      let currentTheme = localStorage.getItem("theme") || "light";
+      const themeToggle = document.getElementById("themeToggle");
+      const themeIcon = document.getElementById("themeIcon");
+
+      function setTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        currentTheme = theme;
+        localStorage.setItem("theme", theme);
+
+        if (theme === "dark") {
+          themeIcon.className = "fas fa-sun";
+        } else {
+          themeIcon.className = "fas fa-moon";
+        }
+      }
+
+      themeToggle.addEventListener("click", () => {
+        const newTheme = currentTheme === "light" ? "dark" : "light";
+        setTheme(newTheme);
+      });
+
+      // Initialize theme
+      setTheme(currentTheme);
+
+      // Navigation management
+      const navLinks = document.querySelectorAll(".nav-link, .nav-btn");
+      const pages = document.querySelectorAll(".page");
+      const sidebar = document.getElementById("sidebar");
+      const sidebarOverlay = document.getElementById("sidebarOverlay");
+
+      function showPage(pageId) {
+        // Hide all pages
+        pages.forEach((page) => page.classList.add("hidden"));
+
+        // Show selected page
+        const targetPage = document.getElementById(pageId + "Page");
+        if (targetPage) {
+          targetPage.classList.remove("hidden");
+        }
+
+        // Update active navigation
+        navLinks.forEach((link) => link.classList.remove("active"));
+        document.querySelectorAll(`[data-page="${pageId}"]`).forEach((link) => {
+          link.classList.add("active");
+        });
+
+        // Close mobile sidebar
+        sidebar.classList.remove("active");
+        sidebarOverlay.classList.remove("active");
+
+        // Refresh searched addresses when showing transactions page
+        if (pageId === "transactions" && searchedAddressDB) {
+          setTimeout(() => {
+            updateSearchedAddressesList();
+          }, 100);
+        }
+      }
+
+      // Handle navigation clicks
+      navLinks.forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          const pageId = link.getAttribute("data-page");
+          showPage(pageId);
+        });
+      });
+
+      // Mobile sidebar toggle
+      const menuToggle = document.getElementById("menuToggle");
+
+      function toggleSidebar() {
+        sidebar.classList.toggle("active");
+        sidebarOverlay.classList.toggle("active");
+      }
+
+      if (menuToggle) {
+        menuToggle.addEventListener("click", toggleSidebar);
+      }
+
+      sidebarOverlay.addEventListener("click", () => {
+        sidebar.classList.remove("active");
+        sidebarOverlay.classList.remove("active");
+      });
+
+      function checkScreenSize() {
+        if (window.innerWidth <= 768) {
+          if (menuToggle) menuToggle.style.display = "block";
+        } else {
+          if (menuToggle) menuToggle.style.display = "none";
+          sidebar.classList.remove("active");
+          sidebarOverlay.classList.remove("active");
+        }
+      }
+
+      window.addEventListener("resize", checkScreenSize);
+      checkScreenSize();
+
+      // Notification system
+      function showNotification(message, type = "info") {
+        const notificationDrawer =
+          document.querySelector(".notification-drawer") ||
+          createNotificationDrawer();
+
+        const notification = document.createElement("div");
+        notification.className = `notification ${type}`;
+
+        let icon = '<i class="fas fa-info-circle"></i>';
+        if (type === "success") {
+          icon = '<i class="fas fa-check-circle"></i>';
+        } else if (type === "error") {
+          icon = '<i class="fas fa-exclamation-circle"></i>';
+        } else if (type === "warning") {
+          icon = '<i class="fas fa-exclamation-triangle"></i>';
+        }
+
+        notification.innerHTML = `${icon} <span>${message}</span>`;
+        notificationDrawer.appendChild(notification);
+
+        setTimeout(() => {
+          notification.style.transform = "translateX(120%)";
+          notification.style.opacity = "0";
+
+          setTimeout(() => {
+            notification.remove();
+          }, 300);
+        }, 3000);
+      }
+
+      function createNotificationDrawer() {
+        const drawer = document.createElement("div");
+        drawer.className = "notification-drawer";
+        document.body.appendChild(drawer);
+        return drawer;
+      }
+
+      // Utility functions
+      function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = input.nextElementSibling.querySelector("i");
+
+        if (input.type === "password") {
+          input.type = "text";
+          icon.className = "fas fa-eye-slash";
+        } else {
+          input.type = "password";
+          icon.className = "fas fa-eye";
+        }
+      }
+
+      function clearInput(inputId) {
+        const input = document.getElementById(inputId);
+        if (input) {
+          input.value = "";
+          input.focus();
+        }
+      }
+
+      function copyToClipboard(text, elementId = null) {
+        navigator.clipboard
+          .writeText(text)
+          .then(() => {
+            showNotification("Copied to clipboard!", "success");
+            if (elementId) {
+              const element = document.getElementById(elementId);
+              if (element) {
+                element.style.transform = "scale(0.95)";
+                setTimeout(() => {
+                  element.style.transform = "scale(1)";
+                }, 150);
+              }
+            }
+          })
+          .catch((err) => {
+            showNotification("Failed to copy to clipboard", "error");
+          });
+      }
+
+      // Wallet functionality
+      async function generateWallet() {
+        const output = document.getElementById("generateOutput");
+        const button = document.querySelector(
+          'button[onclick="generateWallet()"]'
+        );
+        const originalHTML = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Generating...';
+
+        try {
+          let wallet;
+          if (
+            typeof tonCrypto !== "undefined" &&
+            tonCrypto.generateMultiChain
+          ) {
+            wallet = await tonCrypto.generateMultiChain();
+          } else {
+            wallet = await tonBlockchainAPI.getSenderWallet();
+          }
+
+          // Display wallet info
+          const tonData = wallet.TON || wallet;
+
+          // Convert TON address to friendly format
+          const friendlyTonAddress = await convertTob64(tonData.address);
+
+          output.innerHTML = `
+                    <div class="wallet-generated-success">
+                        <div class="success-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="success-message">
+                            <h3>Addresses Generated Successfully!</h3>
+                            <p>Your multi-blockchain addresses have been created. All addresses are derived from the same private key.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="blockchain-section">
+                        <div class="blockchain-header">
+                            <h4><i class="fas fa-diamond"></i> TON Blockchain</h4>
+                            <span class="blockchain-badge primary">Primary</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <label><i class="fas fa-map-marker-alt"></i> Address</label>
+                            <div class="value-container">
+                                <code>${friendlyTonAddress || "N/A"}</code>
+                                <button class="btn-icon" onclick="copyToClipboard('${
+                                  friendlyTonAddress || ""
+                                }')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <label><i class="fas fa-key"></i> Private Key</label>
+                            <div class="value-container">
+                                <code>${tonData.privateKey || "N/A"}</code>
+                                <button class="btn-icon" onclick="copyToClipboard('${
+                                  tonData.privateKey || ""
+                                }')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="blockchain-section">
+                        <div class="blockchain-header">
+                            <h4><i class="fas fa-coins"></i> FLO Blockchain</h4>
+                            <span class="blockchain-badge secondary">Secondary</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <label><i class="fas fa-map-marker-alt"></i> Address</label>
+                            <div class="value-container">
+                                <code>${wallet.FLO?.address || "N/A"}</code>
+                                <button class="btn-icon" onclick="copyToClipboard('${
+                                  wallet.FLO?.address || ""
+                                }')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <label><i class="fas fa-key"></i>   Private Key</label>
+                            <div class="value-container">
+                                <code>${wallet.FLO?.privateKey || "N/A"}</code>
+                                <button class="btn-icon" onclick="copyToClipboard('${
+                                  wallet.FLO?.privateKey || ""
+                                }')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="blockchain-section">
+                        <div class="blockchain-header">
+                            <h4><i class="fab fa-bitcoin"></i> BTC Blockchain</h4>
+                            <span class="blockchain-badge secondary">Secondary</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <label><i class="fas fa-map-marker-alt"></i> Address</label>
+                            <div class="value-container">
+                                <code>${wallet.BTC?.address || "N/A"}</code>
+                                <button class="btn-icon" onclick="copyToClipboard('${
+                                  wallet.BTC?.address || ""
+                                }')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <label><i class="fas fa-key"></i> Private Key</label>
+                            <div class="value-container">
+                                <code>${wallet.BTC?.privateKey || "N/A"}</code>
+                                <button class="btn-icon" onclick="copyToClipboard('${
+                                  wallet.BTC?.privateKey || ""
+                                }')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+          showNotification("Address generated successfully!", "success");
+
+          if (tonData.address) {
+            loadBalanceForAddress(tonData.address);
+          }
+        } catch (error) {
+          output.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="error-message">
+                            <h3>Generation Failed</h3>
+                            <p>Failed to generate : ${error.message}</p>
+                        </div>
+                    </div>
+                `;
+          showNotification("Failed to generate ", "error");
+        } finally {
+          button.disabled = false;
+          button.innerHTML = originalHTML;
+        }
+      }
+
+      // Balance toggle functionality
+      let currentBalanceType = "TON";
+      let balanceCache = { TON: null, USDT: null };
+
+      async function toggleBalance(currency, address) {
+        if (!address) return;
+
+        // Update toggle buttons
+        document.querySelectorAll(".toggle-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        document
+          .querySelector(`[data-currency="${currency}"]`)
+          .classList.add("active");
+
+        // Update balance displays
+        const tonDisplay = document.getElementById("tonBalanceDisplay");
+        const usdtDisplay = document.getElementById("usdtBalanceDisplay");
+
+        if (currency === "TON") {
+          tonDisplay.classList.remove("hidden");
+          tonDisplay.classList.add("active");
+          usdtDisplay.classList.add("hidden");
+          usdtDisplay.classList.remove("active");
+
+          if (!balanceCache.TON) {
+            tonDisplay.innerHTML =
+              '<i class="fas fa-spinner fa-spin"></i> Loading TON balance...';
+            try {
+              const balance = await tonBlockchainAPI.getTonBalance(address);
+              balanceCache.TON = balance;
+              tonDisplay.innerHTML = `${balance.toFixed(6)} TON`;
+            } catch (error) {
+              tonDisplay.innerHTML = "Error loading TON balance";
+            }
+          }
+        } else if (currency === "USDT") {
+          usdtDisplay.classList.remove("hidden");
+          usdtDisplay.classList.add("active");
+          tonDisplay.classList.add("hidden");
+          tonDisplay.classList.remove("active");
+
+          if (!balanceCache.USDT) {
+            usdtDisplay.innerHTML =
+              '<i class="fas fa-spinner fa-spin"></i> Loading USDT balance...';
+            try {
+              const balance = await tonBlockchainAPI.getUsdtBalance(address);
+              balanceCache.USDT = balance;
+              usdtDisplay.innerHTML = `${balance.toFixed(2)} USDT`;
+            } catch (error) {
+              usdtDisplay.innerHTML = "0.00 USDT";
+            }
+          }
+        }
+
+        currentBalanceType = currency;
+      }
+
+      async function loadBalanceForAddress(address) {
+        // Load TON balance by default
+        await toggleBalance("TON", address);
+      }
+
+      // Toggle balance display in transactions tab
+      function toggleTransactionBalance(currency) {
+        document
+          .querySelectorAll("#transactionBalance .toggle-btn")
+          .forEach((btn) => {
+            btn.classList.remove("active");
+          });
+        document
+          .querySelector(`#transactionBalance [data-currency="${currency}"]`)
+          .classList.add("active");
+
+        // Toggle balance displays
+        const tonBalance = document.getElementById("tonBalance");
+        const usdtBalance = document.getElementById("usdtBalance");
+
+        if (currency === "TON") {
+          tonBalance.style.display = "block";
+          usdtBalance.style.display = "none";
+        } else if (currency === "USDT") {
+          tonBalance.style.display = "none";
+          usdtBalance.style.display = "block";
+        }
+      }
+
+      // Send transaction functionality
+      document
+        .getElementById("sendForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const privateKeyInput = document.getElementById("privateKey").value;
+          const recipientAddress =
+            document.getElementById("recipientAddress").value;
+          const amount = document.getElementById("sendAmount").value;
+          const output = document.getElementById("sendOutput");
+
+          // Get the converted TON private key
+          const tonPrivateKey =
+            document.getElementById("privateKey").dataset.tonPrivateKey ||
+            privateKeyInput;
+
+          if (!privateKeyInput || !recipientAddress || !amount) {
+            output.innerHTML = `
+              <div class="error-state">
+                <div class="error-icon">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="error-message">
+                  <h3>Missing Information</h3>
+                  <p>Please fill all fields first!</p>
+                </div>
+              </div>
+            `;
+            return;
+          }
+
+          // Validate amount
+          if (isNaN(amount) || parseFloat(amount) <= 0) {
+            output.innerHTML = `
+              <div class="error-state">
+                <div class="error-icon">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="error-message">
+                  <h3>Invalid Amount</h3>
+                  <p>Please enter a valid amount greater than 0</p>
+                </div>
+              </div>
+            `;
+            return;
+          }
+
+          // Get sender address for confirmation
+          let senderAddress;
+          try {
+            if (
+              typeof tonCrypto !== "undefined" &&
+              tonCrypto.recoverFromInput
+            ) {
+              const wallet = await tonCrypto.recoverFromInput(privateKeyInput);
+              const tonData = wallet.TON || wallet;
+              senderAddress = await convertTob64(tonData.address);
+            } else {
+              // Fallback to getSenderWallet
+              const wallet = await tonBlockchainAPI.getSenderWallet(
+                privateKeyInput
+              );
+              senderAddress = await convertTob64(wallet.address);
+            }
+          } catch (error) {
+            output.innerHTML = `
+              <div class="error-state">
+                <div class="error-icon">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="error-message">
+                  <h3>Invalid Private Key</h3>
+                  <p>Cannot derive address from the provided private key</p>
+                </div>
+              </div>
+            `;
+            return;
+          }
+
+          // Show confirmation popup instead of proceeding directly
+          showConfirmationPopup(
+            senderAddress,
+            recipientAddress,
+            amount,
+            async function () {
+              const submitButton = document.querySelector(
+                '#sendForm button[type="submit"]'
+              );
+              const originalHTML = submitButton.innerHTML;
+              submitButton.disabled = true;
+              submitButton.innerHTML =
+                '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+              output.innerHTML = `
+                <div class="blockchain-section">
+                  <div class="blockchain-header">
+                    <h4><i class="fas fa-paper-plane"></i> Processing Transaction</h4>
+                    <span class="blockchain-badge secondary">Processing</span>
+                  </div>
+                  <div style="padding: 1rem; text-align: center;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color);"></i>
+                    <p style="margin-top: 1rem;">Broadcasting transaction to TON network...</p>
+                  </div>
+                </div>
+              `;
+
+              try {
+                // Send transaction using converted TON private key
+                const { wallet, seqno, senderAddr } =
+                  await tonBlockchainAPI.sendTonTransaction(
+                    tonPrivateKey,
+                    recipientAddress,
+                    amount
+                  );
+
+                output.innerHTML = `
+                  <div class="blockchain-section">
+                    <div class="blockchain-header">
+                      <h4><i class="fas fa-clock"></i> Waiting for Confirmation</h4>
+                      <span class="blockchain-badge secondary">Confirming</span>
+                    </div>
+                    <div style="padding: 1rem; text-align: center;">
+                      <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color);"></i>
+                      <p style="margin-top: 1rem;">Transaction sent! Waiting for blockchain confirmation...</p>
+                      <p style="font-size: 0.9rem; color: var(--text-secondary);">Sent ${amount} TON to ${recipientAddress}</p>
+                    </div>
+                  </div>
+                `;
+
+                // Wait for confirmation and get hash
+                const confirmationResult =
+                  await tonBlockchainAPI.waitForTransactionConfirmation(
+                    wallet,
+                    seqno,
+                    senderAddr
+                  );
+
+                // Show success with hash
+                output.innerHTML = `
+              <div class="wallet-generated-success">
+                <div class="success-icon">
+                  <i class="fas fa-check"></i>
+                </div>
+                <div class="success-message">
+                  <h3>Transaction Confirmed!</h3>
+                  <p>Your transaction has been confirmed on the TON blockchain.</p>
+                </div>
+              </div>
+              
+              <div class="blockchain-section">
+                <div class="blockchain-header">
+                  <h4><i class="fas fa-receipt"></i> Transaction Details</h4>
+                  <span class="blockchain-badge primary">Confirmed</span>
+                </div>
+                
+                <div class="detail-row">
+                  <label><i class="fas fa-fingerprint"></i>      Transaction Hash</label>
+                  <div class="value-container">
+                    <code>${confirmationResult.urlHash}</code>
+                    <button class="btn-icon" onclick="copyToClipboard('${confirmationResult.urlHash}')" title="Copy hash">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="detail-row">
+                  <label><i class="fas fa-coins"></i> Amount</label>
+                  <div class="value-container">
+                    <code>${amount} TON</code>
+                  </div>
+                </div>
+                
+                <div class="detail-row">
+                  <label><i class="fas fa-paper-plane"></i> From</label>
+                  <div class="value-container">
+                    <code>${senderAddr}</code>
+                    <button class="btn-icon" onclick="copyToClipboard('${senderAddr}')" title="Copy address">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="detail-row">
+                  <label><i class="fas fa-arrow-right"></i> To</label>
+                  <div class="value-container">
+                    <code>${recipientAddress}</code>
+                    <button class="btn-icon" onclick="copyToClipboard('${recipientAddress}')" title="Copy address">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="detail-row">
+                  <label><i class="fas fa-external-link-alt"></i> Explorer</label>
+                  <div class="value-container">
+                    <a href="${confirmationResult.explorerUrl}" target="_blank" style="color: var(--primary-color); text-decoration: underline;">
+                      View on TON Explorer
+                    </a>
+                  </div>
+                </div>
+              </div>
+            `;
+
+                showNotification(
+                  "Transaction confirmed successfully!",
+                  "success"
+                );
+                document.getElementById("sendForm").reset();
+              } catch (error) {
+                console.error("Send transaction error:", error);
+
+                let errorTitle = "Transaction Failed";
+                let errorMessage =
+                  error.message || "Failed to send transaction";
+                let notificationMessage = "Transaction failed";
+
+                // Check for specific error types
+                if (error.message) {
+                  const msg = error.message.toLowerCase();
+
+                  if (
+                    msg.includes("insufficient") ||
+                    msg.includes("balance") ||
+                    msg.includes("not enough")
+                  ) {
+                    errorTitle = "Insufficient Balance";
+                    errorMessage =
+                      "You don't have enough TON balance to complete this transaction. Please check your balance and try again.";
+                    notificationMessage = "Insufficient TON balance";
+                  } else if (
+                    msg.includes("invalid address") ||
+                    msg.includes("bad address")
+                  ) {
+                    errorTitle = "Invalid Address";
+                    errorMessage =
+                      "The recipient address is not valid. Please check the address format and try again.";
+                    notificationMessage = "Invalid recipient address";
+                  } else if (
+                    msg.includes("network") ||
+                    msg.includes("connection")
+                  ) {
+                    errorTitle = "Network Error";
+                    errorMessage =
+                      "Unable to connect to the TON network. Please check your internet connection and try again.";
+                    notificationMessage = "Network connection error";
+                  } else if (
+                    msg.includes("seqno") ||
+                    msg.includes("sequence")
+                  ) {
+                    errorTitle = "Transaction Sequence Error";
+                    errorMessage =
+                      "Transaction sequence error. Please wait a moment and try again.";
+                    notificationMessage = "Transaction sequence error";
+                  }
+                }
+
+                output.innerHTML = `
+              <div class="error-state">
+                <div class="error-icon">
+                  <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="error-message">
+                  <h3>${errorTitle}</h3>
+                  <p>${errorMessage}</p>
+                  ${
+                    error.message && error.message !== errorMessage
+                      ? `<p style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">Technical details: ${error.message}</p>`
+                      : ""
+                  }
+                </div>
+              </div>
+            `;
+                showNotification(notificationMessage, "error");
+              } finally {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalHTML;
+              }
+            }
+          );
+        });
+
+      // Handle private key input for balance display and multi-chain conversion
+      document
+        .getElementById("privateKey")
+        .addEventListener("input", async (e) => {
+          const privateKeyInput = e.target.value.trim();
+          const balanceDisplay = document.getElementById(
+            "senderBalanceDisplay"
+          );
+          const balanceElement = document.getElementById("senderTonBalance");
+          const addressElement = document.getElementById("senderAddress");
+
+          // Clear previous display
+          if (!privateKeyInput) {
+            balanceDisplay.style.display = "none";
+            return;
+          }
+
+          try {
+            // Show loading state
+            balanceDisplay.style.display = "block";
+            balanceElement.innerHTML =
+              '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            addressElement.textContent = "Checking...";
+
+            let tonPrivateKey;
+            let tonAddress;
+
+            // Check if input is already a TON private key format (hex)
+            const hexOnly = /^[0-9a-fA-F]+$/.test(privateKeyInput);
+
+            if (
+              hexOnly &&
+              (privateKeyInput.length === 64 || privateKeyInput.length === 128)
+            ) {
+              // Direct TON hex private key
+              tonPrivateKey =
+                privateKeyInput.length === 128
+                  ? privateKeyInput.substring(0, 64)
+                  : privateKeyInput;
+
+              // Get TON address from hex private key
+              try {
+                const { address } = await tonBlockchainAPI.getSenderWallet(
+                  tonPrivateKey
+                );
+                tonAddress = address.toString(true, true, true);
+              } catch (error) {
+                console.warn(
+                  "Error getting address from hex private key:",
+                  error
+                );
+                balanceDisplay.style.display = "none";
+                return;
+              }
+            } else {
+              // Try to convert from multi-chain (TON/FLO/BTC) private key
+              try {
+                const walletData = await tonCrypto.recoverFromInput(
+                  privateKeyInput
+                );
+
+                if (
+                  !walletData.TON ||
+                  !walletData.TON.privateKey ||
+                  !walletData.TON.address
+                ) {
+                  throw new Error("No TON data found");
+                }
+
+                tonPrivateKey = walletData.TON.privateKey;
+                tonAddress = walletData.TON.address;
+              } catch (error) {
+                console.warn(
+                  "Error converting multi-chain private key:",
+                  error
+                );
+                balanceDisplay.style.display = "none";
+                return;
+              }
+            }
+
+            // Get TON balance
+            const balance = await tonBlockchainAPI.getMainnetBalance(
+              tonAddress
+            );
+
+            // Update display
+            balanceElement.innerHTML = `${balance.toFixed(
+              6
+            )} <span class="currency">TON</span>`;
+            addressElement.textContent = tonAddress;
+
+            // Store the converted TON private key
+            e.target.dataset.tonPrivateKey = tonPrivateKey;
+          } catch (error) {
+            console.error("Error checking balance:", error);
+            balanceElement.innerHTML =
+              'Error <span class="currency">TON</span>';
+            addressElement.textContent = "Error loading address";
+          }
+        });
+
+      // Transaction variables
+      let currentAddress = "";
+      let transactions = [];
+      let beforeLt = null;
+      let allFetched = false;
+      let currentPage = 0;
+      const pageSize = 10;
+
+      // Helper function for address conversion
+      async function convertTob64(rawAddr) {
+        return await tonBlockchainAPI.convertTob64(rawAddr);
+      }
+
+      // Fetch transactions with pagination support
+      async function fetchTransactions(address, append = false) {
+        if (allFetched) return;
+
+        try {
+          const result = await tonBlockchainAPI.fetchTransactions(address, {
+            limit: 100,
+            beforeLt: beforeLt,
+          });
+
+          const newTxs = result.transactions || [];
+          if (newTxs.length === 0) {
+            allFetched = true;
+            return;
+          }
+
+          if (append) transactions = transactions.concat(newTxs);
+          else transactions = newTxs;
+
+          beforeLt = result.nextBeforeLt;
+          allFetched = !result.hasMore;
+        } catch (error) {
+          console.error("Error fetching transactions:", error);
+          showNotification("Error fetching transactions", "error");
+        }
+      }
+
+      // Render current page of transactions
+      async function renderPage() {
+        const output = document.getElementById("transactionsOutput");
+
+        // First, apply filter to all transactions to get the filtered list
+        const filteredAllTxs = [];
+        for (const tx of transactions) {
+          const hasIncoming = tx.in_msg && tx.in_msg.source;
+          const hasOutgoing = tx.out_msgs && tx.out_msgs.length > 0;
+
+          if (
+            currentFilter === "all" ||
+            (currentFilter === "received" && hasIncoming) ||
+            (currentFilter === "sent" && hasOutgoing)
+          ) {
+            filteredAllTxs.push(tx);
+          }
+        }
+
+        // If no transactions match the filter at all
+        if (filteredAllTxs.length === 0) {
+          output.innerHTML = `
+            <div class="card">
+              <div class="loading-state">
+                <i class="fas fa-inbox"></i>
+                <p>No ${
+                  currentFilter === "all" ? "" : currentFilter
+                } transactions found.</p>
+              </div>
+            </div>
+          `;
+          updatePagination();
+          return;
+        }
+
+        // Calculate pagination based on filtered transactions
+        const totalFilteredPages = Math.ceil(filteredAllTxs.length / pageSize);
+
+        if (currentPage >= totalFilteredPages) {
+          currentPage = Math.max(0, totalFilteredPages - 1);
+        }
+
+        // Get transactions for current page from filtered results
+        const start = currentPage * pageSize;
+        const end = start + pageSize;
+        const pageTxs = filteredAllTxs.slice(start, end);
+
+        if (pageTxs.length === 0) {
+          output.innerHTML = `
+            <div class="card">
+              <div class="loading-state">
+                <i class="fas fa-inbox"></i>
+                <p>No ${
+                  currentFilter === "all" ? "" : currentFilter
+                } transactions found on this page.</p>
+              </div>
+            </div>
+          `;
+          updatePagination();
+          return;
+        }
+
+        let transactionHTML = '<div class="transaction-list">';
+
+        for (const tx of pageTxs) {
+          const time = new Date(tx.utime * 1000).toLocaleString();
+          const hash = tx.hash;
+          const success = tx.success ? "confirmed" : "failed";
+
+          // --- IN MESSAGE ---
+          if (
+            tx.in_msg &&
+            tx.in_msg.source &&
+            (currentFilter === "all" || currentFilter === "received")
+          ) {
+            const inValue = (parseFloat(tx.in_msg.value || 0) / 1e9).toFixed(6);
+            const fromRaw =
+              tx.in_msg.source.address || tx.in_msg.source || "Unknown";
+            const toRaw = tx.in_msg.destination?.address || currentAddress;
+
+            const [from, to] = await Promise.all([
+              convertTob64(fromRaw),
+              convertTob64(toRaw),
+            ]);
+
+            transactionHTML += `
+              <div class="transaction-card incoming">
+                <div class="tx-header">
+                  <div class="tx-top-row">
+                    <div class="tx-left">
+                      <div class="tx-icon">
+                        <i class="fas fa-arrow-down"></i>
+                      </div>
+                      <div class="tx-main-info">
+                        <div class="tx-direction-label">Received</div>
+                        <div class="tx-amount incoming">+${inValue} TON</div>
+                      </div>
+                    </div>
+                    <div class="tx-meta">
+                      <span class="tx-date">${time}</span>
+                      <span class="tx-status ${success}">
+                        ${success === "confirmed" ? "CONFIRMED" : "FAILED"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="tx-details compact">
+                  <div class="tx-detail-row">
+                    <span class="tx-label">From:</span>
+                    <span class="tx-value full-address">${from}</span>
+                  </div>
+                  <div class="tx-detail-row">
+                    <span class="tx-label">To:</span>
+                    <span class="tx-value full-address">${to}</span>
+                  </div>
+                  <div class="tx-detail-row">
+                    <span class="tx-label">Tx:</span>
+                    <span class="tx-value full-address tx-hash">
+                      <a href="https://tonviewer.com/transaction/${hash}" target="_blank" class="tx-hash-link" title="View on TON Viewer">
+                        ${hash}
+                      </a>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
+          // --- OUT MESSAGES ---
+          if (
+            tx.out_msgs &&
+            tx.out_msgs.length > 0 &&
+            (currentFilter === "all" || currentFilter === "sent")
+          ) {
+            for (const out of tx.out_msgs) {
+              const outValue = (parseFloat(out.value || 0) / 1e9).toFixed(6);
+              const fromRaw = out.source?.address || currentAddress;
+              const toRaw =
+                out.destination?.address || out.destination || "Unknown";
+
+              const [from, to] = await Promise.all([
+                convertTob64(fromRaw),
+                convertTob64(toRaw),
+              ]);
+              transactionHTML += `
+                <div class="transaction-card outgoing">
+                  <div class="tx-header">
+                    <div class="tx-top-row">
+                      <div class="tx-left">
+                        <div class="tx-icon">
+                          <i class="fas fa-arrow-up"></i>
+                        </div>
+                        <div class="tx-main-info">
+                          <div class="tx-direction-label">Sent</div>
+                          <div class="tx-amount outgoing">-${outValue} TON</div>
+                        </div>
+                      </div>
+                      <div class="tx-meta">
+                        <span class="tx-date">${time}</span>
+                        <span class="tx-status ${success}">
+                          ${success === "confirmed" ? "CONFIRMED" : "FAILED"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="tx-details compact">
+                    <div class="tx-detail-row">
+                      <span class="tx-label">From:</span>
+                      <span class="tx-value full-address">${from}</span>
+                    </div>
+                    <div class="tx-detail-row">
+                      <span class="tx-label">To:</span>
+                      <span class="tx-value full-address">${to}</span>
+                    </div>
+                    <div class="tx-detail-row">
+                      <span class="tx-label">Tx:</span>
+                      <span class="tx-value full-address tx-hash">
+                        <a href="https://tonviewer.com/transaction/${hash}" target="_blank" class="tx-hash-link" title="View on TON Viewer">
+                          ${hash}
+                        </a>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              `;
+            }
+          }
+        }
+
+        transactionHTML += "</div>";
+
+        output.style.opacity = "0";
+        output.innerHTML = transactionHTML;
+        requestAnimationFrame(() => {
+          output.style.transition = "opacity 0.3s ease";
+          output.style.opacity = "1";
+        });
+        updatePagination();
+      }
+
+      // Handle search type switching
+      document.querySelectorAll('input[name="searchType"]').forEach((radio) => {
+        radio.addEventListener("change", function () {
+          const containers = document.querySelectorAll(
+            ".radio-button-container"
+          );
+          containers.forEach((c) => c.classList.remove("active"));
+
+          if (this.checked) {
+            this.closest(".radio-button-container").classList.add("active");
+            updateSearchInterface(this.value);
+          }
+        });
+      });
+
+      function updateSearchInterface(searchType) {
+        const inputLabel = document.getElementById("inputLabel");
+        const inputHelp = document.getElementById("inputHelp");
+        const input = document.getElementById("transactionInput");
+        const button = document.getElementById("searchButton");
+
+        clearSearchResults();
+
+        input.value = "";
+
+        if (searchType === "address") {
+          inputLabel.innerHTML =
+            '<i class="fas fa-wallet"></i> TON Address or Private Key';
+          input.placeholder = "Enter TON address, or TON/FLO/BTC private key";
+          inputHelp.textContent =
+            "Enter a TON address to view transactions, or use TON/FLO/BTC private key to derive address";
+          button.innerHTML = '<i class="fas fa-search"></i> Load Transactions';
+        } else if (searchType === "hash") {
+          inputLabel.innerHTML =
+            '<i class="fas fa-fingerprint"></i> Transaction Hash';
+          input.placeholder = "Enter transaction hash to view details";
+          inputHelp.textContent =
+            "Enter a transaction hash to view transaction details and generate explorer URL";
+          button.innerHTML = '<i class="fas fa-fingerprint"></i> Lookup Hash';
+        }
+      }
+
+      // Clear all search results and displays
+      function clearSearchResults() {
+        // Hide balance display
+        const balanceDiv = document.getElementById("transactionBalance");
+        balanceDiv.style.display = "none";
+
+        // Clear transaction output
+        const output = document.getElementById("transactionsOutput");
+        output.innerHTML = "";
+
+        // Hide loading section
+        const loadingSection = document.getElementById("transactionLoading");
+        loadingSection.style.display = "none";
+
+        // Hide filter section
+        const filterSection = document.getElementById(
+          "transactionFilterSection"
+        );
+        filterSection.style.display = "none";
+
+        // Hide pagination section
+        const paginationSection = document.getElementById("paginationSection");
+        paginationSection.style.display = "none";
+
+        // Reset transaction state
+        currentAddress = "";
+        transactions = [];
+        beforeLt = null;
+        allFetched = false;
+        currentPage = 0;
+        currentFilter = "all";
+
+        // Reset filter buttons to default
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        document.querySelector('[data-filter="all"]').classList.add("active");
+      }
+
+      async function handleSearch() {
+        const searchType = document.querySelector(
+          'input[name="searchType"]:checked'
+        ).value;
+        const input = document.getElementById("transactionInput").value.trim();
+
+        if (!input) {
+          showNotification("Please enter a search value", "warning");
+          return;
+        }
+
+        if (searchType === "address") {
+          await loadTransactions(input);
+        } else if (searchType === "hash") {
+          await lookupTransactionHash(input);
+        }
+      }
+
+      async function displaySearchedAddresses() {
+        if (!searchedAddressesDB) {
+          return;
+        }
+
+        try {
+          const addresses = await searchedAddressesDB.getSearchedAddresses();
+          const container = document.getElementById("searchedAddressesList");
+          const containerCard = document.getElementById(
+            "searchedAddressesContainer"
+          );
+
+          if (!container) {
+            return;
+          }
+
+          if (addresses.length === 0) {
+            console.log("No addresses found, hiding container");
+            if (containerCard) {
+              containerCard.style.display = "none";
+            }
+            return;
+          }
+
+          if (containerCard) {
+            containerCard.style.display = "block";
+          }
+
+          container.innerHTML = addresses
+            .map((addr, index) => {
+              // Check if this address has source info (private key)
+              const hasPrivateKey =
+                addr.sourceInfo && addr.sourceInfo.isFromPrivateKey;
+
+              return `
+            <div class="searched-address-item ${
+              hasPrivateKey ? "has-source-info" : ""
+            }" data-address="${
+                addr.address
+              }" data-index="${index}" data-current-type="${
+                hasPrivateKey ? "ton" : "address"
+              }">
+              ${
+                hasPrivateKey
+                  ? `
+                <div class="address-toggle-section">
+                  <div class="address-toggle-group">
+                    <button onclick="toggleAddressType(${index}, 'privatekey')" 
+                            class="btn-toggle-address" 
+                            data-type="privatekey" 
+                            title="Show Private Key">
+                      PRIVATE KEY
+                    </button>
+                    <button onclick="toggleAddressType(${index}, 'ton')" 
+                            class="btn-toggle-address active" 
+                            data-type="ton" 
+                            title="Show TON Address">
+                      TON
+                    </button>
+                  </div>
+                </div>
+              `
+                  : ""
+              }
+              <div class="address-content-wrapper">
+                <div class="address-info">
+                  <div class="address-display">
+                    <div class="address-text" id="address-display-${index}" title="${
+                addr.address
+              }">${addr.address}</div>
+                  </div>
+                  <div class="address-meta">
+                    <span class="balance">
+                      <i class="fas fa-coins"></i>
+                      ${
+                        addr.balance !== null
+                          ? `${addr.balance.toFixed(6)} TON`
+                          : "Unknown"
+                      }
+                    </span>
+                    <span class="date">${new Date(
+                      addr.timestamp
+                    ).toLocaleDateString()}</span>
+                  </div>
+                </div>
+                <div class="address-actions">
+                  ${
+                    hasPrivateKey
+                      ? `
+                    <button class="action-btn copy-btn" onclick="copyCurrentAddress(${index})" title="Copy Current Display">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  `
+                      : `
+                    <button class="action-btn copy-btn" onclick="copyAddressToClipboard('${addr.address}')" title="Copy Address">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  `
+                  }
+                  <button class="action-btn recheck-btn" onclick="recheckBalance('${
+                    addr.address
+                  }')" title="Recheck Balance">
+                    <i class="fas fa-sync-alt"></i>
+                  </button>
+                  <button class="action-btn delete-btn" onclick="deleteSearchedAddress('${
+                    addr.address
+                  }')" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+            })
+            .join("");
+          console.log(
+            "Container innerHTML set:",
+            container.innerHTML.substring(0, 200)
+          );
+        } catch (error) {
+          console.error("Failed to display searched addresses:", error);
+        }
+      }
+
+      async function deleteSearchedAddress(address) {
+        if (!searchedAddressesDB) return;
+
+        if (
+          confirm(
+            `Are you sure you want to delete this address from your search history?\n\n${address}`
+          )
+        ) {
+          try {
+            await searchedAddressesDB.deleteSearchedAddress(address);
+            await displaySearchedAddresses();
+            showNotification("Address removed from search history", "success");
+          } catch (error) {
+            console.error("Failed to delete searched address:", error);
+            showNotification("Failed to delete address", "error");
+          }
+        }
+      }
+
+      async function clearAllSearchedAddresses() {
+        if (!searchedAddressesDB) return;
+
+        if (
+          confirm(
+            "Are you sure you want to clear all searched addresses? This action cannot be undone."
+          )
+        ) {
+          try {
+            await searchedAddressesDB.clearAllSearchedAddresses();
+            await displaySearchedAddresses();
+            showNotification("All searched addresses cleared", "success");
+          } catch (error) {
+            console.error("Failed to clear searched addresses:", error);
+            showNotification("Failed to clear addresses", "error");
+          }
+        }
+      }
+
+      async function copyAddressToClipboard(address) {
+        try {
+          await navigator.clipboard.writeText(address);
+          showNotification("Address copied to clipboard", "success");
+        } catch (error) {
+          console.error("Failed to copy address:", error);
+          showNotification("Failed to copy address", "error");
+        }
+      }
+
+      // Searched addresses database functionality
+      let searchedAddressDB = null;
+
+      async function initializeSearchDB() {
+        try {
+          searchedAddressDB = new SearchedAddressDB();
+          await searchedAddressDB.init();
+          await updateSearchedAddressesList();
+        } catch (error) {
+          console.error("Failed to initialize search database:", error);
+        }
+      }
+
+      async function updateSearchedAddressesList() {
+        try {
+          const searchedAddresses =
+            await searchedAddressDB.getSearchedAddresses();
+          displaySearchedAddresses(searchedAddresses);
+        } catch (error) {
+          console.error("Error loading searched addresses:", error);
+        }
+      }
+
+      function displaySearchedAddresses(addresses) {
+        const container = document.getElementById("searchedAddressesContainer");
+        const list = document.getElementById("searchedAddressesList");
+
+        if (!container || !list) return;
+
+        if (addresses.length === 0) {
+          container.style.display = "none";
+          return;
+        }
+
+        container.style.display = "block";
+
+        let html = "";
+        addresses.forEach((addr, index) => {
+          // Check if this was derived from a private key (any blockchain)
+          const hasSourceInfo =
+            addr.sourceInfo &&
+            addr.sourceInfo.originalPrivateKey &&
+            addr.sourceInfo.originalAddress !== addr.address;
+
+          html += `
+            <div class="searched-address-item ${
+              hasSourceInfo ? "has-source-info" : ""
+            }" 
+                 data-index="${index}" 
+                 data-current-type="${
+                   hasSourceInfo
+                     ? addr.sourceInfo.blockchain.toLowerCase()
+                     : "ton"
+                 }">
+              ${
+                hasSourceInfo
+                  ? `
+                <div class="address-toggle-section">
+                  <div class="address-toggle-group">
+                    <button onclick="toggleAddressType(${index}, '${addr.sourceInfo.blockchain.toLowerCase()}')" 
+                            class="btn-toggle-address active" 
+                            data-type="${addr.sourceInfo.blockchain.toLowerCase()}" 
+                            title="Show ${addr.sourceInfo.blockchain} Address">
+                      ${addr.sourceInfo.blockchain}
+                    </button>
+                    <button onclick="toggleAddressType(${index}, 'ton')" 
+                            class="btn-toggle-address" 
+                            data-type="ton" 
+                            title="Show TON Address">
+                      TON
+                    </button>
+                  </div>
+                </div>
+                <div class="address-content-wrapper">
+                  <div class="address-info">
+                    <div class="address-display">
+                      <div class="address-text" id="address-display-${index}" title="${
+                      addr.sourceInfo.originalAddress
+                    }">
+                        ${addr.sourceInfo.originalAddress}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="address-actions">
+                    <button onclick="copyCurrentAddress(${index})" class="btn-copy-current" title="Copy Selected Address">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                    <button onclick="deleteSearchedAddress('${
+                      addr.address
+                    }')" class="btn-delete" title="Delete">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                    <button onclick="recheckBalance('${
+                      addr.address
+                    }')" class="btn-check" title="Check balance">
+                      <i class="fas fa-search"></i>
+                    </button>
+                  </div>
+                </div>
+              `
+                  : `
+                <div class="address-toggle-section">
+                  <div class="address-toggle-group">
+                    <button class="btn-toggle-address active" 
+                            data-type="ton" 
+                            title="TON Address">
+                      TON
+                    </button>
+                  </div>
+                </div>
+                <div class="address-content-wrapper">
+                  <div class="address-info">
+                    <div class="address-display">
+                      <div class="address-text" id="address-display-${index}" title="${addr.address}">
+                        ${addr.address}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="address-actions">
+                    <button onclick="copyAddressToClipboard('${addr.address}')" class="btn-copy" title="Copy TON Address">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                    <button onclick="deleteSearchedAddress('${addr.address}')" class="btn-delete" title="Delete">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                    <button onclick="recheckBalance('${addr.address}')" class="btn-check" title="Check balance">
+                      <i class="fas fa-search"></i>
+                    </button>
+                  </div>
+                </div>
+              `
+              }
+            </div>
+          `;
+        });
+
+        list.innerHTML = html;
+      }
+
+      // Toggle between address types in searched addresses
+      async function toggleAddressType(addressIndex, type) {
+        try {
+          const addresses = await searchedAddressDB.getSearchedAddresses();
+          if (!addresses[addressIndex]) return;
+
+          const addressItem = addresses[addressIndex];
+          const container = document.querySelector(
+            `[data-index="${addressIndex}"]`
+          );
+          if (!container) return;
+
+          const toggleButtons = container.querySelectorAll(
+            ".btn-toggle-address"
+          );
+          toggleButtons.forEach((btn) => btn.classList.remove("active"));
+
+          const activeButton = container.querySelector(`[data-type="${type}"]`);
+          if (activeButton) {
+            activeButton.classList.add("active");
+          }
+
+          container.setAttribute("data-current-type", type);
+
+          const addressDisplay = container.querySelector(
+            `#address-display-${addressIndex}`
+          );
+          if (addressDisplay) {
+            if (type === "ton") {
+              // Show TON address
+              addressDisplay.textContent = addressItem.address;
+              addressDisplay.title = addressItem.address;
+            } else {
+              // Show original blockchain address (FLO/BTC)
+              const originalAddress =
+                addressItem.sourceInfo?.originalAddress || addressItem.address;
+              addressDisplay.textContent = originalAddress;
+              addressDisplay.title = originalAddress;
+            }
+          }
+        } catch (error) {
+          console.error("Error toggling address type:", error);
+        }
+      }
+
+      async function copyCurrentAddress(addressIndex) {
+        try {
+          const addresses = await searchedAddressDB.getSearchedAddresses();
+          if (!addresses[addressIndex]) return;
+
+          const addressItem = addresses[addressIndex];
+          const container = document.querySelector(
+            `[data-index="${addressIndex}"]`
+          );
+          if (!container) return;
+
+          const currentType =
+            container.getAttribute("data-current-type") || "ton";
+
+          let addressToCopy;
+          let addressLabel;
+
+          if (currentType === "ton") {
+            addressToCopy = addressItem.address;
+            addressLabel = "TON address";
+          } else {
+            addressToCopy =
+              addressItem.sourceInfo?.originalAddress || addressItem.address;
+            addressLabel = `${
+              addressItem.sourceInfo?.blockchain || "Original"
+            } address`;
+          }
+
+          await navigator.clipboard.writeText(addressToCopy);
+          showNotification(`${addressLabel} copied to clipboard`, "success");
+        } catch (error) {
+          console.error("Error copying current address:", error);
+          showNotification("Failed to copy address", "error");
+        }
+      }
+
+      async function copyAddressToClipboard(address) {
+        try {
+          await navigator.clipboard.writeText(address);
+          showNotification("Address copied to clipboard", "success");
+        } catch (error) {
+          console.error("Failed to copy address:", error);
+          showNotification("Failed to copy address", "error");
+        }
+      }
+
+      async function deleteSearchedAddress(address) {
+        try {
+          if (
+            confirm(
+              `Are you sure you want to delete this address from your search history?`
+            )
+          ) {
+            await searchedAddressDB.deleteSearchedAddress(address);
+            await updateSearchedAddressesList();
+            showNotification("Address removed from search history", "success");
+          }
+        } catch (error) {
+          console.error("Failed to delete searched address:", error);
+          showNotification("Failed to delete address", "error");
+        }
+      }
+
+      async function clearAllSearchedAddresses() {
+        try {
+          if (
+            confirm(
+              "Are you sure you want to clear all searched addresses? This action cannot be undone."
+            )
+          ) {
+            await searchedAddressDB.clearAllSearchedAddresses();
+            await updateSearchedAddressesList();
+            showNotification("All searched addresses cleared", "success");
+          }
+        } catch (error) {
+          console.error("Failed to clear searched addresses:", error);
+          showNotification("Failed to clear addresses", "error");
+        }
+      }
+
+      async function recheckBalance(address) {
+        try {
+          await loadTransactions(address);
+          showNotification("Balance rechecked successfully", "success");
+        } catch (error) {
+          console.error("Failed to recheck balance:", error);
+          showNotification(
+            "Failed to recheck balance: " + error.message,
+            "error"
+          );
+        }
+      }
+
+      // Initialize database when page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        initializeSearchDB();
+      });
+
+      // Transaction hash lookup functionality
+      async function lookupTransactionHash(hash) {
+        const output = document.getElementById("transactionsOutput");
+        const button = document.getElementById("searchButton");
+
+        if (!validateTransactionHash(hash)) {
+          showNotification("Invalid transaction hash format", "error");
+          return;
+        }
+
+        button.disabled = true;
+        const originalHTML = button.innerHTML;
+        button.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Looking up...';
+
+        try {
+          const urlHash = hash.replace(/\+/g, "-").replace(/\//g, "_");
+          const tonViewerUrl = `https://tonviewer.com/transaction/${urlHash}`;
+
+          output.innerHTML = `
+            <div class="card">
+              <div class="wallet-generated-success">
+                <div class="success-icon">
+                  <i class="fas fa-fingerprint"></i>
+                </div>
+                <div class="success-message">
+                  <h3>Transaction Hash Found</h3>
+                  <p>Transaction hash validated and explorer links generated.</p>
+                </div>
+              </div>
+              
+              <div class="blockchain-section">
+                <div class="blockchain-header">
+                  <h4><i class="fas fa-receipt"></i> Transaction Details</h4>
+                  <span class="blockchain-badge primary">Hash</span>
+                </div>
+                
+                <div class="detail-row">
+                  <label><i class="fas fa-fingerprint"></i> Transaction Hash</label>
+                  <div class="value-container">
+                    <code>${hash}</code>
+                    <button class="btn-icon" onclick="copyToClipboard('${hash}')" title="Copy hash">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                
+                <div class="detail-row">
+                  <label><i class="fas fa-external-link-alt"></i> TON Viewer</label>
+                  <div class="value-container">
+                    <a href="${tonViewerUrl}" target="_blank" style="color: var(--primary-color); text-decoration: underline;">
+                      View on TON Viewer
+                    </a>
+                    <button class="btn-icon" onclick="copyToClipboard('${tonViewerUrl}')" title="Copy URL">
+                      <i class="fas fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                
+              </div>
+            </div>
+          `;
+
+          showNotification("Transaction hash lookup successful!", "success");
+        } catch (error) {
+          output.innerHTML = `
+            <div class="error-state">
+              <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="error-message">
+                <h3>Hash Lookup Failed</h3>
+                <p>Unable to process transaction hash: ${error.message}</p>
+              </div>
+            </div>
+          `;
+          showNotification("Hash lookup failed", "error");
+        } finally {
+          button.disabled = false;
+          button.innerHTML = originalHTML;
+        }
+      }
+
+      // Validate transaction hash format
+      function validateTransactionHash(hash) {
+        // TON transaction hashes are typically 44 characters base64
+        const base64Regex = /^[A-Za-z0-9+/]{43}=?$/;
+        const hexRegex = /^[a-fA-F0-9]{64}$/;
+        return base64Regex.test(hash) || hexRegex.test(hash);
+      }
+
+      // Validate TON address format
+      function validateTonAddress(address) {
+        // TON addresses start with EQ, UQ, or kQ and are base64url encoded
+        const tonAddressRegex = /^[EUk]Q[A-Za-z0-9_-]{46}$/;
+        return tonAddressRegex.test(address);
+      }
+
+      // Validate if input is a valid address or private key (not a transaction hash)
+      function isValidAddressOrPrivateKey(input) {
+        // Check if it's a TON address
+        if (validateTonAddress(input)) {
+          return true;
+        }
+
+        // Check if it's a hex private key (64 or 128 characters)
+        const hexOnly = /^[0-9a-fA-F]+$/.test(input);
+        if (hexOnly && (input.length === 64 || input.length === 128)) {
+          return true;
+        }
+
+        // Check for TON/FLO/BTC private key format (WIF - Wallet Import Format)
+        const base58Regex =
+          /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
+        if (
+          base58Regex.test(input) &&
+          input.length >= 51 &&
+          input.length <= 56
+        ) {
+          // Only accept private keys with specific prefixes that can be converted to TON
+          const validPrivateKeyPrefixes = ["R", "K", "L", "T"];
+          if (
+            validPrivateKeyPrefixes.some((prefix) => input.startsWith(prefix))
+          ) {
+            return true;
+          }
+          return false; // Reject other Base58 strings (like BTC addresses)
+        }
+
+        // Reject any other input format
+        return false;
+      }
+
+      // Enhanced transaction loading with multi-chain support
+      async function loadTransactions(inputValue = null) {
+        const input =
+          inputValue ||
+          document.getElementById("transactionInput").value.trim();
+        const output = document.getElementById("transactionsOutput");
+        const balanceDiv = document.getElementById("transactionBalance");
+        const button = document.getElementById("searchButton");
+
+        if (!input) {
+          showNotification(
+            "Please enter a TON address or private key",
+            "warning"
+          );
+          return;
+        }
+
+        // Validate input for address search mode
+        if (validateTransactionHash(input)) {
+          output.innerHTML = `
+            <div class="error-state">
+              <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="error-message">
+                <h3>Invalid Input for Address Search</h3>
+                <p>You've entered a transaction hash, but this section is for TON addresses and private keys only.</p>
+                <p>Please switch to "Transaction Hash" mode to search for transaction hashes, or enter a valid TON address or private key (TON/FLO/BTC format).</p>
+              </div>
+            </div>
+          `;
+          showNotification(
+            "Transaction hashes not allowed in address search mode",
+            "error"
+          );
+          return;
+        }
+
+        if (!isValidAddressOrPrivateKey(input)) {
+          output.innerHTML = `
+            <div class="error-state">
+              <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="error-message">
+                <h3>Invalid Input Format</h3>
+                <p>The input doesn't appear to be a valid TON address or private key.</p>
+                <p>Please enter:</p>
+                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                  <li>A TON address (starts with EQ, UQ)</li>
+                  <li>A TON/FLO/BTC private key</li>
+                </ul>
+              </div>
+            </div>
+          `;
+          showNotification("Invalid address or private key format", "error");
+          return;
+        }
+
+        const loadingSection = document.getElementById("transactionLoading");
+        const filterSection = document.getElementById(
+          "transactionFilterSection"
+        );
+        const paginationSection = document.getElementById("paginationSection");
+
+        output.innerHTML = "";
+        loadingSection.style.display = "block";
+        filterSection.style.display = "none";
+        paginationSection.style.display = "none";
+
+        button.disabled = true;
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+
+        let finalAddress = input;
+
+        // Validate and convert input to TON address
+        try {
+          // Check if input is already a TON address
+          if (validateTonAddress(input)) {
+            finalAddress = input;
+          } else {
+            // Try to derive TON address from private key (multi-chain support)
+            const hexOnly = /^[0-9a-fA-F]+$/.test(input);
+
+            if (hexOnly && (input.length === 64 || input.length === 128)) {
+              // Direct TON hex private key
+              const tonPrivateKey =
+                input.length === 128 ? input.substring(0, 64) : input;
+              const { address } = await tonBlockchainAPI.getSenderWallet(
+                tonPrivateKey
+              );
+              finalAddress = address.toString(true, true, true);
+              finalAddress = await convertTob64(finalAddress);
+            } else {
+              // Try multi-chain conversion (TON/FLO/BTC)
+              const walletData = await tonCrypto.recoverFromInput(input);
+              if (walletData.TON && walletData.TON.address) {
+                finalAddress = walletData.TON.address;
+                finalAddress = await convertTob64(finalAddress);
+              } else {
+                throw new Error(
+                  "Invalid input: not a valid TON address or private key"
+                );
+              }
+            }
+          }
+        } catch (conversionError) {
+          loadingSection.style.display = "none";
+          button.disabled = false;
+          button.innerHTML = originalHTML;
+
+          output.innerHTML = `
+            <div class="error-state">
+              <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="error-message">
+                <h3>Invalid Input</h3>
+                <p>Please enter a valid TON address or private key (TON/FLO/BTC format).</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Error: ${conversionError.message}</p>
+              </div>
+            </div>
+          `;
+          showNotification("Invalid address or private key format", "error");
+          return;
+        }
+
+        currentAddress = finalAddress;
+        beforeLt = null;
+        allFetched = false;
+        transactions = [];
+        currentPage = 0;
+
+        try {
+          // Load balances
+          balanceDiv.style.display = "block";
+          const tonBalanceElement = document.getElementById("tonBalance");
+          const usdtBalanceElement = document.getElementById("usdtBalance");
+          const addressDisplay = document.getElementById(
+            "transactionAddressDisplay"
+          );
+          const displayedAddress = document.getElementById("displayedAddress");
+
+          // Show address
+          addressDisplay.style.display = "block";
+          displayedAddress.textContent = finalAddress;
+
+          // Show loading for both balances
+          tonBalanceElement.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Loading TON...';
+          usdtBalanceElement.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Loading USDT...';
+
+          let tonBalanceValue = null;
+
+          await Promise.all([
+            (async () => {
+              try {
+                const tonBalance = await tonBlockchainAPI.getTonBalance(
+                  finalAddress
+                );
+                tonBalanceValue = tonBalance;
+                tonBalanceElement.innerHTML = `${tonBalance.toFixed(
+                  6
+                )} <span class="currency">TON</span>`;
+              } catch (error) {
+                tonBalanceElement.innerHTML = "Error loading TON";
+              }
+            })(),
+            (async () => {
+              try {
+                const usdtBalance = await tonBlockchainAPI.getUsdtBalance(
+                  finalAddress
+                );
+                usdtBalanceElement.innerHTML = `${usdtBalance.toFixed(
+                  6
+                )} <span class="currency">USDT</span>`;
+              } catch (error) {
+                usdtBalanceElement.innerHTML = `0.00 <span class="currency">USDT</span>`;
+              }
+            })(),
+            fetchTransactions(finalAddress),
+          ]);
+
+          // Save successfully searched address to database
+          if (tonBalanceValue !== null) {
+            let sourceInfo = null;
+            if (input !== finalAddress) {
+              try {
+                // Detect the blockchain type of the private key
+                let blockchainType = "UNKNOWN";
+                let originalAddress = input;
+
+                // Check if it's a hex private key (TON format)
+                const hexOnly = /^[0-9a-fA-F]+$/.test(input);
+                if (hexOnly && (input.length === 64 || input.length === 128)) {
+                  blockchainType = "TON";
+                  // For hex private key, derive the address
+                  try {
+                    const tonPrivateKey =
+                      input.length === 128 ? input.substring(0, 64) : input;
+                    const { address } = await tonBlockchainAPI.getSenderWallet(
+                      tonPrivateKey
+                    );
+                    originalAddress = address.toString(true, true, true);
+                  } catch (error) {
+                    originalAddress = "Invalid TON Private Key";
+                  }
+                } else {
+                  // Try to determine blockchain from multi-chain recovery
+                  try {
+                    const walletData = await tonCrypto.recoverFromInput(input);
+
+                    // Determine blockchain type based on WIF format starting characters
+                    // FLO private keys typically start with 'R' (mainnet)
+                    // BTC private keys typically start with '5', 'K', or 'L' (mainnet)
+                    if (input.startsWith("R")) {
+                      blockchainType = "FLO";
+                      originalAddress = walletData.FLO.address;
+                    } else if (
+                      input.startsWith("5") ||
+                      input.startsWith("K") ||
+                      input.startsWith("L")
+                    ) {
+                      blockchainType = "BTC";
+                      originalAddress = walletData.BTC.address;
+                    } else {
+                      // For other formats, check which addresses were generated
+                      if (
+                        walletData.FLO &&
+                        walletData.FLO.address &&
+                        walletData.FLO.privateKey === input
+                      ) {
+                        blockchainType = "FLO";
+                        originalAddress = walletData.FLO.address;
+                      } else if (
+                        walletData.BTC &&
+                        walletData.BTC.address &&
+                        walletData.BTC.privateKey === input
+                      ) {
+                        blockchainType = "BTC";
+                        originalAddress = walletData.BTC.address;
+                      } else {
+                        blockchainType = "BTC";
+                        originalAddress = walletData.BTC.address;
+                      }
+                    }
+                  } catch (error) {
+                    console.warn("Could not determine blockchain type:", error);
+                    blockchainType = "UNKNOWN";
+                    originalAddress = input;
+                  }
+                }
+
+                sourceInfo = {
+                  originalPrivateKey: input,
+                  originalAddress: originalAddress,
+                  blockchain: blockchainType,
+                  derivedTonAddress: finalAddress,
+                };
+              } catch (error) {
+                console.error("Error detecting blockchain type:", error);
+                sourceInfo = {
+                  originalPrivateKey: input,
+                  originalAddress: input,
+                  blockchain: "UNKNOWN",
+                  derivedTonAddress: finalAddress,
+                };
+              }
+            }
+
+            // Save to database with source info
+            if (searchedAddressDB) {
+              try {
+                await searchedAddressDB.saveSearchedAddress(
+                  finalAddress,
+                  tonBalanceValue,
+                  Date.now(),
+                  sourceInfo
+                );
+
+                await updateSearchedAddressesList();
+              } catch (error) {
+                console.error("Failed to save address to database:", error);
+              }
+            }
+          }
+
+          filterSection.style.display = "block";
+
+          if (transactions.length > 0) {
+            paginationSection.style.display = "flex";
+
+            await renderPage();
+
+            loadingSection.style.display = "none";
+          } else {
+            loadingSection.style.display = "none";
+            output.innerHTML = `
+              <div class="card">
+                <div class="loading-state">
+                  <i class="fas fa-inbox"></i>
+                  <p>No transactions found for this address</p>
+                </div>
+              </div>
+            `;
+          }
+
+          showNotification("Transactions loaded successfully!", "success");
+        } catch (error) {
+          console.error("Transaction loading error:", error);
+          output.innerHTML = `
+            <div class="error-state">
+              <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="error-message">
+                <h3>Loading Failed</h3>
+                <p>Unable to load transaction data. Please check your input and try again.</p>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem;">Error: ${error.message}</p>
+              </div>
+            </div>
+          `;
+          balanceDiv.style.display = "none";
+          showNotification("Failed to load transaction data", "error");
+        } finally {
+          button.disabled = false;
+          button.innerHTML = originalHTML;
+          loadingSection.style.display = "none";
+        }
+      }
+
+      // Update pagination controls
+      function updatePagination() {
+        // Calculate filtered transactions for pagination
+        const filteredAllTxs = [];
+        for (const tx of transactions) {
+          const hasIncoming = tx.in_msg && tx.in_msg.source;
+          const hasOutgoing = tx.out_msgs && tx.out_msgs.length > 0;
+
+          if (
+            currentFilter === "all" ||
+            (currentFilter === "received" && hasIncoming) ||
+            (currentFilter === "sent" && hasOutgoing)
+          ) {
+            filteredAllTxs.push(tx);
+          }
+        }
+
+        const totalPages = Math.ceil(filteredAllTxs.length / pageSize);
+        const startItem =
+          filteredAllTxs.length === 0 ? 0 : currentPage * pageSize + 1;
+        const endItem = Math.min(
+          (currentPage + 1) * pageSize,
+          filteredAllTxs.length
+        );
+
+        // Update pagination info
+        const filterText = currentFilter === "all" ? "" : ` ${currentFilter}`;
+        document.getElementById(
+          "paginationInfo"
+        ).textContent = `Showing ${startItem}-${endItem} of ${filteredAllTxs.length}${filterText} transactions`;
+
+        // Update previous/next buttons
+        document.getElementById("prevBtn").disabled = currentPage === 0;
+        document.getElementById("nextBtn").disabled =
+          (currentPage + 1) * pageSize >= filteredAllTxs.length && allFetched;
+
+        // Generate page numbers
+        generatePageNumbers(totalPages);
+      }
+
+      // Generate page number buttons
+      function generatePageNumbers(totalPages) {
+        const pageNumbers = document.getElementById("pageNumbers");
+        pageNumbers.innerHTML = "";
+
+        if (totalPages <= 1) return;
+
+        const maxVisiblePages = 5;
+        const currentDisplayPage = currentPage + 1;
+        let startPage = Math.max(
+          1,
+          currentDisplayPage - Math.floor(maxVisiblePages / 2)
+        );
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage < maxVisiblePages - 1) {
+          startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          const pageBtn = document.createElement("button");
+          pageBtn.className = `page-number ${
+            i === currentDisplayPage ? "active" : ""
+          }`;
+          pageBtn.textContent = i;
+          pageBtn.onclick = () => goToPage(i);
+          pageNumbers.appendChild(pageBtn);
+        }
+      }
+
+      // Change page (previous/next) - using lt-based pagination
+      async function changePage(direction) {
+        showPaginationLoading();
+
+        try {
+          if (direction === 1) {
+            // Next page
+            const nextStart = (currentPage + 1) * pageSize;
+            if (nextStart >= transactions.length && !allFetched) {
+              await fetchTransactions(currentAddress, true);
+            }
+            if (
+              (currentPage + 1) * pageSize <= transactions.length ||
+              !allFetched
+            ) {
+              currentPage++;
+              await renderPage();
+            }
+          } else if (direction === -1) {
+            // Previous page
+            if (currentPage > 0) {
+              currentPage--;
+              await renderPage();
+            }
+          }
+        } finally {
+          hidePaginationLoading();
+        }
+      }
+
+      // Go to specific page
+      async function goToPage(page) {
+        const targetPage = page - 1;
+        if (targetPage >= 0 && targetPage !== currentPage) {
+          showPaginationLoading();
+
+          try {
+            currentPage = targetPage;
+
+            // Check if we need to fetch more transactions
+            const requiredTxs = (targetPage + 1) * pageSize;
+            if (requiredTxs > transactions.length && !allFetched) {
+              await fetchTransactions(currentAddress, true);
+            }
+
+            await renderPage();
+          } finally {
+            hidePaginationLoading();
+          }
+        }
+      }
+
+      // Pagination loading functions
+      function showPaginationLoading() {
+        const output = document.getElementById("transactionsOutput");
+        output.innerHTML = `
+          <div class="transaction-loading">
+            <div class="loading-container">
+              <div class="loading-spinner"></div>
+              <div class="loading-text">Loading transactions...</div>
+            </div>
+          </div>
+        `;
+
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+
+        const prevOriginal = prevBtn.innerHTML;
+        const nextOriginal = nextBtn.innerHTML;
+
+        prevBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+        // Store original content for restoration
+        prevBtn.dataset.original = prevOriginal;
+        nextBtn.dataset.original = nextOriginal;
+
+        // Disable page number buttons
+        document.querySelectorAll(".page-number").forEach((btn) => {
+          btn.disabled = true;
+          btn.style.opacity = "0.5";
+        });
+      }
+
+      function hidePaginationLoading() {
+        // Restore pagination buttons
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+
+        // Restore original button content
+        if (prevBtn.dataset.original) {
+          prevBtn.innerHTML = prevBtn.dataset.original;
+          delete prevBtn.dataset.original;
+        }
+
+        if (nextBtn.dataset.original) {
+          nextBtn.innerHTML = nextBtn.dataset.original;
+          delete nextBtn.dataset.original;
+        }
+
+        // Re-enable page number buttons
+        document.querySelectorAll(".page-number").forEach((btn) => {
+          btn.disabled = false;
+          btn.style.opacity = "1";
+        });
+
+        updatePagination();
+      }
+
+      // Filter transactions functionality
+      let currentFilter = "all";
+
+      async function filterTransactions(filter) {
+        showPaginationLoading();
+
+        try {
+          currentFilter = filter;
+
+          // Update active button
+          document.querySelectorAll(".filter-btn").forEach((btn) => {
+            btn.classList.remove("active");
+          });
+          document
+            .querySelector(`[data-filter="${filter}"]`)
+            .classList.add("active");
+
+          // Re-render current page with filter
+          await renderPage();
+        } finally {
+          hidePaginationLoading();
+        }
+      }
+
+      // Validation function for recover wallet (only private keys,)
+      function isValidRecoverPrivateKey(input) {
+        // Check if it's a hex private key (64 or 128 characters) - TON format
+        const hexOnly = /^[0-9a-fA-F]+$/.test(input);
+        if (hexOnly && (input.length === 64 || input.length === 128)) {
+          return true;
+        }
+
+        // Check for TON/FLO/BTC private key format (WIF - Wallet Import Format)
+        const base58Regex =
+          /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
+        if (
+          base58Regex.test(input) &&
+          input.length >= 51 &&
+          input.length <= 56
+        ) {
+          // Only accept private keys with specific prefixes for TON/FLO/BTC
+          const validPrivateKeyPrefixes = ["R", "K", "L", "T"];
+          if (
+            validPrivateKeyPrefixes.some((prefix) => input.startsWith(prefix))
+          ) {
+            return true;
+          }
+        }
+
+        return false;
+      }
+
+      // Recover wallet functionality
+      async function recoverWallet() {
+        const privateKeyInput = document
+          .getElementById("recoverPrivateKey")
+          .value.trim();
+        const output = document.getElementById("recoverOutput");
+        const button = document.querySelector(
+          'button[onclick="recoverWallet()"]'
+        );
+
+        if (!privateKeyInput) {
+          showNotification("Please enter a private key", "warning");
+          return;
+        }
+
+        // Validate private key format
+        if (!isValidRecoverPrivateKey(privateKeyInput)) {
+          output.innerHTML = `
+            <div class="error-state">
+              <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div class="error-message">
+                <h3>Invalid Private Key Format</h3>
+                <p>Please enter a valid private key (TON/FLO/BTC format).</p>
+                <p>Addresses and other formats are not supported.</p>
+              </div>
+            </div>
+          `;
+          showNotification(
+            "Invalid private key format - only TON/FLO/BTC private keys supported",
+            "error"
+          );
+          return;
+        }
+
+        // Show loading state
+        const originalHTML = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> Recovering...';
+
+        try {
+          let wallet;
+          if (typeof tonCrypto !== "undefined") {
+            wallet = await tonCrypto.recoverFromInput(privateKeyInput);
+          }
+          const tonData = wallet.TON || wallet;
+          const friendlyTonAddress = await convertTob64(tonData.address);
+
+          output.innerHTML = `
+                    <div class="wallet-generated-success">
+                        <div class="success-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="success-message">
+                            <h3>Addresses Recovered Successfully!</h3>
+                            <p>Your multi-blockchain addresses have been recovered. All addresses are derived from the same private key.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="blockchain-section">
+                        <div class="blockchain-header">
+                            <h4><i class="fas fa-diamond"></i> TON Blockchain</h4>
+                            <span class="blockchain-badge primary">Primary</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <label><i class="fas fa-map-marker-alt"></i> Address</label>
+                            <div class="value-container">
+                                <code>${friendlyTonAddress || "N/A"}</code>
+                                <button class="btn-icon" onclick="copyToClipboard('${
+                                  friendlyTonAddress || ""
+                                }')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <label><i class="fas fa-key"></i>    Private Key</label>
+                            <div class="value-container">
+                                <code>${tonData.privateKey || "N/A"}</code>
+                                <button class="btn-icon" onclick="copyToClipboard('${
+                                  tonData.privateKey || ""
+                                }')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        
+                    </div>
+                    
+                    <div class="blockchain-section">
+                        <div class="blockchain-header">
+                            <h4><i class="fas fa-coins"></i> FLO Blockchain</h4>
+                            <span class="blockchain-badge secondary">Secondary</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <label><i class="fas fa-map-marker-alt"></i> Address</label>
+                            <div class="value-container">
+                                <code>${wallet.FLO?.address || "N/A"}</code>
+                                <button class="btn-icon" onclick="copyToClipboard('${
+                                  wallet.FLO?.address || ""
+                                }')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <label><i class="fas fa-key"></i> Private Key</label>
+                            <div class="value-container">
+                                <code>${wallet.FLO?.privateKey || "N/A"}</code>
+                                <button class="btn-icon" onclick="copyToClipboard('${
+                                  wallet.FLO?.privateKey || ""
+                                }')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="blockchain-section">
+                        <div class="blockchain-header">
+                            <h4><i class="fab fa-bitcoin"></i> BTC Blockchain</h4>
+                            <span class="blockchain-badge secondary">Secondary</span>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <label><i class="fas fa-map-marker-alt"></i> Address</label>
+                            <div class="value-container">
+                                <code>${wallet.BTC?.address || "N/A"}</code>
+                                <button class="btn-icon" onclick="copyToClipboard('${
+                                  wallet.BTC?.address || ""
+                                }')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-row">
+                            <label><i class="fas fa-key"></i> Private Key</label>
+                            <div class="value-container">
+                                <code>${wallet.BTC?.privateKey || "N/A"}</code>
+                                <button class="btn-icon" onclick="copyToClipboard('${
+                                  wallet.BTC?.privateKey || ""
+                                }')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+          showNotification("Recovered successfully!", "success");
+
+          document.getElementById("recoverPrivateKey").value = "";
+        } catch (error) {
+          output.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="error-message">
+                            <h3>Recovery Failed</h3>
+                            <p>Unable to recover address from the provided private key. Please ensure you've entered a valid TON/FLO/BTC private key.</p>
+                            
+                        </div>
+                    </div>
+                `;
+          showNotification(
+            "Failed to recover address from private key",
+            "error"
+          );
+        } finally {
+          button.disabled = false;
+          button.innerHTML = originalHTML;
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", async function () {
+        // Show loading screen
+        const loadingScreen = document.createElement("div");
+        loadingScreen.className = "loading-screen";
+        loadingScreen.innerHTML = `
+          <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3>Loading Ton Wallet</h3>
+          </div>
+        `;
+        document.body.appendChild(loadingScreen);
+
+        setTimeout(() => {
+          loadingScreen.style.opacity = "0";
+          setTimeout(() => {
+            loadingScreen.remove();
+          }, 500);
+        }, 1500);
+
+        // Initialize search interface
+        updateSearchInterface("address");
+
+        // Initialize searched addresses database
+        await initializeSearchDB();
+
+        // Set up searched addresses clear all button
+        const clearAllBtn = document.getElementById(
+          "clearAllSearchedAddresses"
+        );
+        if (clearAllBtn) {
+          clearAllBtn.addEventListener("click", clearAllSearchedAddresses);
+        }
+      });
+
+      // Confirmation popup functions
+      function showConfirmationPopup(
+        senderAddress,
+        receiverAddress,
+        amount,
+        onConfirm
+      ) {
+        document.getElementById("confirmAmount").textContent = `${amount} TON`;
+        document.getElementById("confirmFrom").textContent = senderAddress;
+        document.getElementById("confirmTo").textContent = receiverAddress;
+
+        const confirmBtn = document.getElementById("confirmSendBtn");
+
+        // Remove any existing event listeners by cloning the button
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+        // Add the new event listener
+        newConfirmBtn.addEventListener("click", function () {
+          closeConfirmationPopup();
+          onConfirm();
+        });
+
+        // Show the popup
+        document.getElementById("confirmationPopup").style.display = "block";
+        document.body.style.overflow = "hidden";
+      }
+
+      // Function to close confirmation popup
+      function closeConfirmationPopup() {
+        document.getElementById("confirmationPopup").style.display = "none";
+        document.body.style.overflow = "auto";
+      }
+
+      // Click outside modal to close
+      document.addEventListener("DOMContentLoaded", function () {
+        const confirmationPopup = document.getElementById("confirmationPopup");
+        if (confirmationPopup) {
+          confirmationPopup.addEventListener("click", function (event) {
+            if (event.target === confirmationPopup) {
+              closeConfirmationPopup();
+            }
+          });
+        }
+
+        handleSharedLinks();
+      });
+
+      // Shareable link functionality
+      function shareAddress() {
+        const currentAddress =
+          document.getElementById("displayedAddress").textContent;
+        if (!currentAddress) {
+          showNotification("No address to share", "error");
+          return;
+        }
+
+        const shareUrl = `${window.location.origin}${
+          window.location.pathname
+        }#transactions?address=${encodeURIComponent(currentAddress)}`;
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(shareUrl)
+            .then(() => {
+              showNotification(
+                "Shareable link copied to clipboard!",
+                "success"
+              );
+            })
+            .catch(() => {
+              showShareFallback(shareUrl);
+            });
+        } else {
+          showShareFallback(shareUrl);
+        }
+      }
+
+      function showShareFallback(url) {
+        const textArea = document.createElement("textarea");
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand("copy");
+          showNotification("Shareable link copied to clipboard!", "success");
+        } catch (err) {
+          showNotification("Please copy this link: " + url, "info");
+        }
+        document.body.removeChild(textArea);
+      }
+
+      function handleSharedLinks() {
+        if (window.location.hash) {
+          const hash = window.location.hash.substring(1);
+
+          if (hash.startsWith("transactions")) {
+            const params = new URLSearchParams(hash.split("?")[1] || "");
+            const address = params.get("address");
+
+            // Show the transactions page first
+            showPage("transactions");
+
+            if (address) {
+              // Pre-fill the address and load transactions
+              document.getElementById("transactionInput").value = address;
+              showNotification("Loading shared address data...", "info");
+              setTimeout(() => {
+                loadTransactions(address);
+              }, 100);
+            }
+
+            // Clear the hash from URL after processing
+            history.replaceState(null, null, window.location.pathname);
+          }
+        }
+      }
+
+      const originalLoadTransactions = loadTransactions;
+      window.loadTransactions = async function (inputValue = null) {
+        await originalLoadTransactions(inputValue);
+
+        // Show the share button when balance is displayed
+        const balanceSection = document.getElementById("transactionBalance");
+        const shareBtn = document.getElementById("shareAddressBtn");
+        if (
+          balanceSection &&
+          balanceSection.style.display !== "none" &&
+          shareBtn
+        ) {
+          shareBtn.style.display = "inline-flex";
+        }
+      };
+    </script>
+  </body>
+</html>
