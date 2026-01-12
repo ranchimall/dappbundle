@@ -1,0 +1,2225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hedera Wallet - RanchiMall</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="hedera_favicon.png?v=1">
+   
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div id="logo" class="app-brand">
+          <svg id="main_logo" class="icon" viewBox="0 0 27.25 32">
+            <title>RanchiMall</title>
+            <path
+              d="M27.14,30.86c-.74-2.48-3-4.36-8.25-6.94a20,20,0,0,1-4.2-2.49,6,6,0,0,1-1.25-1.67,4,4,0,0,1,0-2.26c.37-1.08.79-1.57,3.89-4.55a11.66,11.66,0,0,0,3.34-4.67,6.54,6.54,0,0,0,.05-2.82C20,3.6,18.58,2,16.16.49c-.89-.56-1.29-.64-1.3-.24a3,3,0,0,1-.3.72l-.3.55L13.42.94C13,.62,12.4.26,12.19.15c-.4-.2-.73-.18-.72.05a9.39,9.39,0,0,1-.61,1.33s-.14,0-.27-.13C8.76.09,8-.27,8,.23A11.73,11.73,0,0,1,6.76,2.6C4.81,5.87,2.83,7.49.77,7.49c-.89,0-.88,0-.61,1,.22.85.33.92,1.09.69A5.29,5.29,0,0,0,3,8.33c.23-.17.45-.29.49-.26a2,2,0,0,1,.22.63A1.31,1.31,0,0,0,4,9.34a5.62,5.62,0,0,0,2.27-.87L7,8l.13.55c.19.74.32.82,1,.65a7.06,7.06,0,0,0,3.46-2.47l.6-.71-.06.64c-.17,1.63-1.3,3.42-3.39,5.42L6.73,14c-3.21,3.06-3,5.59.6,8a46.77,46.77,0,0,0,4.6,2.41c.28.13,1,.52,1.59.87,3.31,2,4.95,3.92,4.95,5.93a2.49,2.49,0,0,0,.07.77h0c.09.09,0,.1.9-.14a2.61,2.61,0,0,0,.83-.32,3.69,3.69,0,0,0-.55-1.83A11.14,11.14,0,0,0,17,26.81a35.7,35.7,0,0,0-5.1-2.91C9.37,22.64,8.38,22,7.52,21.17a3.53,3.53,0,0,1-1.18-2.48c0-1.38.71-2.58,2.5-4.23,2.84-2.6,3.92-3.91,4.67-5.65a3.64,3.64,0,0,0,.42-2A3.37,3.37,0,0,0,13.61,5l-.32-.74.29-.48c.17-.27.37-.63.46-.8l.15-.3.44.64a5.92,5.92,0,0,1,1,2.81,5.86,5.86,0,0,1-.42,1.94c0,.12-.12.3-.15.4a9.49,9.49,0,0,1-.67,1.1,28,28,0,0,1-4,4.29C8.62,15.49,8.05,16.44,8,17.78a3.28,3.28,0,0,0,1.11,2.76c.95,1,2.07,1.74,5.25,3.32,3.64,1.82,5.22,2.9,6.41,4.38A4.78,4.78,0,0,1,21.94,31a3.21,3.21,0,0,0,.14.92,1.06,1.06,0,0,0,.43-.05l.83-.22.46-.12-.06-.46c-.21-1.53-1.62-3.25-3.94-4.8a37.57,37.57,0,0,0-5.22-2.82A13.36,13.36,0,0,1,11,21.19a3.36,3.36,0,0,1-.8-4.19c.41-.85.83-1.31,3.77-4.15,2.39-2.31,3.43-4.13,3.43-6a5.85,5.85,0,0,0-2.08-4.29c-.23-.21-.44-.43-.65-.65A2.5,2.5,0,0,1,15.27.69a10.6,10.6,0,0,1,2.91,2.78A4.16,4.16,0,0,1,19,6.16a4.91,4.91,0,0,1-.87,3c-.71,1.22-1.26,1.82-4.27,4.67a9.47,9.47,0,0,0-2.07,2.6,2.76,2.76,0,0,0-.33,1.54,2.76,2.76,0,0,0,.29,1.47c.57,1.21,2.23,2.55,4.65,3.73a32.41,32.41,0,0,1,5.82,3.24c2.16,1.6,3.2,3.16,3.2,4.8a1.94,1.94,0,0,0,.09.76,4.54,4.54,0,0,0,1.66-.4C27.29,31.42,27.29,31.37,27.14,30.86ZM6.1,7h0a3.77,3.77,0,0,1-1.46.45L4,7.51l.68-.83a25.09,25.09,0,0,0,3-4.82A12,12,0,0,1,8.28.76c.11-.12.77.32,1.53,1l.63.58-.57.84A10.34,10.34,0,0,1,6.1,7Zm5.71-1.78A9.77,9.77,0,0,1,9.24,7.18h0a5.25,5.25,0,0,1-1.17.28l-.58,0,.65-.78a21.29,21.29,0,0,0,2.1-3.12c.22-.41.42-.76.44-.79s.5.43.9,1.24L12,5ZM13.41,3a2.84,2.84,0,0,1-.45.64,11,11,0,0,1-.9-.91l-.84-.9.19-.45c.34-.79.39-.8,1-.31A9.4,9.4,0,0,1,13.80,2.33q-.18.34-.39.69Z"
+            />
+          </svg>
+          <div class="app-name">
+            <div class="app-name__company">RanchiMall</div>
+            <h4 class="app-name__title">Hedera Wallet</h4>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+            <i class="fas fa-moon" id="themeIcon"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar Overlay (for mobile) -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar Navigation (Desktop) -->
+    <aside id="sidebar" class="sidebar">
+      <ul class="sidebar-menu">
+        <li>
+          <a href="#" class="nav-link active" data-page="generate">
+            <i class="fas fa-plus-circle"></i>
+            <span>Generate</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-page="transactions">
+            <i class="fas fa-history"></i>
+            <span>Transactions</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-page="send">
+            <i class="fas fa-paper-plane"></i>
+            <span>Send</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-page="recover">
+            <i class="fas fa-key"></i>
+            <span>Recover</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <div class="container">
+        <main class="main-content">
+            <!-- Generate Page -->
+            <div id="generate-tab" class="page tab-content active">
+              <div class="page-header">
+                <h2><i class="fas fa-wallet"></i> Generate Multi-Blockchain Address</h2>
+                <p>Generate addresses for BTC, FLO, and HBAR from a single private key</p>
+              </div>
+
+              <div class="generate-wallet-intro">
+                <div class="intro-icon">
+                  <i class="fas fa-wallet"></i>
+                </div>
+                <div class="intro-content">
+                  <h3>One Key, Multiple Blockchains</h3>
+                  <p>Generate a single private key that works across BTC, FLO, and HBAR networks. This creates a unified experience across multiple blockchains.</p>
+                </div>
+              </div>
+
+              <div class="card generate-actions">
+                <button id="generateBtn" class="btn btn-primary btn-block" onclick="generateWallet()">
+                  <i class="fas fa-wallet"></i> Generate
+                </button>
+              </div>
+
+              <div id="generate-results" class="output" style="display: none;">
+                <!-- HBAR Section -->
+                <div class="blockchain-section algo-primary">
+                  <div class="blockchain-header">
+                    <h4><svg class="chain-icon-svg" viewBox="700 650 1100 1200" fill="currentColor"><path d="M1758.12,1790.62H1599.38V1453.13H900.62v337.49H741.87V696.25H900.62v329.37h698.76V696.25h158.75Zm-850-463.75h698.75V1152.5H908.12Z"/></svg> HBAR</h4>
+                    <span class="blockchain-badge primary">Primary</span>
+                  </div>
+                  <div class="detail-row">
+                    <label>EVM Address</label>
+                    <div class="detail-value-wrapper">
+                      <code id="hbar-evmAddress" class="detail-value">-</code>
+                      <button class="input-action-btn clear-btn" onclick="copyToClipboard('hbar-evmAddress')">
+                        <i class="fa-regular fa-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="detail-row">
+                    <label>Private Key</label>
+                    <div class="input-with-actions">
+                      <input type="password" id="hbar-privateKey" class="form-input" value="-" readonly />
+                      <button type="button" class="input-action-btn password-toggle" onclick="toggleVisibility('hbar-privateKey')">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button type="button" class="input-action-btn clear-btn" onclick="copyPrivateKey('hbar-privateKey')">
+                        <i class="fa-regular fa-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- FLO Section -->
+                <div class="blockchain-section">
+                  <div class="blockchain-header">
+                    <h4><i class="fas fa-spa"></i> FLO</h4>
+                    <span class="blockchain-badge secondary">Secondary</span>
+                  </div>
+                  <div class="detail-row">
+                    <label>Address</label>
+                    <div class="detail-value-wrapper">
+                      <code id="flo-address" class="detail-value">-</code>
+                      <button class="input-action-btn clear-btn" onclick="copyToClipboard('flo-address')">
+                        <i class="fa-regular fa-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="detail-row">
+                    <label>Private Key</label>
+                    <div class="input-with-actions">
+                      <input type="password" id="flo-privateKey" class="form-input" value="-" readonly />
+                      <button type="button" class="input-action-btn password-toggle" onclick="toggleVisibility('flo-privateKey')">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button type="button" class="input-action-btn clear-btn" onclick="copyPrivateKey('flo-privateKey')">
+                        <i class="fa-regular fa-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- BTC Section -->
+                <div class="blockchain-section">
+                  <div class="blockchain-header">
+                    <h4><i class="fab fa-bitcoin"></i> BTC</h4>
+                    <span class="blockchain-badge secondary">Secondary</span>
+                  </div>
+                  <div class="detail-row">
+                    <label>Address</label>
+                    <div class="detail-value-wrapper">
+                      <code id="btc-address" class="detail-value">-</code>
+                      <button class="input-action-btn clear-btn" onclick="copyToClipboard('btc-address')">
+                        <i class="fa-regular fa-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="detail-row">
+                    <label>Private Key</label>
+                    <div class="input-with-actions">
+                      <input type="password" id="btc-privateKey" class="form-input" value="-" readonly />
+                      <button type="button" class="input-action-btn password-toggle" onclick="toggleVisibility('btc-privateKey')">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                      <button type="button" class="input-action-btn clear-btn" onclick="copyPrivateKey('btc-privateKey')">
+                        <i class="fa-regular fa-copy"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="wallet-security-notice">
+                <div class="notice-icon">
+                  <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="notice-content">
+                  <h4>Security Notice</h4>
+                  <p>Your private keys are generated locally and never leave your device. Make sure to backup your keys securely before using.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recover Page -->
+            <div id="recover-tab" class="page tab-content hidden">
+              <div class="page-header">
+                <h2><i class="fas fa-sync-alt"></i> Recover Multi-Blockchain Address</h2>
+                <p>Recover all blockchain addresses (BTC, FLO, HBAR) from a single private key</p>
+              </div>
+
+              <div class="card">
+                <div class="form-group">
+                  <label for="privateKeyInput"><i class="fas fa-key"></i> Private Key (BTC/FLO/HBAR)</label>
+                  <div class="input-with-actions">
+                    <input type="password" id="privateKeyInput" class="form-input" placeholder="Enter HBAR/FLO/BTC private key" required />
+                    <button type="button" class="input-action-btn password-toggle" onclick="toggleRecoverKeyVisibility()">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" class="input-action-btn clear-btn" onclick="clearInput('privateKeyInput')">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="form-text">Only ECDSA private keys accepted</div>
+                </div>
+
+                <button id="recoverBtn" class="btn btn-primary btn-block" onclick="recoverWallet()">
+                  <i class="fas fa-sync-alt"></i> Recover
+                </button>
+
+                <div id="recover-results" class="output" style="display: none;">
+                  <!-- HBAR Section -->
+                  <div class="blockchain-section algo-primary">
+                    <div class="blockchain-header">
+                      <h4><svg class="chain-icon-svg" viewBox="700 650 1100 1200" fill="currentColor"><path d="M1758.12,1790.62H1599.38V1453.13H900.62v337.49H741.87V696.25H900.62v329.37h698.76V696.25h158.75Zm-850-463.75h698.75V1152.5H908.12Z"/></svg> HBAR (Hedera)</h4>
+                      <span class="blockchain-badge primary">Primary</span>
+                    </div>
+                    <div class="detail-row">
+                      <label>EVM Address</label>
+                      <div class="detail-value-wrapper">
+                        <code id="recover-hbar-evmAddress" class="detail-value">-</code>
+                        <button class="input-action-btn clear-btn" onclick="copyToClipboard('recover-hbar-evmAddress')">
+                          <i class="fa-regular fa-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="detail-row">
+                      <label>Private Key</label>
+                      <div class="input-with-actions">
+                        <input type="password" id="recover-hbar-privateKey" class="form-input" value="-" readonly />
+                        <button type="button" class="input-action-btn password-toggle" onclick="toggleVisibility('recover-hbar-privateKey')">
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button type="button" class="input-action-btn clear-btn" onclick="copyPrivateKey('recover-hbar-privateKey')">
+                          <i class="fa-regular fa-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- FLO Section -->
+                  <div class="blockchain-section">
+                    <div class="blockchain-header">
+                      <h4><i class="fas fa-spa"></i> FLO</h4>
+                      <span class="blockchain-badge secondary">Secondary</span>
+                    </div>
+                    <div class="detail-row">
+                      <label>Address</label>
+                      <div class="detail-value-wrapper">
+                        <code id="recover-flo-address" class="detail-value">-</code>
+                        <button class="input-action-btn clear-btn" onclick="copyToClipboard('recover-flo-address')">
+                          <i class="fa-regular fa-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="detail-row">
+                      <label>Private Key</label>
+                      <div class="input-with-actions">
+                        <input type="password" id="recover-flo-privateKey" class="form-input" value="-" readonly />
+                        <button type="button" class="input-action-btn password-toggle" onclick="toggleVisibility('recover-flo-privateKey')">
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button type="button" class="input-action-btn clear-btn" onclick="copyPrivateKey('recover-flo-privateKey')">
+                          <i class="fa-regular fa-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- BTC Section -->
+                  <div class="blockchain-section">
+                    <div class="blockchain-header">
+                      <h4><i class="fab fa-bitcoin"></i> BTC</h4>
+                      <span class="blockchain-badge secondary">Secondary</span>
+                    </div>
+                    <div class="detail-row">
+                      <label>Address</label>
+                      <div class="detail-value-wrapper">
+                        <code id="recover-btc-address" class="detail-value">-</code>
+                        <button class="input-action-btn clear-btn" onclick="copyToClipboard('recover-btc-address')">
+                          <i class="fa-regular fa-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="detail-row">
+                      <label>Private Key</label>
+                      <div class="input-with-actions">
+                        <input type="password" id="recover-btc-privateKey" class="form-input" value="-" readonly />
+                        <button type="button" class="input-action-btn password-toggle" onclick="toggleVisibility('recover-btc-privateKey')">
+                          <i class="fas fa-eye"></i>
+                        </button>
+                        <button type="button" class="input-action-btn clear-btn" onclick="copyPrivateKey('recover-btc-privateKey')">
+                          <i class="fa-regular fa-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="wallet-security-notice">
+                <div class="notice-icon">
+                  <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="notice-content">
+                  <h4>Privacy Notice</h4>
+                  <p>Your private key is processed locally and never transmitted to any server. All recovery operations happen in your browser.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Transactions Page -->
+            <div id="transactions-tab" class="page tab-content hidden">
+              <div class="page-header">
+                <h2><i class="fas fa-exchange-alt"></i> HBAR Transactions</h2>
+                <p>Check balance and transaction history for any HBAR address</p>
+              </div>
+
+              <div class="card">
+                <!-- Search Type Selector -->
+                <div class="search-type-selector">
+                  <div class="search-type-label">Search Type</div>
+                  <div class="search-type-options">
+                    <label class="radio-button-container active" id="addressSearchType">
+                      <input type="radio" name="searchType" value="address" checked />
+                      <div class="radio-icon"><i class="fas fa-wallet"></i></div>
+                      <span>HBAR Address</span>
+                    </label>
+                    <label class="radio-button-container" id="hashSearchType">
+                      <input type="radio" name="searchType" value="hash" />
+                      <div class="radio-icon"><i class="fas fa-fingerprint"></i></div>
+                      <span>Transaction Hash</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Address Search Section -->
+                <div id="address-search" class="search-section">
+                  <div class="form-group">
+                    <label for="addressInput"><i class="fas fa-wallet"></i> HBAR Address or Private Key</label>
+                    <div class="input-with-actions">
+                      <input type="text" id="addressInput" class="form-input" placeholder="Enter HBAR address or private key (HBAR/FLO/BTC)" />
+                      <button type="button" class="input-action-btn clear-btn" onclick="clearInput('addressInput')">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                    <div class="form-text">Enter EVM address, Account ID or BTC/FLO/HBAR private key to view transactions</div>
+                  </div>
+                </div>
+
+                <!-- Transaction Hash Search Section -->
+                <div id="hash-search" class="search-section" style="display: none;">
+                  <div class="form-group">
+                    <label for="hashInput"><i class="fas fa-fingerprint"></i> Transaction Hash</label>
+                    <div class="input-with-actions">
+                      <input type="text" id="hashInput" class="form-input" placeholder="Enter transaction hash" />
+                      <button type="button" class="input-action-btn clear-btn" onclick="clearInput('hashInput')">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <button class="btn btn-primary btn-block" onclick="handleSearch()" id="searchBtn">
+                  <i class="fas fa-search"></i> Search
+                </button>
+              </div>
+
+              <!-- Address Results - Balance Display -->
+              <div id="transactions-results" class="balance-info card" style="display: none;">
+                <div class="balance-header">
+                  <h3><i class="fas fa-wallet"></i> Balance</h3>
+                </div>
+                <div class="balance-display">
+                  <div class="balance-amount" id="display-balance">0 <span class="currency">HBAR</span></div>
+                </div>
+                <div class="address-display">
+                  <span class="address-label">Address:</span>
+                  <span class="address-value" id="display-address">-</span>
+                </div>
+              </div>
+
+              <!-- Transaction History Section -->
+              <div id="transactionFilterSection" class="transaction-section" style="display: none;">
+                <div class="transaction-header">
+                  <h3>Transactions</h3>
+                  <div class="transaction-filters">
+                    <button class="filter-btn active" data-filter="all" onclick="filterTransactions('all')" title="All Transactions">
+                      <i class="fas fa-exchange-alt"></i>
+                      <span class="filter-text">All</span>
+                    </button>
+                    <button class="filter-btn" data-filter="receive" onclick="filterTransactions('receive')" title="Received">
+                      <i class="fas fa-arrow-down"></i>
+                      <span class="filter-text">Received</span>
+                    </button>
+                    <button class="filter-btn" data-filter="send" onclick="filterTransactions('send')" title="Sent">
+                      <i class="fas fa-arrow-up"></i>
+                      <span class="filter-text">Sent</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="transaction-list" class="output"></div>
+
+              <div id="tx-pagination" class="pagination-section" style="display: none;">
+                <div class="pagination-info">
+                  <span id="paginationInfo">Page 1 of 1</span>
+                </div>
+                <div class="pagination-controls">
+                  <button class="pagination-btn" id="prev-page-btn" onclick="prevPage()">
+                    <i class="fas fa-chevron-left"></i>
+                    <span class="btn-text">Prev</span>
+                  </button>
+                  <button class="pagination-btn" id="next-page-btn" onclick="nextPage()">
+                    <span class="btn-text">Next</span>
+                    <i class="fas fa-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Recent Searches -->
+              <div id="recent-searches" class="recent-searches" style="display: none;">
+                <div class="recent-header">
+                  <h4><i class="fas fa-history"></i> Recent Searches</h4>
+                  <button class="btn-clear-all" onclick="clearAllRecentSearches()" title="Clear All">
+                    <i class="fas fa-trash-alt"></i> Clear All
+                  </button>
+                </div>
+                <div id="recent-searches-list" class="recent-list">
+                  <!-- Recent searches will be inserted here -->
+                </div>
+              </div>
+
+              <!-- Transaction Hash Details Section -->
+              <div id="hash-details-results" style="display: none;">
+                <div class="tx-details-card card">
+                  <div class="tx-details-header">
+                    <div class="tx-status" id="tx-status">
+                      <i class="fa-solid fa-circle-check"></i>
+                      <span>Confirmed</span>
+                    </div>
+                    <a class="explorer-link" id="tx-explorer-link" href="#" target="_blank">
+                      <i class="fa-solid fa-external-link-alt"></i> View on Explorer
+                    </a>
+                  </div>
+                  
+                  <div class="tx-details-body">
+                    <div class="tx-detail-row">
+                      <span class="detail-label">Transaction ID</span>
+                      <div class="detail-value-wrapper">
+                        <code class="detail-value" id="tx-detail-id">-</code>
+                        <button class="input-action-btn clear-btn" onclick="copyToClipboard('tx-detail-id')">
+                          <i class="fa-regular fa-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="tx-detail-row">
+                      <span class="detail-label">Transaction Hash</span>
+                      <div class="detail-value-wrapper">
+                        <code class="detail-value" id="tx-detail-hash">-</code>
+                        <button class="input-action-btn clear-btn" onclick="copyToClipboard('tx-detail-hash')">
+                          <i class="fa-regular fa-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="tx-detail-row">
+                      <span class="detail-label">Consensus Timestamp</span>
+                      <span class="detail-value" id="tx-detail-timestamp">-</span>
+                    </div>
+                    <div class="tx-detail-row">
+                      <span class="detail-label">Result</span>
+                      <span class="detail-value" id="tx-detail-result">-</span>
+                    </div>
+                    <div class="tx-detail-row">
+                      <span class="detail-label">Type</span>
+                      <span class="detail-value" id="tx-detail-type">-</span>
+                    </div>
+                    <div class="tx-detail-row highlight">
+                      <span class="detail-label">Charged Fee</span>
+                      <span class="detail-value fee" id="tx-detail-fee">-</span>
+                    </div>
+                    <div class="tx-detail-row">
+                      <span class="detail-label">Node</span>
+                      <span class="detail-value" id="tx-detail-node">-</span>
+                    </div>
+                    <div class="tx-detail-row">
+                      <span class="detail-label">Block</span>
+                      <span class="detail-value" id="tx-detail-block">-</span>
+                    </div>
+                    <div class="tx-detail-row" id="tx-memo-row" style="display: none;">
+                      <span class="detail-label">Memo</span>
+                      <span class="detail-value" id="tx-detail-memo">-</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Transfers Section -->
+                  <div id="tx-transfers-section" style="display: none;">
+                    <div class="tx-details-header" style="border-top: 1px solid var(--border); margin-top: 1rem; padding-top: 1rem;">
+                      <div class="tx-status">
+                        <i class="fas fa-exchange-alt"></i>
+                        <span>Transfers</span>
+                      </div>
+                    </div>
+                    <div class="tx-details-body" id="tx-transfers-list">
+                      <!-- Transfers will be populated here -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Send Page -->
+            <div id="send-tab" class="page tab-content hidden">
+              <div class="page-header">
+                <h2><i class="fas fa-paper-plane"></i> Send HBAR</h2>
+                <p>Transfer HBAR to any Hedera address</p>
+              </div>
+
+              <!-- Send Form -->
+              <div class="card">
+                <div class="form-group">
+                  <label for="senderPrivateKey"><i class="fas fa-key"></i> Private Key (BTC/FLO/HBAR)</label>
+                  <div class="input-with-actions">
+                    <input type="password" id="senderPrivateKey" class="form-input" placeholder="Enter BTC/FLO/HBAR private key" oninput="deriveSenderAddress()" />
+                    <button type="button" class="input-action-btn password-toggle" onclick="toggleSendKeyVisibility()">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" class="input-action-btn clear-btn" onclick="clearSenderKey()">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  
+                  <!-- Derived Address & Balance Display -->
+                  <div id="sender-address-display" class="balance-info card" style="display: none; margin-top: 1rem;">
+                    <div class="balance-header">
+                      <h3><i class="fas fa-wallet"></i> Balance</h3>
+                    </div>
+                    <div class="balance-display">
+                      <div class="balance-amount" id="sender-balance">
+                        <i class="fas fa-spinner fa-spin"></i> Loading...
+                      </div>
+                    </div>
+                    <div class="address-display">
+                      <span class="address-label">EVM Address:</span>
+                      <span class="address-value" id="sender-evm-address">-</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="recipientAddress"><i class="fas fa-user"></i> Recipient Address</label>
+                  <div class="input-with-actions">
+                    <input type="text" id="recipientAddress" class="form-input" placeholder="Enter recipient's EVM address (0x...) or Account ID (0.0.xxxx)" />
+                    <button type="button" class="input-action-btn clear-btn" onclick="clearInput('recipientAddress')">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="form-text">EVM address (0x...) or Account ID (0.0.xxxx)</div>
+                </div>
+
+                <div class="form-group">
+                  <label for="sendAmount"><i class="fas fa-coins"></i> Amount (HBAR)</label>
+                  <div class="input-with-actions">
+                    <input type="number" id="sendAmount" class="form-input" placeholder="0.00" step="0.00000001" min="0" />
+                    <button type="button" class="input-action-btn clear-btn" onclick="clearInput('sendAmount')">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <div class="form-text">Minimum: 0.00000001 HBAR</div>
+                </div>
+
+                <!-- Fee Estimation -->
+                <div id="fee-estimate" style="display: none; margin-bottom: 1rem;">
+                  <div class="detail-row" style="background: rgba(99, 102, 241, 0.1); padding: 1rem; border-radius: 0.5rem;">
+                    <label>Estimated Fee</label>
+                    <div class="detail-value" id="estimated-fee" style="color: var(--primary-light);">
+                      Calculating...
+                    </div>
+                  </div>
+                </div>
+
+                <button id="sendBtn" class="btn btn-primary btn-block" onclick="sendHBAR()">
+                  <i class="fas fa-paper-plane"></i> Send HBAR
+                </button>
+              </div>
+
+              <div class="wallet-security-notice">
+                <div class="notice-icon">
+                  <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="notice-content">
+                  <h4>Security Notice</h4>
+                  <p>Always verify the recipient address before sending. Transactions on the blockchain are irreversible.</p>
+                </div>
+              </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Required libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <script src="lib.hedera.js"></script>
+    <script src="hederaCrypto.js"></script>
+    <script src="hederaBlockchainAPI.js"></script>
+    <script src="hederaSearchDB.js"></script>
+    
+    <script>
+        // Clear input helper
+        function clearInput(inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        async function generateWallet() {
+            try {
+                showLoading(true);
+                const result = await hederaCrypto.generateMultiChain();
+                
+                // Display BTC
+                document.getElementById('btc-address').textContent = result.BTC.address;
+                document.getElementById('btc-privateKey').value = result.BTC.privateKey;
+                
+                // Display FLO
+                document.getElementById('flo-address').textContent = result.FLO.address;
+                document.getElementById('flo-privateKey').value = result.FLO.privateKey;
+                
+                // Display HBAR
+                document.getElementById('hbar-evmAddress').textContent = result.HBAR.evmAddress || result.HBAR.address;
+                document.getElementById('hbar-privateKey').value = result.HBAR.privateKey;
+                
+                document.getElementById('generate-results').style.display = 'block';
+                showNotification(' New address generated!', 'success');
+            } catch (error) {
+                console.error('Error generating address:', error);
+                showNotification('❌ Error: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function recoverWallet() {
+            const privateKey = document.getElementById('privateKeyInput').value.trim();
+            
+            if (!privateKey) {
+                showNotification('⚠️ Please enter a private key', 'warning');
+                return;
+            }
+
+            // Check if it's hex format or WIF format
+            const hexOnly = /^[0-9a-fA-F]+$/.test(privateKey);
+            const isValidHex = hexOnly && (privateKey.length === 64 || privateKey.length === 128);
+            
+            // WIF format uses Base58 characters (no 0, O, I, l)
+            const base58Chars = /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
+            const isValidWIF = !hexOnly && base58Chars.test(privateKey) && privateKey.length >= 51 && privateKey.length <= 52;
+            
+            if (!isValidHex && !isValidWIF) {
+                showNotification('⚠️ Invalid private key format.', 'error');
+                return;
+            }
+
+            try {
+                showLoading(true);
+                const result = await hederaCrypto.generateMultiChain(privateKey);
+                
+                // Display BTC
+                document.getElementById('recover-btc-address').textContent = result.BTC.address;
+                document.getElementById('recover-btc-privateKey').value = result.BTC.privateKey;
+                
+                // Display FLO
+                document.getElementById('recover-flo-address').textContent = result.FLO.address;
+                document.getElementById('recover-flo-privateKey').value = result.FLO.privateKey;
+                
+                // Display HBAR
+                document.getElementById('recover-hbar-evmAddress').textContent = result.HBAR.evmAddress || result.HBAR.address;
+                document.getElementById('recover-hbar-privateKey').value = result.HBAR.privateKey;
+                
+                document.getElementById('recover-results').style.display = 'block';
+                showNotification(' Address recovered!', 'success');
+            } catch (error) {
+                console.error('Error recovering address:', error);
+                showNotification('❌ Error: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function toggleRecoverKeyVisibility() {
+            const input = document.getElementById('privateKeyInput');
+            const icon = event.target.closest('.password-toggle')?.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                if (icon) icon.className = 'fas fa-eye';
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification(' Copied!', 'success');
+            });
+        }
+
+        function copyPrivateKey(elementId) {
+            const text = document.getElementById(elementId).value;
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification(' Copied!', 'success');
+            });
+        }
+
+        function toggleVisibility(elementId) {
+            const input = document.getElementById(elementId);
+            const icon = input.closest('.input-with-actions')?.querySelector('.password-toggle i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                if (icon) icon.className = 'fas fa-eye';
+            }
+        }
+
+        function showNotification(message, type) {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.classList.add('show'), 10);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        function showLoading(show) {
+            document.querySelectorAll('.btn-primary').forEach(btn => {
+                btn.disabled = show;
+                if (show) {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                } else {
+                    if (btn.id === 'generateBtn') {
+                        btn.innerHTML = '<i class="fas fa-wallet"></i> Generate';
+                    } else if (btn.id === 'recoverBtn') {
+                        btn.innerHTML = '<i class="fas fa-sync-alt"></i> Recover';
+                    } else if (btn.id === 'searchBtn') {
+                        btn.innerHTML = '<i class="fas fa-search"></i> Search';
+                    }
+                }
+            });
+        }
+
+        // Theme Management
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const icon = document.querySelector('#themeToggle i');
+            if (icon) {
+                icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
+        }
+
+        // Initialize theme toggle
+        document.getElementById('themeToggle')?.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+
+        // Navigation for sidebar and bottom nav
+        function initializeNavigation() {
+            const navLinks = document.querySelectorAll('.nav-link:not(.disabled), .nav-btn:not(.disabled)');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const sidebar = document.getElementById('sidebar');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = link.getAttribute('data-page');
+                    
+                    switchTabByPage(page);
+                    
+                    // Update active states
+                    document.querySelectorAll('.nav-link, .nav-btn').forEach(l => l.classList.remove('active'));
+                    document.querySelectorAll(`[data-page="${page}"]`).forEach(l => l.classList.add('active'));
+                    
+                    // Close sidebar on mobile
+                    if (sidebar) sidebar.classList.remove('active');
+                    if (sidebarOverlay) sidebarOverlay.classList.remove('active');
+                });
+            });
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', () => {
+                    sidebar?.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                });
+            }
+        }
+
+        function switchTabByPage(page) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+                content.classList.add('hidden');
+            });
+            // Show selected tab
+            const targetTab = document.getElementById(`${page}-tab`);
+            if (targetTab) {
+                targetTab.classList.add('active');
+                targetTab.classList.remove('hidden');
+            }
+        }
+
+        // Initialize on DOM ready
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTheme();
+            initializeNavigation();
+        });
+
+        //FUNCTIONS
+        
+        let currentAddress = null;
+        let allTransactions = [];
+        let currentFilter = 'all';
+        let currentSearchType = 'address';
+        let searchDB = new SearchedAddressDB(); // Initialize search database
+        
+        // Pagination state
+        let currentPage = 1;
+        let transactionsPerPage = 10;
+        let nextPageLink = null;
+        let previousPageLinks = []; // Stack to store previous page links
+
+        // Switch between address and transaction hash search
+        function switchSearchType(type) {
+            currentSearchType = type;
+            
+            const addressType = document.getElementById('addressSearchType');
+            const hashType = document.getElementById('hashSearchType');
+            
+            if (type === 'address') {
+                addressType.classList.add('active');
+                hashType.classList.remove('active');
+                document.getElementById('address-search').style.display = 'block';
+                document.getElementById('hash-search').style.display = 'none';
+                document.getElementById('hash-details-results').style.display = 'none';
+                
+                // Show recent searches for address search
+                const recentSearches = document.getElementById('recent-searches');
+                if (recentSearches && recentSearches.querySelector('.recent-item')) {
+                    recentSearches.style.display = 'block';
+                }
+            } else {
+                addressType.classList.remove('active');
+                hashType.classList.add('active');
+                document.getElementById('address-search').style.display = 'none';
+                document.getElementById('hash-search').style.display = 'block';
+                
+                // Hide all address-related sections when switching to hash
+                document.getElementById('transactions-results').style.display = 'none';
+                document.getElementById('transactionFilterSection').style.display = 'none';
+                document.getElementById('tx-pagination').style.display = 'none';
+                
+                // Hide recent searches for transaction hash search
+                const recentSearches = document.getElementById('recent-searches');
+                if (recentSearches) {
+                    recentSearches.style.display = 'none';
+                }
+                
+                // Hide transaction list
+                const transactionList = document.getElementById('transaction-list');
+                if (transactionList) {
+                    transactionList.style.display = 'none';
+                }
+            }
+        }
+
+        // Handle unified search button
+        function handleSearch() {
+            if (currentSearchType === 'address') {
+                searchAddress();
+            } else {
+                searchTransactionHash();
+            }
+        }
+
+        function initializeSearchTypeSelectors() {
+            const addressType = document.getElementById('addressSearchType');
+            const hashType = document.getElementById('hashSearchType');
+            
+            if (addressType) {
+                addressType.addEventListener('click', function() {
+                    switchSearchType('address');
+                });
+            }
+            if (hashType) {
+                hashType.addEventListener('click', function() {
+                    switchSearchType('hash');
+                });
+            }
+        }
+
+        // Search transaction by hash
+        async function searchTransactionHash() {
+            const hash = document.getElementById('hashInput').value.trim();
+            
+            if (!hash) {
+                showNotification('⚠️ Please enter a transaction hash', 'warning');
+                return;
+            }
+
+
+            // Validate transaction hash format
+            const isHexHash = /^0x[a-fA-F0-9]{64,96}$/.test(hash); // EVM transaction hash (64 or 96 chars)
+            const isTransactionId = /^\d+\.\d+\.\d+@\d+\.\d+$/.test(hash); // Hedera transaction ID
+            const isTransactionIdAlt = /^\d+\.\d+\.\d+-\d+-\d+$/.test(hash); // Alternative format
+            
+            if (!isHexHash && !isTransactionId && !isTransactionIdAlt) {
+                showNotification('⚠️ Invalid transaction hash format. Expected:\n- Hex hash (0x...)\n- Transaction ID (0.0.xxxx@seconds.nanos)', 'error');
+                return;
+            }
+
+            const searchBtn = document.getElementById('searchBtn');
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+            
+            // Hide address results and transaction list
+            document.getElementById('transactions-results').style.display = 'none';
+            document.getElementById('transactionFilterSection').style.display = 'none';
+            document.getElementById('tx-pagination').style.display = 'none';
+            
+            const transactionList = document.getElementById('transaction-list');
+            if (transactionList) {
+                transactionList.style.display = 'none';
+            }
+            
+            // Show hash results
+            document.getElementById('hash-details-results').style.display = 'block';
+            
+            try {
+                // Update URL with hash parameter (clear address)
+                const url = new URL(window.location);
+                url.searchParams.set('hash', hash);
+                url.searchParams.delete('address');
+                window.history.pushState({}, '', url);
+                
+                // Fetch transaction details by hash
+                const txDetails = await hederaAPI.getTransactionById(hash);
+                
+                // Display transaction details
+                document.getElementById('tx-detail-id').textContent = txDetails.id;
+                document.getElementById('tx-detail-hash').textContent = txDetails.hash || hash;
+                document.getElementById('tx-detail-timestamp').textContent = hederaAPI.formatTimestamp(txDetails.consensusTimestamp);
+                document.getElementById('tx-detail-result').textContent = txDetails.result || 'SUCCESS';
+                document.getElementById('tx-detail-type').textContent = txDetails.name || 'CRYPTOTRANSFER';
+                document.getElementById('tx-detail-fee').textContent = txDetails.charged_tx_fee.toFixed(8) + ' HBAR';
+                document.getElementById('tx-detail-node').textContent = txDetails.node || 'N/A';
+                document.getElementById('tx-detail-block').textContent = txDetails.block_number || 'N/A';
+                
+                // Show/hide memo row based on content
+                const memoRow = document.getElementById('tx-memo-row');
+                if (txDetails.memo && txDetails.memo.trim() !== '') {
+                    memoRow.style.display = 'flex';
+                    document.getElementById('tx-detail-memo').textContent = txDetails.memo;
+                } else {
+                    memoRow.style.display = 'none';
+                }
+                
+                // Set explorer link 
+                document.getElementById('tx-explorer-link').href = `https://hashscan.io/mainnet/transaction/${txDetails.hash}`;
+                
+                // Display transfers if available
+                if (txDetails.transfers && txDetails.transfers.length > 0) {
+                    document.getElementById('tx-transfers-section').style.display = 'block';
+                    
+                    let transfersHtml = '';
+                    txDetails.transfers.forEach(transfer => {
+                        const amount = transfer.amount / 100000000; // Convert to HBAR
+                        const isPositive = amount > 0;
+                        const color = isPositive ? 'var(--success)' : 'var(--error)';
+                        
+                        transfersHtml += `
+                            <div class="tx-detail-row">
+                                <span class="detail-label">${transfer.account}</span>
+                                <span class="detail-value" style="color: ${color}; font-weight: 600;">
+                                    ${isPositive ? '+' : ''}${amount.toFixed(8)} HBAR
+                                </span>
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('tx-transfers-list').innerHTML = transfersHtml;
+                } else {
+                    document.getElementById('tx-transfers-section').style.display = 'none';
+                }
+                
+                showNotification(' Transaction details loaded!', 'success');
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('❌ Error: ' + error.message, 'error');
+                document.getElementById('hash-details-results').style.display = 'none';
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = '<i class="fas fa-search"></i> Search';
+            }
+        }
+
+        // Search address and load balance + transactions
+        async function searchAddress() {
+            const input = document.getElementById('addressInput').value.trim();
+            
+            if (!input) {
+                showNotification('⚠️ Please enter an address or private key', 'warning');
+                return;
+            }
+
+            let address = input;
+            let sourceInfo = null; // Will store BTC/FLO addresses if derived from private key
+            
+            const searchBtn = document.getElementById('searchBtn');
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+            
+            try {
+                // Check if input is a private key (hex or WIF format)
+                const hexOnly = /^[0-9a-fA-F]+$/.test(input);
+                const isHexKey = hexOnly && (input.length === 64 || input.length === 128);
+                
+                // WIF format uses Base58 characters (no 0, O, I, l)
+                const base58Chars = /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/;
+                const isWifKey = !hexOnly && base58Chars.test(input) && input.length >= 51 && input.length <= 52;
+                
+                if (isHexKey || isWifKey) {
+                    // It's a private key - derive all addresses
+                    showNotification('🔑 Deriving addresses from private key...', 'success');
+                    const result = await hederaCrypto.generateMultiChain(input);
+                    address = result.HBAR.address;
+                    
+                    // Store source info for multi-chain display
+                    sourceInfo = {
+                        privateKey: input,
+                        btcAddress: result.BTC.address,
+                        floAddress: result.FLO.address
+                    };
+                    
+                    console.log('Derived HBAR address:', address);
+                } else {
+                    // Validate as address
+                    const validation = hederaAPI.validateAddress(input);
+                    if (!validation.valid) {
+                        showNotification('⚠️ Invalid address or private key format', 'error');
+                        searchBtn.disabled = false;
+                        searchBtn.innerHTML = '<i class="fas fa-search"></i> Search';
+                        return;
+                    }
+                    address = input;
+                }
+
+                currentAddress = address;
+                
+                // Show results section
+                document.getElementById('transactions-results').style.display = 'block';
+                document.getElementById('transactionFilterSection').style.display = 'block';
+                
+                document.getElementById('transaction-list').style.display = 'block';
+                
+                document.getElementById('display-balance').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                document.getElementById('transaction-list').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                        <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+                        <p style="margin-top: 1rem;">Loading transactions...</p>
+                    </div>
+                `;
+                
+                // Fetch balance
+                const balanceData = await hederaAPI.getBalance(address);
+                
+                // Update URL with address parameter (clear hash/txid)
+                const url = new URL(window.location);
+                url.searchParams.set('address', address);
+                url.searchParams.delete('hash');
+                url.searchParams.delete('txid');
+                window.history.pushState({}, '', url);
+                
+                // Display balance info
+                document.getElementById('display-address').textContent = balanceData.evmAddress || address;
+                document.getElementById('display-balance').textContent = balanceData.balance.toFixed(8) + ' HBAR';
+                
+                
+                const accountIdForTransactions = balanceData.accountId || address;
+                
+                // Store current address for pagination
+                currentAddress = accountIdForTransactions;
+                
+                // Reset pagination state
+                currentPage = 1;
+                previousPageLinks = [];
+                
+                // Fetch transaction history using Account ID
+                try {
+                    const historyData = await hederaAPI.getTransactionHistory(accountIdForTransactions, { limit: transactionsPerPage });
+                    allTransactions = historyData.transactions;
+                    
+                    // Only set nextPageLink if we actually have transactions
+                    if (allTransactions.length === 0) {
+                        nextPageLink = null;
+                    } else if (allTransactions.length < transactionsPerPage) {
+                        // If we got fewer transactions than requested, no more pages
+                        nextPageLink = null;
+                    } else {
+                        nextPageLink = historyData.links?.next || null;
+                    }
+                    
+                    updatePaginationUI();
+                    
+                    // Display transactions
+                    if (allTransactions.length === 0) {
+                        document.getElementById('transaction-list').innerHTML = `
+                            <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                <i class="fas fa-inbox" style="font-size: 2rem;"></i>
+                                <p style="margin-top: 1rem;">No transactions found for this account</p>
+                            </div>
+                        `;
+                        document.getElementById('tx-pagination').style.display = 'none';
+                    } else {
+                        displayTransactions(allTransactions);
+                        document.getElementById('tx-pagination').style.display = 'flex';
+                    }
+                } catch (txError) {
+                    console.error('Error fetching transactions:', txError);
+                    // If transactions fail but balance succeeded, show empty state
+                    allTransactions = [];
+                    document.getElementById('transaction-list').innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                            <i class="fas fa-inbox" style="font-size: 2rem;"></i>
+                            <p style="margin-top: 1rem;">No transactions found for this account</p>
+                            <p style="font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.7;">This account may be new or have no transaction history</p>
+                        </div>
+                    `;
+                }
+                
+                // Save to database after successful balance fetch
+                try {
+                    await searchDB.saveSearchedAddress(
+                        address,
+                        balanceData.balance,
+                        Date.now(),
+                        sourceInfo // Pass source info
+                    );
+                    await loadRecentSearches();
+                } catch (dbError) {
+                    console.error('Error saving to database:', dbError);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('❌ Error: ' + error.message, 'error');
+                
+                // Update URL with address parameter 
+                const url = new URL(window.location);
+                url.searchParams.set('address', address);
+                url.searchParams.delete('hash');
+                url.searchParams.delete('txid');
+                window.history.pushState({}, '', url);
+                
+                // Display the searched address
+                document.getElementById('display-address').textContent = address;
+                
+                // Check if it's an inactive account error
+                if (error.message.includes('not found') || error.message.includes('invalid')) {
+                    document.getElementById('display-balance').textContent = 'Address is inactive';
+                } else {
+                    document.getElementById('display-balance').textContent = 'Error loading balance';
+                }
+                
+                document.getElementById('transaction-list').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--error);">
+                        <i class="fas fa-exclamation-circle" style="font-size: 2rem;"></i>
+                        <p style="margin-top: 1rem;">${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = '<i class="fas fa-search"></i> Search';
+            }
+        }
+
+        // Refresh balance
+        async function refreshBalance() {
+            if (!currentAddress) return;
+            
+            const refreshIcon = document.getElementById('refresh-icon');
+            refreshIcon.classList.add('spinning');
+            
+            try {
+                const balanceData = await hederaAPI.getBalance(currentAddress);
+                document.getElementById('display-balance').textContent = balanceData.balance.toFixed(8) + ' HBAR';
+                showNotification(' Balance refreshed!', 'success');
+            } catch (error) {
+                showNotification('❌ Error refreshing balance', 'error');
+            } finally {
+                refreshIcon.classList.remove('spinning');
+            }
+        }
+
+        // Display transactions
+        function displayTransactions(transactions) {
+            const listContainer = document.getElementById('transaction-list');
+            
+            if (!transactions || transactions.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="tx-empty">
+                        <i class="fas fa-inbox" style="font-size: 2rem;"></i>
+                        <p style="margin-top: 1rem;">No transactions found</p>
+                    </div>
+                `;
+                document.getElementById('tx-pagination').style.display = 'none';
+                return;
+            }
+            
+            let html = '';
+            transactions.forEach(tx => {
+                const typeClass = tx.type === 'receive' ? 'received' : tx.type === 'send' ? 'sent' : 'unknown';
+                const typeIcon = tx.type === 'receive' ? 'arrow-down' : tx.type === 'send' ? 'arrow-up' : 'exchange-alt';
+                const typeText = tx.type === 'receive' ? 'Received' : tx.type === 'send' ? 'Sent' : 'Transaction';
+                const timestamp = hederaAPI.formatTimestamp(tx.consensusTimestamp);
+                const amountPrefix = tx.type === 'receive' ? '+' : tx.type === 'send' ? '-' : '';
+                const counterpartyDisplay = tx.counterparty || 'Unknown';
+                
+                html += `
+                    <div class="tx-item" onclick="showTransactionDetails('${tx.hash}')">
+                        <div class="tx-icon ${typeClass}">
+                            <i class="fas fa-${typeIcon}"></i>
+                        </div>
+                        <div class="tx-details">
+                            <div class="tx-type">${typeText}</div>
+                            <div class="tx-address">${counterpartyDisplay}</div>
+                            <div class="tx-date">${timestamp}</div>
+                        </div>
+                        <div class="tx-amount ${typeClass}">
+                            ${amountPrefix}${tx.amount.toFixed(8)} HBAR
+                        </div>
+                    </div>
+                `;
+            });
+            
+            listContainer.innerHTML = html;
+            
+            // Show pagination if needed
+            document.getElementById('tx-pagination').style.display = transactions.length > 0 ? 'flex' : 'none';
+        }
+
+        // Filter transactions
+        function filterTransactions(filter) {
+            currentFilter = filter;
+            
+            // Update filter buttons - use correct selector
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            const activeBtn = document.querySelector(`.filter-btn[data-filter="${filter}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+
+            let filtered = allTransactions;
+            if (filter !== 'all') {
+                filtered = allTransactions.filter(tx => tx.type === filter);
+            }
+            
+            displayTransactions(filtered);
+        }
+
+        // Next page - load more transactions
+        async function nextPage() {
+            if (!currentAddress) return;
+            
+            const nextBtn = document.getElementById('next-page-btn');
+            nextBtn.disabled = true;
+            nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span class="btn-text">Loading...</span>';
+            
+            try {
+
+                let timestamp = null;
+                if (allTransactions.length > 0) {
+                    const lastTx = allTransactions[allTransactions.length - 1];
+                    timestamp = `lt:${lastTx.consensusTimestamp}`;
+                }
+                
+                // Fetch next page of transactions
+                const historyData = await hederaAPI.getTransactionHistory(currentAddress, { 
+                    limit: transactionsPerPage,
+                    timestamp: timestamp
+                });
+                
+                // Check if we got any transactions
+                if (!historyData.transactions || historyData.transactions.length === 0) {
+                    // No more transactions - disable next button silently
+                    nextPageLink = null;
+                    updatePaginationUI();
+                    return;
+                }
+                
+                // Store current transactions for going back
+                previousPageLinks.push({
+                    transactions: [...allTransactions],
+                    page: currentPage
+                });
+                
+                allTransactions = historyData.transactions;
+                currentPage++;
+                
+                
+                if (historyData.transactions.length < transactionsPerPage) {
+                    nextPageLink = null; // No more pages
+                } else {
+                    nextPageLink = historyData.links?.next || 'has-more';
+                }
+                
+                updatePaginationUI();
+                
+                displayTransactions(allTransactions);
+                
+                showNotification(' Loaded next page', 'success');
+            } catch (error) {
+                console.error('Error loading next page:', error);
+                
+                // If account not found or no transactions, treat as end of pagination
+                if (error.message.includes('Account not found') || error.message.includes('not found')) {
+                    nextPageLink = null;
+                    updatePaginationUI();
+                } else {
+                    showNotification('❌ Error loading next page', 'error');
+                }
+            } finally {
+                nextBtn.disabled = false;
+                nextBtn.innerHTML = '<span class="btn-text">Next</span> <i class="fas fa-chevron-right"></i>';
+            }
+        }
+
+        // Previous page - go back to previous transactions
+        async function prevPage() {
+            if (currentPage <= 1 || !currentAddress || previousPageLinks.length === 0) return;
+            
+            const prevBtn = document.getElementById('prev-page-btn');
+            prevBtn.disabled = true;
+            prevBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span class="btn-text">Loading...</span>';
+            
+            try {
+                // Restore previous page from stack
+                const previousState = previousPageLinks.pop();
+                
+                allTransactions = previousState.transactions;
+                currentPage = previousState.page;
+                
+                nextPageLink = 'has-more';
+                
+                updatePaginationUI();
+                
+                displayTransactions(allTransactions);
+                
+                showNotification(' Loaded previous page', 'success');
+            } catch (error) {
+                console.error('Error loading previous page:', error);
+                showNotification('❌ Error loading previous page', 'error');
+            } finally {
+                prevBtn.disabled = false;
+                prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i> <span class="btn-text">Prev</span>';
+            }
+        }
+
+        function updatePaginationUI() {
+            const paginationInfo = document.getElementById('paginationInfo');
+            paginationInfo.textContent = `Page ${currentPage}`;
+            
+            // Enable/disable buttons
+            const prevBtn = document.getElementById('prev-page-btn');
+            const nextBtn = document.getElementById('next-page-btn');
+            
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = !nextPageLink;
+        }
+
+
+        // Show transaction details (when clicking on a transaction)
+        async function showTransactionDetails(txId) {
+            try {
+                // Switch to transaction hash search type
+                switchSearchType('hash');
+                
+                // Update URL with hash parameter
+                const url = new URL(window.location);
+                url.searchParams.set('hash', txId);
+                url.searchParams.delete('address');
+                window.history.pushState({}, '', url);
+                
+                // Fill the hash input with the transaction ID
+                document.getElementById('hashInput').value = txId;
+                
+                // Hide ALL address-related sections
+                document.getElementById('transactions-results').style.display = 'none';
+                document.getElementById('transactionFilterSection').style.display = 'none';
+                document.getElementById('tx-pagination').style.display = 'none';
+                
+                // Hide the transaction list container
+                const transactionList = document.getElementById('transaction-list');
+                if (transactionList) {
+                    transactionList.style.display = 'none';
+                }
+                
+                // Show hash details
+                document.getElementById('hash-details-results').style.display = 'block';
+                
+                document.getElementById('tx-detail-id').textContent = 'Loading...';
+                
+                document.getElementById('hash-details-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                const txDetails = await hederaAPI.getTransactionById(txId);
+                
+                // Display transaction details
+                document.getElementById('tx-detail-id').textContent = txDetails.id;
+                document.getElementById('tx-detail-hash').textContent = txDetails.hash || txId;
+                document.getElementById('tx-detail-timestamp').textContent = hederaAPI.formatTimestamp(txDetails.consensusTimestamp);
+                document.getElementById('tx-detail-result').textContent = txDetails.result || 'SUCCESS';
+                document.getElementById('tx-detail-type').textContent = txDetails.name || 'CRYPTOTRANSFER';
+                document.getElementById('tx-detail-fee').textContent = txDetails.charged_tx_fee.toFixed(8) + ' HBAR';
+                document.getElementById('tx-detail-node').textContent = txDetails.node || 'N/A';
+                document.getElementById('tx-detail-block').textContent = txDetails.block_number || 'N/A';
+                
+                // Show/hide memo row based on content
+                const memoRow = document.getElementById('tx-memo-row');
+                if (txDetails.memo && txDetails.memo.trim() !== '') {
+                    memoRow.style.display = 'flex';
+                    document.getElementById('tx-detail-memo').textContent = txDetails.memo;
+                } else {
+                    memoRow.style.display = 'none';
+                }
+                
+                // Set explorer link - use transaction hash for HashScan
+                document.getElementById('tx-explorer-link').href = `https://hashscan.io/mainnet/transaction/${txDetails.hash}`;
+                
+                // Display transfers if available
+                if (txDetails.transfers && txDetails.transfers.length > 0) {
+                    document.getElementById('tx-transfers-section').style.display = 'block';
+                    
+                    let transfersHtml = '';
+                    txDetails.transfers.forEach(transfer => {
+                        const amount = transfer.amount / 100000000; // Convert to HBAR
+                        const isPositive = amount > 0;
+                        const color = isPositive ? 'var(--success)' : 'var(--error)';
+                        
+                        transfersHtml += `
+                            <div class="tx-detail-row">
+                                <span class="detail-label">${transfer.account}</span>
+                                <span class="detail-value" style="color: ${color}; font-weight: 600;">
+                                    ${isPositive ? '+' : ''}${amount.toFixed(8)} HBAR
+                                </span>
+                            </div>
+                        `;
+                    });
+                    
+                    document.getElementById('tx-transfers-list').innerHTML = transfersHtml;
+                } else {
+                    document.getElementById('tx-transfers-section').style.display = 'none';
+                }
+                
+                showNotification('Transaction details loaded!', 'success');
+            } catch (error) {
+                console.error('Error fetching transaction details:', error);
+                showNotification('Error loading transaction details', 'error');
+            }
+        }
+
+        // Toggle send key visibility
+        function toggleSendKeyVisibility() {
+            const input = document.getElementById('senderPrivateKey');
+            const icon = event.target.closest('.password-toggle')?.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (icon) icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                if (icon) icon.className = 'fas fa-eye';
+            }
+        }
+
+        let deriveAddressTimer = null;
+
+        // Derive sender address from private key
+        async function deriveSenderAddress() {
+          
+            if (deriveAddressTimer) {
+                clearTimeout(deriveAddressTimer);
+            }
+            
+            const privateKey = document.getElementById('senderPrivateKey').value.trim();
+            const addressDisplay = document.getElementById('sender-address-display');
+            const evmAddressEl = document.getElementById('sender-evm-address');
+            const balanceEl = document.getElementById('sender-balance');
+            
+            if (!privateKey) {
+                addressDisplay.style.display = 'none';
+                return;
+            }
+            
+            
+            deriveAddressTimer = setTimeout(async () => {
+                try {
+                    let evmAddress;
+                    try {
+                        const walletData = await hederaCrypto.generateMultiChain(privateKey);
+                        evmAddress = walletData.HBAR.evmAddress;
+                        console.log('Derived EVM address:', evmAddress);
+                    } catch (error) {
+                        console.error('Error deriving address:', error);
+                        addressDisplay.style.display = 'none';
+                        return;
+                    }
+                    
+                    if (evmAddress && !evmAddress.includes('Error')) {
+                        evmAddressEl.textContent = evmAddress;
+                        addressDisplay.style.display = 'block';
+                        
+                        
+                        balanceEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                        
+                        
+                        try {
+                           
+                            const balanceData = await hederaAPI.getBalance(evmAddress);
+                            const balance = balanceData.balance; // Already in HBAR from API
+                            balanceEl.innerHTML = `${balance.toFixed(8)} <span class="currency">HBAR</span>`;
+                            console.log('Balance fetched:', balance);
+                        } catch (error) {
+                            console.error('Error fetching balance:', error);
+                            balanceEl.innerHTML = 'Error loading balance';
+                        }
+                    } else {
+                        addressDisplay.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('Error in deriveSenderAddress:', error);
+                    addressDisplay.style.display = 'none';
+                }
+            }, 500);
+        }
+
+        // Clear sender key and derived address
+        function clearSenderKey() {
+            document.getElementById('senderPrivateKey').value = '';
+            document.getElementById('sender-address-display').style.display = 'none';
+            document.getElementById('sender-evm-address').textContent = '-';
+            document.getElementById('sender-balance').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        }
+
+        // Pending transaction data
+        let pendingTx = null;
+
+        // Send HBAR - Show confirmation modal
+        async function sendHBAR() {
+            const privateKey = document.getElementById('senderPrivateKey').value.trim();
+            const recipient = document.getElementById('recipientAddress').value.trim();
+            const amount = parseFloat(document.getElementById('sendAmount').value);
+            
+            // Validation
+            if (!privateKey) {
+                showNotification('⚠️ Please enter your private key', 'warning');
+                return;
+            }
+            
+            // Validate private key format (hex or WIF)
+            const isHex = /^[0-9a-fA-F]+$/.test(privateKey);
+            const isValidHex = isHex && (privateKey.length === 64 || privateKey.length === 128);
+            const isValidWIF = !isHex && (privateKey.length >= 51 && privateKey.length <= 52);
+            
+            if (!isValidHex && !isValidWIF) {
+                showNotification('⚠️ Invalid private key format. Expected 64-char hex or WIF format.', 'error');
+                return;
+            }
+            
+            if (!recipient) {
+                showNotification('⚠️ Please enter recipient address', 'warning');
+                return;
+            }
+            
+            // Validate recipient address format (EVM or Account ID)
+            const validation = hederaAPI.validateAddress(recipient);
+            if (!validation.valid) {
+                showNotification('⚠️ Invalid recipient address. Expected EVM address (0x...) or Account ID (0.0.xxxx)', 'error');
+                return;
+            }
+            
+            // If Account ID is provided, convert it to EVM address
+            let recipientEvmAddress = recipient;
+            if (validation.type === 'accountId') {
+                try {
+                    showNotification('🔄 Converting Account ID to EVM address...', 'info');
+                    const accountData = await hederaAPI.getBalance(recipient);
+                    recipientEvmAddress = accountData.evmAddress;
+                    console.log(`Converted Account ID ${recipient} to EVM address ${recipientEvmAddress}`);
+                } catch (error) {
+                    showNotification('⚠️ Could not find account. Please verify the Account ID.', 'error');
+                    return;
+                }
+            }
+            
+            if (!amount || amount <= 0) {
+                showNotification('⚠️ Please enter a valid amount', 'warning');
+                return;
+            }
+            
+            try {
+                // Check if recipient account exists (using EVM address)
+                let recipientExists = false;
+                try {
+                    const recipientBalance = await hederaAPI.getBalance(recipientEvmAddress);
+                    recipientExists = true;
+                    console.log('Recipient account exists with balance:', recipientBalance.balance);
+                } catch (error) {
+                    
+                    if (error.message.includes('not found') || error.message.includes('invalid')) {
+                        recipientExists = false;
+                        console.log('Recipient account does not exist - will be auto-created');
+                    } else {
+                        throw error; 
+                    }
+                }
+                
+                
+                const walletData = await hederaCrypto.generateMultiChain(privateKey);
+                const senderAddress = walletData.HBAR.evmAddress;
+                const hexPrivateKey = walletData.HBAR.privateKey; 
+                
+                // Check sender's balance
+                const senderBalance = await hederaAPI.getBalance(senderAddress);
+                
+                // Calculate actual gas cost using Web3 API
+                let estimatedGasFee = 0.002; // Default fallback
+                try {
+                    // Use Hedera JSON-RPC endpoint directly
+                    const jsonRpcUrl = 'https://mainnet.hashio.io/api';
+                    const web3 = new Web3(jsonRpcUrl);
+                    
+                    // Get current gas price
+                    const gasPrice = await web3.eth.getGasPrice();
+                    console.log('Current gas price:', gasPrice, 'wei');
+                    
+                    // Estimate gas for this transaction (use EVM address)
+                    
+                    const amountString = amount.toFixed(18);
+                    const amountInWei = web3.utils.toWei(amountString, 'ether');
+                    const estimatedGas = await web3.eth.estimateGas({
+                        from: senderAddress,
+                        to: recipientEvmAddress,
+                        value: amountInWei
+                    });
+                    console.log('Estimated gas units:', estimatedGas);
+                    
+                    // Calculate gas cost in wei, then convert to HBAR
+                    const gasCostWei = BigInt(estimatedGas) * BigInt(gasPrice);
+                    const gasCostHBAR = parseFloat(web3.utils.fromWei(gasCostWei.toString(), 'ether'));
+                    estimatedGasFee = gasCostHBAR * 1.2; // Add 20% buffer
+                    
+                    console.log('Estimated gas fee:', estimatedGasFee, 'HBAR');
+                } catch (error) {
+                    console.warn('Could not calculate exact gas fee, using estimate:', error.message);
+                    estimatedGasFee = recipientExists ? 0.002 : 0.1;
+                }
+                
+                const totalCost = amount + estimatedGasFee;
+                
+                if (senderBalance.balance < totalCost) {
+                    const errorMessage = `You need ${totalCost.toFixed(4)} HBAR but only have ${senderBalance.balance.toFixed(4)} HBAR.`;
+                    const errorDetails = `Breakdown:
+• Amount to send: ${amount.toFixed(4)} HBAR
+• Estimated gas fee: ${estimatedGasFee.toFixed(4)} HBAR
+• Total required: ${totalCost.toFixed(4)} HBAR
+• Your balance: ${senderBalance.balance.toFixed(4)} HBAR
+• Shortfall: ${(totalCost - senderBalance.balance).toFixed(4)} HBAR`;
+                    
+                    showErrorModal('Insufficient Balance', errorMessage, errorDetails);
+                    return;
+                }
+                
+                // Store pending transaction (use EVM address)
+                const estimatedFee = estimatedGasFee;
+                pendingTx = {
+                    privateKey: hexPrivateKey, // Use hex format for API
+                    from: senderAddress,
+                    to: recipientEvmAddress, // Use EVM address for transaction
+                    amount: amount,
+                    fee: estimatedFee,
+                    total: amount + estimatedFee
+                };
+                
+                // Show confirmation modal
+                showConfirmModal();
+                
+            } catch (error) {
+                console.error('Error preparing transaction:', error);
+                showNotification('❌ Error: ' + error.message, 'error');
+            }
+        }
+
+        // Show confirmation modal
+        function showConfirmModal() {
+            document.getElementById('confirm-from').textContent = pendingTx.from.substring(0, 12) + '...' + pendingTx.from.substring(34);
+            document.getElementById('confirm-to').textContent = pendingTx.to.substring(0, 12) + '...' + pendingTx.to.substring(34);
+            document.getElementById('confirm-amount').textContent = pendingTx.amount.toFixed(8) + ' HBAR';
+            document.getElementById('confirm-fee').textContent = '~' + pendingTx.fee.toFixed(8) + ' HBAR';
+            document.getElementById('confirm-total').textContent = pendingTx.total.toFixed(8) + ' HBAR';
+            
+            document.getElementById('confirm-modal').style.display = 'flex';
+        }
+
+        // Close confirmation modal
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').style.display = 'none';
+            pendingTx = null;
+        }
+
+        // Confirm and send transaction
+        async function confirmAndSend() {
+            if (!pendingTx) return;
+            
+            const confirmBtn = document.getElementById('confirm-send-btn');
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            
+            try {
+                // Save transaction data before closing modal
+                const txAmount = pendingTx.amount;
+                const txFrom = pendingTx.from;
+                const txTo = pendingTx.to;
+                
+                // Send transaction (no memo)
+                const result = await hederaAPI.sendHBAR(pendingTx.privateKey, pendingTx.to, pendingTx.amount);
+                
+                // Close confirmation modal
+                closeConfirmModal();
+                
+                // Store explorer URL globally
+                window.currentExplorerUrl = result.explorerUrl;
+                
+                // Show success modal with full addresses
+                document.getElementById('success-txhash').textContent = result.transactionHash;
+                document.getElementById('success-amount').textContent = txAmount.toFixed(8) + ' HBAR';
+                document.getElementById('success-from').textContent = txFrom;
+                document.getElementById('success-to').textContent = txTo;
+                document.getElementById('success-gas').textContent = result.gasUsed;
+                document.getElementById('success-modal').style.display = 'flex';
+                
+                // Clear form
+                document.getElementById('senderPrivateKey').value = '';
+                document.getElementById('recipientAddress').value = '';
+                document.getElementById('sendAmount').value = '';
+                document.getElementById('sender-address-display').style.display = 'none';
+                
+                showNotification(' Transaction sent successfully!', 'success');
+            } catch (error) {
+                console.error('Error sending HBAR:', error);
+                
+                // Close confirmation modal
+                closeConfirmModal();
+                
+                // Determine error type
+                let errorType = 'Transaction Error';
+                let errorMessage = error.message || 'Unknown error occurred';
+                let errorDetails = null;
+                
+                if (error.message.includes('Insufficient funds')) {
+                    errorType = 'Insufficient Funds';
+                } else if (error.message.includes('Gas estimation failed')) {
+                    errorType = 'Gas Estimation Failed';
+                } else if (error.message.includes('reverted')) {
+                    errorType = 'Transaction Reverted';
+                    // Try to extract revert reason if available
+                    if (error.toString().includes('revertReason')) {
+                        errorDetails = error.toString();
+                    }
+                } else if (error.message.includes('nonce')) {
+                    errorType = 'Nonce Error';
+                }
+                
+                // Show error modal with details
+                showErrorModal(errorType, errorMessage, errorDetails);
+                
+               
+                showNotification('❌ Transaction failed: ' + errorMessage, 'error');
+            } finally {
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-check"></i> Confirm & Send';
+            }
+        }
+
+        // Close success modal
+        function closeSuccessModal() {
+            document.getElementById('success-modal').style.display = 'none';
+            window.currentExplorerUrl = null;
+        }
+
+        // View on explorer
+        function viewOnExplorer() {
+            if (window.currentExplorerUrl) {
+                window.open(window.currentExplorerUrl, '_blank');
+            }
+        }
+
+        // Show error modal
+        function showErrorModal(errorType, errorMessage, errorDetails = null) {
+            document.getElementById('error-type').textContent = errorType;
+            document.getElementById('error-message').textContent = errorMessage;
+            
+            if (errorDetails) {
+                document.getElementById('error-details').textContent = errorDetails;
+                document.getElementById('error-details-row').style.display = 'flex';
+            } else {
+                document.getElementById('error-details-row').style.display = 'none';
+            }
+            
+            document.getElementById('error-modal').style.display = 'flex';
+        }
+
+        // Close error modal
+        function closeErrorModal() {
+            document.getElementById('error-modal').style.display = 'none';
+        }
+
+        // Load and display recent searches
+        async function loadRecentSearches() {
+            try {
+                const searches = await searchDB.getSearchedAddresses();
+                const listEl = document.getElementById('recent-searches-list');
+                const containerEl = document.getElementById('recent-searches');
+                
+                if (!listEl || !containerEl) return; // Elements don't exist yet
+                
+                if (searches.length === 0) {
+                    containerEl.style.display = 'none';
+                    return;
+                }
+                
+                // Only show recent searches if we're in address search mode
+                if (currentSearchType === 'address') {
+                    containerEl.style.display = 'block';
+                } else {
+                    containerEl.style.display = 'none';
+                }
+                
+                listEl.innerHTML = '';
+                
+                searches.forEach(search => {
+                    const item = document.createElement('div');
+                    item.className = 'recent-item';
+                    item.setAttribute('data-current-address', search.hbarAddress);
+                    
+                    const shortAddr = search.hbarAddress.substring(0, 12) + '...' + search.hbarAddress.substring(search.hbarAddress.length - 8);
+                    const date = new Date(search.timestamp);
+                    const formattedDate = date.toLocaleDateString();
+                    
+                    item.innerHTML = `
+                        ${search.isFromPrivateKey ? `
+                        <div class="recent-chain-buttons">
+                            <button class="chain-btn active" onclick="showAddressForChain(${search.id}, 'HBAR', '${search.hbarAddress}')" title="HBAR">
+                                <svg class="chain-icon-svg" viewBox="700 650 1100 1200" fill="currentColor"><path d="M1758.12,1790.62H1599.38V1453.13H900.62v337.49H741.87V696.25H900.62v329.37h698.76V696.25h158.75Zm-850-463.75h698.75V1152.5H908.12Z"/></svg>
+                            </button>
+                            <button class="chain-btn" onclick="showAddressForChain(${search.id}, 'BTC', '${search.btcAddress}')" title="BTC">
+                                <i class="fab fa-bitcoin"></i>
+                            </button>
+                            <button class="chain-btn" onclick="showAddressForChain(${search.id}, 'FLO', '${search.floAddress}')" title="FLO">
+                                <i class="fas fa-spa"></i>
+                            </button>
+                        </div>
+                        ` : ''}
+                        <div class="recent-address" title="${search.hbarAddress}">
+                            ${shortAddr}
+                        </div>
+                        <div class="recent-bottom-row">
+                            <div class="recent-balance-row">
+                                <span class="recent-balance">${search.formattedBalance}</span>
+                                <span class="recent-date">• ${formattedDate}</span>
+                            </div>
+                            <div class="recent-actions">
+                                <button class="action-btn copy-recent-btn" title="Copy">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="action-btn" onclick="recheckAddress('${search.hbarAddress}')" title="Recheck">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                                <button class="action-btn" onclick="deleteRecentSearch(${search.id})" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    listEl.appendChild(item);
+                });
+                
+                // Add copy functionality
+                document.querySelectorAll('.copy-recent-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const recentItem = this.closest('.recent-item');
+                        const currentAddress = recentItem.getAttribute('data-current-address');
+                        copyAddress(currentAddress);
+                    });
+                });
+            } catch (error) {
+                console.error('Error loading recent searches:', error);
+            }
+        }
+
+        // Show address for different chain
+        function showAddressForChain(searchId, chain, address) {
+            event.target.closest('.recent-chain-buttons').querySelectorAll('.chain-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.chain-btn').classList.add('active');
+            
+            const recentItem = event.target.closest('.recent-item');
+            const addressEl = recentItem.querySelector('.recent-address');
+            const shortAddr = address.substring(0, 12) + '...' + address.substring(address.length - 8);
+            addressEl.textContent = shortAddr;
+            addressEl.title = address;
+            
+            recentItem.setAttribute('data-current-address', address);
+        }
+
+        // Recheck address
+        async function recheckAddress(address) {
+            document.getElementById('addressInput').value = address;
+            switchSearchType('address');
+            await searchAddress();
+        }
+
+        // Delete recent search
+        async function deleteRecentSearch(id) {
+            try {
+                await searchDB.deleteSearchedAddress(id);
+                await loadRecentSearches();
+                showNotification('Search deleted', 'success');
+            } catch (error) {
+                console.error('Error deleting search:', error);
+                showNotification('Error deleting search', 'error');
+            }
+        }
+
+        // Copy address to clipboard
+        function copyAddress(address) {
+            navigator.clipboard.writeText(address).then(() => {
+                showNotification('Address copied!', 'success');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                showNotification('Failed to copy address', 'error');
+            });
+        }
+
+        // Clear all recent searches
+        async function clearAllRecentSearches() {
+            if (!confirm('Are you sure you want to clear all recent searches?')) {
+                return;
+            }
+            try {
+                await searchDB.clearAllSearchedAddresses();
+                await loadRecentSearches();
+                showNotification('All searches cleared', 'success');
+            } catch (error) {
+                console.error('Error clearing searches:', error);
+                showNotification('Error clearing searches', 'error');
+            }
+        }
+
+        
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSearchTypeSelectors();
+            
+            // Check for URL parameters and load content
+            checkAndLoadFromURL();
+            
+            // Load recent searches
+            loadRecentSearches();
+        });
+
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', function(event) {
+            
+            checkAndLoadFromURL();
+        });
+
+        // Function to check URL parameters and load appropriate content
+        function checkAndLoadFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const address = urlParams.get('address');
+            const hash = urlParams.get('hash');
+            const txid = urlParams.get('txid');
+            
+            if (address) {
+                
+                // Switch to transactions tab
+                switchTabByPage('transactions');
+                // Update nav button states
+                document.querySelectorAll('.nav-link, .nav-btn').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('[data-page="transactions"]').forEach(l => l.classList.add('active'));
+                // Set search type to address
+                switchSearchType('address');
+                // Fill in the address (correct ID is 'addressInput')
+                document.getElementById('addressInput').value = address;
+                
+                // Trigger search with longer delay
+                setTimeout(() => {
+                    
+                    handleSearch();
+                }, 1000);
+            } else if (hash || txid) {
+                
+                // Switch to transactions tab
+                switchTabByPage('transactions');
+                // Update nav button states
+                document.querySelectorAll('.nav-link, .nav-btn').forEach(l => l.classList.remove('active'));
+                document.querySelectorAll('[data-page="transactions"]').forEach(l => l.classList.add('active'));
+                // Set search type to hash
+                switchSearchType('hash');
+                // Fill in the hash/txid
+                document.getElementById('hashInput').value = hash || txid;
+               
+                // Trigger search with longer delay
+                setTimeout(() => {
+                   
+                    handleSearch();
+                }, 1000);
+            }
+        }
+    </script>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="nav-box">
+      <button class="nav-btn active" data-page="generate">
+        <i class="fas fa-plus-circle"></i>
+        <span>Generate</span>
+      </button>
+      <button class="nav-btn" data-page="transactions">
+        <i class="fas fa-history"></i>
+        <span>Transactions</span>
+      </button>
+      <button class="nav-btn" data-page="send">
+        <i class="fas fa-paper-plane"></i>
+        <span>Send</span>
+      </button>
+      <button class="nav-btn" data-page="recover">
+        <i class="fas fa-key"></i>
+        <span>Recover</span>
+      </button>
+    </nav>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content confirm-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-paper-plane"></i> Confirm Transaction</h3>
+                <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="confirm-details">
+                    <div class="confirm-row">
+                        <span class="confirm-label">From:</span>
+                        <span class="confirm-value" id="confirm-from">-</span>
+                    </div>
+                    <div class="confirm-row">
+                        <span class="confirm-label">To:</span>
+                        <span class="confirm-value" id="confirm-to">-</span>
+                    </div>
+                    <div class="confirm-row highlight">
+                        <span class="confirm-label">Amount:</span>
+                        <span class="confirm-value" id="confirm-amount">0.00000000 HBAR</span>
+                    </div>
+                    <div class="confirm-row fee-row">
+                        <span class="confirm-label">Network Fee:</span>
+                        <span class="confirm-value fee" id="confirm-fee">~0.001 HBAR</span>
+                    </div>
+                    <div class="confirm-divider"></div>
+                    <div class="confirm-row total-row">
+                        <span class="confirm-label">Total:</span>
+                        <span class="confirm-value total" id="confirm-total">0.001 HBAR</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" onclick="closeConfirmModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="modal-btn confirm" id="confirm-send-btn" onclick="confirmAndSend()">
+                    <i class="fas fa-check"></i> Confirm & Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content success-modal">
+            <div class="modal-header success">
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3>Transaction Sent!</h3>
+            </div>
+            <div class="modal-body">
+                <div class="success-details">
+                    <div class="success-row">
+                        <span class="success-label">Transaction Hash:</span>
+                        <div class="tx-id-wrapper">
+                            <code id="success-txhash">-</code>
+                            <button class="input-action-btn clear-btn" onclick="copyToClipboard('success-txhash')">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="success-row">
+                        <span class="success-label">Amount Sent:</span>
+                        <span class="success-value" id="success-amount">0.00000000 HBAR</span>
+                    </div>
+                    <div class="success-row">
+                        <span class="success-label">From:</span>
+                        <div class="tx-id-wrapper">
+                            <code id="success-from">-</code>
+                            <button class="input-action-btn clear-btn" onclick="copyToClipboard('success-from')">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="success-row">
+                        <span class="success-label">To:</span>
+                        <div class="tx-id-wrapper">
+                            <code id="success-to">-</code>
+                            <button class="input-action-btn clear-btn" onclick="copyToClipboard('success-to')">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="success-row">
+                        <span class="success-label">Gas Used:</span>
+                        <span class="success-value" id="success-gas">-</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn secondary" id="view-explorer-btn" onclick="viewOnExplorer()">
+                    <i class="fas fa-external-link-alt"></i> View on Explorer
+                </button>
+                <button class="modal-btn confirm" onclick="closeSuccessModal()">
+                    <i class="fas fa-check"></i> Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="error-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content error-modal">
+            <div class="modal-header error">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h3>Transaction Failed</h3>
+            </div>
+            <div class="modal-body">
+                <div class="error-details">
+                    <div class="error-row">
+                        <span class="error-label">Error Type:</span>
+                        <span class="error-value" id="error-type">-</span>
+                    </div>
+                    <div class="error-row">
+                        <span class="error-label">Error Message:</span>
+                        <span class="error-value" id="error-message">-</span>
+                    </div>
+                    <div class="error-row" id="error-details-row" style="display: none;">
+                        <span class="error-label">Details:</span>
+                        <pre class="error-details-text" id="error-details">-</pre>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn confirm" onclick="closeErrorModal()">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
