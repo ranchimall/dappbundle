@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ripple Wallet</title>
+    <link rel="shortcut icon" href="favicon.svg" type="image/x-icon" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/main.css" />
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/xrpl@2.7.0/build/xrpl-latest-min.js"></script>
+    <script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
+
+    <script src="https://unpkg.com/@preact/signals-core@1.7.0/dist/signals-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.6.1/elliptic.min.js"></script>
+  </head>
+  <body class="hidden">
+    <!-- Loading Screen -->
+    <div id="loading_page" class="loading-screen">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <h2>Ripple Wallet</h2>
+        <p>Loading...</p>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div id="logo" class="app-brand">
+          <svg id="main_logo" class="icon" viewBox="0 0 27.25 32">
+            <title>RanchiMall</title>
+            <path
+              d="M27.14,30.86c-.74-2.48-3-4.36-8.25-6.94a20,20,0,0,1-4.2-2.49,6,6,0,0,1-1.25-1.67,4,4,0,0,1,0-2.26c.37-1.08.79-1.57,3.89-4.55a11.66,11.66,0,0,0,3.34-4.67,6.54,6.54,0,0,0,.05-2.82C20,3.6,18.58,2,16.16.49c-.89-.56-1.29-.64-1.3-.24a3,3,0,0,1-.3.72l-.3.55L13.42.94C13,.62,12.4.26,12.19.15c-.4-.2-.73-.18-.72.05a9.39,9.39,0,0,1-.61,1.33s-.14,0-.27-.13C8.76.09,8-.27,8,.23A11.73,11.73,0,0,1,6.76,2.6C4.81,5.87,2.83,7.49.77,7.49c-.89,0-.88,0-.61,1,.22.85.33.92,1.09.69A5.29,5.29,0,0,0,3,8.33c.23-.17.45-.29.49-.26a2,2,0,0,1,.22.63A1.31,1.31,0,0,0,4,9.34a5.62,5.62,0,0,0,2.27-.87L7,8l.13.55c.19.74.32.82,1,.65a7.06,7.06,0,0,0,3.46-2.47l.6-.71-.06.64c-.17,1.63-1.3,3.42-3.39,5.42L6.73,14c-3.21,3.06-3,5.59.6,8a46.77,46.77,0,0,0,4.6,2.41c.28.13,1,.52,1.59.87,3.31,2,4.95,3.92,4.95,5.93a2.49,2.49,0,0,0,.07.77h0c.09.09,0,.1.9-.14a2.61,2.61,0,0,0,.83-.32,3.69,3.69,0,0,0-.55-1.83A11.14,11.14,0,0,0,17,26.81a35.7,35.7,0,0,0-5.1-2.91C9.37,22.64,8.38,22,7.52,21.17a3.53,3.53,0,0,1-1.18-2.48c0-1.38.71-2.58,2.5-4.23,2.84-2.6,3.92-3.91,4.67-5.65a3.64,3.64,0,0,0,.42-2A3.37,3.37,0,0,0,13.61,5l-.32-.74.29-.48c.17-.27.37-.63.46-.8l.15-.3.44.64a5.92,5.92,0,0,1,1,2.81,5.86,5.86,0,0,1-.42,1.94c0,.12-.12.3-.15.4a9.49,9.49,0,0,1-.67,1.1,28,28,0,0,1-4,4.29C8.62,15.49,8.05,16.44,8,17.78a3.28,3.28,0,0,0,1.11,2.76c.95,1,2.07,1.74,5.25,3.32,3.64,1.82,5.22,2.9,6.41,4.38A4.78,4.78,0,0,1,21.94,31a3.21,3.21,0,0,0,.14.92,1.06,1.06,0,0,0,.43-.05l.83-.22.46-.12-.06-.46c-.21-1.53-1.62-3.25-3.94-4.8a37.57,37.57,0,0,0-5.22-2.82A13.36,13.36,0,0,1,11,21.19a3.36,3.36,0,0,1-.8-4.19c.41-.85.83-1.31,3.77-4.15,2.39-2.31,3.43-4.13,3.43-6a5.85,5.85,0,0,0-2.08-4.29c-.23-.21-.44-.43-.65-.65A2.5,2.5,0,0,1,15.27.69a10.6,10.6,0,0,1,2.91,2.78A4.16,4.16,0,0,1,19,6.16a4.91,4.91,0,0,1-.87,3c-.71,1.22-1.26,1.82-4.27,4.67a9.47,9.47,0,0,0-2.07,2.6,2.76,2.76,0,0,0-.33,1.54,2.76,2.76,0,0,0,.29,1.47c.57,1.21,2.23,2.55,4.65,3.73a32.41,32.41,0,0,1,5.82,3.24c2.16,1.6,3.2,3.16,3.2,4.8a1.94,1.94,0,0,0,.09.76,4.54,4.54,0,0,0,1.66-.4C27.29,31.42,27.29,31.37,27.14,30.86ZM6.1,7h0a3.77,3.77,0,0,1-1.46.45L4,7.51l.68-.83a25.09,25.09,0,0,0,3-4.82A12,12,0,0,1,8.28.76c.11-.12.77.32,1.53,1l.63.58-.57.84A10.34,10.34,0,0,1,6.1,7Zm5.71-1.78A9.77,9.77,0,0,1,9.24,7.18h0a5.25,5.25,0,0,1-1.17.28l-.58,0,.65-.78a21.29,21.29,0,0,0,2.1-3.12c.22-.41.42-.76.44-.79s.5.43.9,1.24L12,5ZM13.41,3a2.84,2.84,0,0,1-.45.64,11,11,0,0,1-.9-.91l-.84-.9.19-.45c.34-.79.39-.8,1-.31A9.4,9.4,0,0,1,13.8,2.33q-.18.34-.39.69Z"
+            />
+          </svg>
+          <div class="app-name">
+            <div class="app-name__company">RanchiMall</div>
+            <h4 class="app-name__title">Ripple Wallet</h4>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button
+            id="themeToggle"
+            class="theme-toggle"
+            title="Toggle dark/light mode"
+          >
+            <i class="fas fa-sun" id="themeIcon"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+      <!-- Sidebar Navigation -->
+      <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <i class="fas fa-wallet"></i>
+          <h3>Ripple Wallet</h3>
+        </div>
+        <ul class="sidebar-menu">
+          <li>
+            <a
+              href="#"
+              onclick="showPage('connectPage')"
+              class="nav-link active"
+            >
+              <i class="fas fa-search-dollar"></i>Balance
+            </a>
+          </li>
+          <li>
+            <a href="#" onclick="showPage('sendPage')" class="nav-link">
+              <i class="fas fa-paper-plane"></i> Send XRP
+            </a>
+          </li>
+          <li>
+            <a href="#" onclick="showPage('recoverPage')" class="nav-link">
+              <i class="fas fa-key"></i> Retrieve Address
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Main Content Area -->
+      <main class="main-content">
+        <!-- Check Balance & Transactions Page -->
+        <div id="connectPage" class="page">
+          <div class="page-header">
+            <h2><i class="fas fa-search-dollar"></i> Check Balance</h2>
+            <p>Check XRP balance or view transaction details</p>
+          </div>
+
+          <div class="card">
+            <!-- Search Type Selector -->
+            <div class="form-group">
+              <label>Search Type:</label>
+              <div class="search-type-tabs">
+                <button
+                  type="button"
+                  class="tab-btn active"
+                  onclick="switchSearchType('balance')"
+                  id="balanceTab"
+                >
+                  <i class="fas fa-wallet"></i> Balance & History
+                </button>
+                <button
+                  type="button"
+                  class="tab-btn"
+                  onclick="switchSearchType('transaction')"
+                  id="transactionTab"
+                >
+                  <i class="fas fa-receipt"></i> Transaction Details
+                </button>
+              </div>
+            </div>
+
+            <!-- Balance Search -->
+            <div id="balanceSearch" class="search-section">
+              <div class="form-group">
+                <label for="checkAddress">
+                  <i class="fas fa-wallet"></i> XRP Address or Private Key
+                </label>
+                <input
+                  type="text"
+                  id="checkAddress"
+                  class="form-input"
+                  placeholder="Enter XRP address (r...), BTC/FLO private key, or XRP seed"
+                  autocomplete="off"
+                />
+                <div class="input-help">
+                  Enter an XRP address, private key (BTC/FLO), or XRP seed to
+                  check balance
+                </div>
+              </div>
+
+              <button
+                onclick="checkBalanceAndTransactions()"
+                class="btn btn-primary btn-block"
+              >
+                <i class="fas fa-search-dollar"></i> Check Balance
+              </button>
+            </div>
+
+            <!-- Transaction Hash Search -->
+            <div
+              id="transactionSearch"
+              class="search-section"
+              style="display: none"
+            >
+              <div class="form-group">
+                <label for="checkTransactionHash">
+                  <i class="fas fa-receipt"></i> Transaction Hash
+                </label>
+                <input
+                  type="text"
+                  id="checkTransactionHash"
+                  class="form-input"
+                  placeholder="Enter transaction hash (TX ID)"
+                  autocomplete="off"
+                />
+                <div class="input-help">
+                  Enter a transaction hash to view transaction details
+                </div>
+              </div>
+
+              <button
+                onclick="checkTransactionDetails()"
+                class="btn btn-primary btn-block"
+              >
+                <i class="fas fa-search"></i> View Transaction
+              </button>
+            </div>
+          </div>
+
+          <!-- Balance Info Display -->
+          <div class="card balance-info" id="balanceInfo" style="display: none">
+            <div class="balance-header">
+              <h3><i class="fas fa-coins"></i> Account Balance</h3>
+              <button
+                onclick="copyBalanceLink()"
+                class="btn-icon share-btn"
+                title="Copy Shareable Link"
+              >
+                <i class="fas fa-share-alt"></i>
+              </button>
+            </div>
+            <div class="balance-display">
+              <span class="balance-amount" id="displayBalance">0 XRP</span>
+            </div>
+            <div class="account-details">
+              <div class="detail-row">
+                <label>Address:</label>
+                <div class="address-container">
+                  <span id="checkedAddress" class="address-text">-</span>
+                  <button
+                    onclick="copyAddressToClipboard(document.getElementById('checkedAddress').textContent)"
+                    class="btn-icon"
+                    title="Copy Address"
+                  >
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Transaction Details Display -->
+          <div
+            class="card transaction-details"
+            id="transactionDetails"
+            style="display: none"
+          >
+            <div class="transaction-details-header">
+              <h3><i class="fas fa-receipt"></i> Transaction Details</h3>
+              <button
+                onclick="copyTransactionLink()"
+                class="btn-icon share-btn"
+                title="Copy Shareable Link"
+              >
+                <i class="fas fa-share-alt"></i>
+              </button>
+            </div>
+            <div id="transactionDetailsContent">
+              <!-- Transaction details -->
+            </div>
+          </div>
+
+          <!-- Transaction Section -->
+          <div
+            id="transactionSection"
+            class="card transaction-section"
+            style="display: none"
+          >
+            <!-- Transaction Header and Filter Controls -->
+            <div id="transactionControls" class="transaction-controls">
+              <div class="transaction-header">
+                <h3>Transactions</h3>
+                <div class="filter-buttons">
+                  <button
+                    class="filter-btn active"
+                    data-filter="all"
+                    onclick="setTransactionFilter('all')"
+                  >
+                    <i class="fas fa-list"></i> All
+                  </button>
+                  <button
+                    class="filter-btn"
+                    data-filter="received"
+                    onclick="setTransactionFilter('received')"
+                  >
+                    <i class="fas fa-arrow-down"></i> Received
+                  </button>
+                  <button
+                    class="filter-btn"
+                    data-filter="sent"
+                    onclick="setTransactionFilter('sent')"
+                  >
+                    <i class="fas fa-arrow-up"></i> Sent
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Transaction Results -->
+            <div id="txList" class="transaction-list">
+              <!-- Transaction cards will be inserted here -->
+            </div>
+
+            <!-- Pagination Controls (moved below transaction list) -->
+            <div class="pagination-section">
+              <div class="pagination-info" id="paginationInfo">
+                Showing 0 - 0 of 0 transactions
+              </div>
+              <div class="pagination-controls">
+                <button
+                  class="pagination-btn"
+                  id="prevBtn"
+                  onclick="goToPreviousPage()"
+                  disabled
+                >
+                  <i class="fas fa-chevron-left"></i>
+                </button>
+                <div class="page-numbers" id="pageNumbers">
+                  <!-- Page numbers will be inserted here -->
+                </div>
+                <button
+                  class="pagination-btn"
+                  id="nextBtn"
+                  onclick="goToNextPage()"
+                  disabled
+                >
+                  <i class="fas fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Send XRP Page -->
+        <div id="sendPage" class="page hidden">
+          <div class="page-header">
+            <h2><i class="fas fa-paper-plane"></i> Send XRP</h2>
+            <p>Send XRP to another Ripple address</p>
+          </div>
+
+          <div class="card">
+            <div class="form-group">
+              <label for="sendKey">
+                <i class="fas fa-key"></i> Your Ripple Seed or Private Key
+                (FLO/BTC)
+              </label>
+              <input
+                type="password"
+                id="sendKey"
+                class="form-input"
+                placeholder="Enter your seed (s...) or private key (FLO/BTC)"
+                autocomplete="off"
+              />
+              <div class="input-help">Use your Ripple seed (s...)</div>
+            </div>
+
+            <div class="form-group">
+              <label for="recipient">
+                <i class="fas fa-user"></i> Recipient Address
+              </label>
+              <input
+                type="text"
+                id="recipient"
+                class="form-input"
+                placeholder="Enter Ripple address (r...)"
+              />
+              <small class="help-text"
+                >Enter a valid Ripple address starting with 'r' (25-34
+                characters)</small
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="amount">
+                <i class="fas fa-coins"></i> Amount (XRP)
+              </label>
+              <input
+                type="number"
+                id="amount"
+                class="form-input"
+                placeholder="0.00"
+                step="0.000001"
+                min="0.000001"
+              />
+              <div class="input-help">Minimum: 0.000001 XRP</div>
+            </div>
+
+            <button onclick="sendXRP()" class="btn btn-primary btn-block">
+              <i class="fas fa-paper-plane"></i> Send XRP
+            </button>
+          </div>
+        </div>
+
+        <!-- Retrieve Address Page -->
+        <div id="recoverPage" class="page hidden">
+          <div class="page-header">
+            <h2><i class="fas fa-key"></i> Retrieve XRP Address</h2>
+            <p>Retrieve your XRP address from private key</p>
+          </div>
+
+          <div class="card">
+            <div class="form-group">
+              <label for="recoverKey">
+                <i class="fas fa-key"></i> Private Key / Seed
+              </label>
+              <input
+                type="password"
+                id="recoverKey"
+                class="form-input"
+                placeholder="Enter private key or seed"
+                autocomplete="off"
+              />
+              <div class="input-help">
+                Enter your private key from any blockchain (BTC/FLO) or XRP seed
+                (s...) to retrieve your XRP address.
+              </div>
+            </div>
+
+            <div class="retrieve-actions">
+              <button
+                onclick="retrieveXRPAddress()"
+                class="btn btn-primary btn-block"
+              >
+                <i class="fas fa-coins"></i> Retrieve XRP Address
+              </button>
+            </div>
+          </div>
+
+          <!-- Retrieved Address Output -->
+          <div
+            id="recoveryOutput"
+            class="card output-card"
+            style="display: none"
+          >
+            <!-- Retrieved address info will be inserted here -->
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <div class="nav-box">
+      <button
+        onclick="showPage('connectPage')"
+        class="nav-btn active"
+        data-page="connectPage"
+      >
+        <i class="fas fa-search-dollar"></i>
+        <span>Balance</span>
+      </button>
+      <button
+        onclick="showPage('sendPage')"
+        class="nav-btn"
+        data-page="sendPage"
+      >
+        <i class="fas fa-paper-plane"></i>
+        <span>Send</span>
+      </button>
+      <button
+        onclick="showPage('recoverPage')"
+        class="nav-btn"
+        data-page="recoverPage"
+      >
+        <i class="fas fa-key"></i>
+        <span>Retrieve</span>
+      </button>
+    </div>
+
+    <!-- Confirmation Popup -->
+    <sm-popup id="sendConfirm">
+      <div class="modern-popup-container">
+        <!-- Popup Header -->
+        <div class="popup-header">
+          <div class="popup-icon confirm-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h2 class="popup-title">Confirm Transaction</h2>
+          <p class="popup-subtitle">
+            Please review the transaction details before sending
+          </p>
+        </div>
+
+        <!-- Transaction Summary -->
+        <div class="transaction-summary">
+          <div class="summary-item amount-highlight">
+            <div class="summary-icon">
+              <i class="fas fa-coins"></i>
+            </div>
+            <div class="summary-content">
+              <span class="summary-label">Amount to Send</span>
+              <span class="summary-value" id="confirmAmount">0 XRP</span>
+            </div>
+          </div>
+
+          <div class="summary-item">
+            <div class="summary-icon">
+              <i class="fas fa-user-minus"></i>
+            </div>
+            <div class="summary-content">
+              <span class="summary-label">From</span>
+              <span class="summary-value address-text" id="confirmFrom"
+                >Loading...</span
+              >
+            </div>
+          </div>
+
+          <div class="summary-item">
+            <div class="summary-icon">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <div class="summary-content">
+              <span class="summary-label">To</span>
+              <span class="summary-value address-text" id="confirmTo"
+                >Loading...</span
+              >
+            </div>
+          </div>
+
+          <div class="summary-item">
+            <div class="summary-icon">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <div class="summary-content">
+              <span class="summary-label">Network Fee</span>
+              <span class="summary-value" id="confirmFee">~0.00001 XRP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="popup-actions modern-actions">
+          <button onclick="closePopup()" class="btn btn-cancel">
+            <i class="fas fa-times"></i>
+            <span>Cancel</span>
+          </button>
+          <button onclick="confirmSend()" class="btn btn-confirm">
+            <i class="fas fa-paper-plane"></i>
+            <span>Confirm</span>
+          </button>
+        </div>
+      </div>
+    </sm-popup>
+
+    <!-- Transaction Success Popup -->
+    <sm-popup id="transactionSuccess">
+      <div class="modern-popup-container success-popup">
+        <!-- Success Header -->
+        <div class="popup-header success-header">
+          <div class="popup-icon success-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h2 class="popup-title">Transaction Successful!</h2>
+          <p class="popup-subtitle">Your XRP has been sent successfully</p>
+        </div>
+
+        <!-- Transaction Details -->
+        <div class="success-details">
+          <div class="success-summary">
+            <div class="success-item">
+              <span class="success-label">Amount Sent</span>
+              <span class="success-value" id="successAmount">0 XRP</span>
+            </div>
+            <div class="success-item">
+              <span class="success-label">Network Fee</span>
+              <span class="success-value" id="successFee">0 XRP</span>
+            </div>
+          </div>
+
+          <!-- Expandable Details -->
+          <div class="expandable-details">
+            <button class="details-toggle" onclick="toggleTransactionDetails()">
+              <span>View Details</span>
+              <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="details-content" id="expandableDetails">
+              <!-- Detailed transaction info will be populated here -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Success Actions -->
+        <div class="popup-actions modern-actions">
+          <button onclick="closePopup()" class="btn btn-done">
+            <i class="fas fa-check"></i>
+            <span>Done</span>
+          </button>
+        </div>
+      </div>
+    </sm-popup>
+
+    <!-- Standard UI Notifications -->
+
+    <!-- Confirmation Popup -->
+    <sm-popup id="confirmation_popup">
+      <div class="popup-content">
+        <h3 id="confirm_title">Confirm Action</h3>
+        <div id="confirm_message"></div>
+        <div class="popup-actions">
+          <button class="btn btn-secondary cancel-button">Cancel</button>
+          <button class="btn btn-primary confirm-button">OK</button>
+        </div>
+      </div>
+    </sm-popup>
+
+    <!-- Scripts -->
+    <script src="scripts/components.min.js"></script>
+    <script src="scripts/btcwallet_scripts_lib.js"></script>
+    <script type="text/javascript" src="scripts/floCrypto.js"></script>
+    <script type="text/javascript" src="scripts/btcOperator.js"></script>
+
+    <script type="module" src="scripts/wallet.js"></script>
+    <script>
+      // UI Enhancement Functions
+      function showPage(pageId) {
+        // Hide all pages
+        document.querySelectorAll(".page").forEach((page) => {
+          page.classList.add("hidden");
+        });
+
+        // Show selected page
+        document.getElementById(pageId).classList.remove("hidden");
+
+        // Update navigation states
+        updateNavigation(pageId);
+      }
+
+      function updateNavigation(activePageId) {
+        // Update sidebar navigation - remove active from all first
+        document.querySelectorAll(".sidebar .nav-link").forEach((link) => {
+          link.classList.remove("active");
+        });
+
+        // Update bottom navigation
+        document.querySelectorAll(".nav-btn").forEach((btn) => {
+          btn.classList.remove("active");
+          if (btn.dataset.page === activePageId) {
+            btn.classList.add("active");
+          }
+        });
+
+        // Find and activate corresponding sidebar link
+        const activeLink = document.querySelector(
+          `.sidebar .nav-link[onclick*="${activePageId}"]`
+        );
+        if (activeLink) {
+          activeLink.classList.add("active");
+        }
+      }
+
+      // Theme toggle functionality
+      function initializeTheme() {
+        const themeToggle = document.getElementById("themeToggle");
+        const themeIcon = document.getElementById("themeIcon");
+        const body = document.body;
+
+        // Check for saved theme preference or default to 'light'
+        const savedTheme = localStorage.getItem("theme");
+        const systemPrefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches;
+
+        // Set initial theme
+        let currentTheme = savedTheme || (systemPrefersDark ? "dark" : "light");
+
+        // Apply theme
+        body.setAttribute("data-theme", currentTheme);
+        updateThemeIcon(currentTheme);
+
+        // Add event listener for theme toggle
+        themeToggle.addEventListener("click", () => {
+          currentTheme = currentTheme === "light" ? "dark" : "light";
+          body.setAttribute("data-theme", currentTheme);
+          localStorage.setItem("theme", currentTheme);
+          updateThemeIcon(currentTheme);
+          notify(`Switched to ${currentTheme} mode`, "success");
+        });
+      }
+
+      function updateThemeIcon(theme) {
+        const themeIcon = document.getElementById("themeIcon");
+        if (theme === "dark") {
+          themeIcon.className = "fas fa-sun";
+        } else {
+          themeIcon.className = "fas fa-moon";
+        }
+      }
+
+      // Toggle transaction details in success popup
+      function toggleTransactionDetails() {
+        const detailsContent = document.getElementById("expandableDetails");
+        const toggleButton = document.querySelector(".details-toggle");
+        const icon = toggleButton.querySelector("i");
+
+        if (detailsContent.classList.contains("expanded")) {
+          detailsContent.classList.remove("expanded");
+          icon.className = "fas fa-chevron-down";
+          toggleButton.querySelector("span").textContent = "View Details";
+        } else {
+          detailsContent.classList.add("expanded");
+          icon.className = "fas fa-chevron-up";
+          toggleButton.querySelector("span").textContent = "Hide Details";
+        }
+      }
+
+      // Initialize theme when DOM is loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        initializeTheme();
+
+        // Initialize searched addresses list
+        if (typeof updateSearchedAddressesList === "function") {
+          updateSearchedAddressesList();
+        }
+
+        // Add real-time validation for recipient address
+        const recipientInput = document.getElementById("recipient");
+        const helpText = recipientInput
+          ? recipientInput.nextElementSibling
+          : null;
+
+        if (recipientInput && helpText) {
+          recipientInput.addEventListener("input", function () {
+            const address = this.value.trim();
+            if (address && typeof validateAddressInput === "function") {
+              const validation = validateAddressInput(address);
+              if (validation.valid) {
+                helpText.textContent = "✓ Valid Ripple address";
+                helpText.style.color = "#22c55e";
+              } else {
+                helpText.textContent = validation.message;
+                helpText.style.color = "#ef4444";
+              }
+            } else {
+              helpText.textContent =
+                "Enter a valid Ripple address starting with 'r' (25-34 characters)";
+              helpText.style.color = "";
+            }
+          });
+        }
+      });
+    </script>
+    <div id="notification_drawer" class="notification-drawer"></div>
+  </body>
+</html>
