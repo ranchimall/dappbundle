@@ -1,0 +1,2451 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Polkadot Wallet - RanchiMall</title>
+    <link rel="icon" type="image/svg+xml" href="polkadot_favicon.svg?v=1" />
+
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div id="logo" class="app-brand">
+          <svg id="main_logo" class="icon" viewBox="0 0 27.25 32">
+            <title>RanchiMall</title>
+            <path
+              d="M27.14,30.86c-.74-2.48-3-4.36-8.25-6.94a20,20,0,0,1-4.2-2.49,6,6,0,0,1-1.25-1.67,4,4,0,0,1,0-2.26c.37-1.08.79-1.57,3.89-4.55a11.66,11.66,0,0,0,3.34-4.67,6.54,6.54,0,0,0,.05-2.82C20,3.6,18.58,2,16.16.49c-.89-.56-1.29-.64-1.3-.24a3,3,0,0,1-.3.72l-.3.55L13.42.94C13,.62,12.4.26,12.19.15c-.4-.2-.73-.18-.72.05a9.39,9.39,0,0,1-.61,1.33s-.14,0-.27-.13C8.76.09,8-.27,8,.23A11.73,11.73,0,0,1,6.76,2.6C4.81,5.87,2.83,7.49.77,7.49c-.89,0-.88,0-.61,1,.22.85.33.92,1.09.69A5.29,5.29,0,0,0,3,8.33c.23-.17.45-.29.49-.26a2,2,0,0,1,.22.63A1.31,1.31,0,0,0,4,9.34a5.62,5.62,0,0,0,2.27-.87L7,8l.13.55c.19.74.32.82,1,.65a7.06,7.06,0,0,0,3.46-2.47l.6-.71-.06.64c-.17,1.63-1.3,3.42-3.39,5.42L6.73,14c-3.21,3.06-3,5.59.6,8a46.77,46.77,0,0,0,4.6,2.41c.28.13,1,.52,1.59.87,3.31,2,4.95,3.92,4.95,5.93a2.49,2.49,0,0,0,.07.77h0c.09.09,0,.1.9-.14a2.61,2.61,0,0,0,.83-.32,3.69,3.69,0,0,0-.55-1.83A11.14,11.14,0,0,0,17,26.81a35.7,35.7,0,0,0-5.1-2.91C9.37,22.64,8.38,22,7.52,21.17a3.53,3.53,0,0,1-1.18-2.48c0-1.38.71-2.58,2.5-4.23,2.84-2.6,3.92-3.91,4.67-5.65a3.64,3.64,0,0,0,.42-2A3.37,3.37,0,0,0,13.61,5l-.32-.74.29-.48c.17-.27.37-.63.46-.8l.15-.3.44.64a5.92,5.92,0,0,1,1,2.81,5.86,5.86,0,0,1-.42,1.94c0,.12-.12.3-.15.4a9.49,9.49,0,0,1-.67,1.1,28,28,0,0,1-4,4.29C8.62,15.49,8.05,16.44,8,17.78a3.28,3.28,0,0,0,1.11,2.76c.95,1,2.07,1.74,5.25,3.32,3.64,1.82,5.22,2.9,6.41,4.38A4.78,4.78,0,0,1,21.94,31a3.21,3.21,0,0,0,.14.92,1.06,1.06,0,0,0,.43-.05l.83-.22.46-.12-.06-.46c-.21-1.53-1.62-3.25-3.94-4.8a37.57,37.57,0,0,0-5.22-2.82A13.36,13.36,0,0,1,11,21.19a3.36,3.36,0,0,1-.8-4.19c.41-.85.83-1.31,3.77-4.15,2.39-2.31,3.43-4.13,3.43-6a5.85,5.85,0,0,0-2.08-4.29c-.23-.21-.44-.43-.65-.65A2.5,2.5,0,0,1,15.27.69a10.6,10.6,0,0,1,2.91,2.78A4.16,4.16,0,0,1,19,6.16a4.91,4.91,0,0,1-.87,3c-.71,1.22-1.26,1.82-4.27,4.67a9.47,9.47,0,0,0-2.07,2.6,2.76,2.76,0,0,0-.33,1.54,2.76,2.76,0,0,0,.29,1.47c.57,1.21,2.23,2.55,4.65,3.73a32.41,32.41,0,0,1,5.82,3.24c2.16,1.6,3.2,3.16,3.2,4.8a1.94,1.94,0,0,0,.09.76,4.54,4.54,0,0,0,1.66-.4C27.29,31.42,27.29,31.37,27.14,30.86ZM6.1,7h0a3.77,3.77,0,0,1-1.46.45L4,7.51l.68-.83a25.09,25.09,0,0,0,3-4.82A12,12,0,0,1,8.28.76c.11-.12.77.32,1.53,1l.63.58-.57.84A10.34,10.34,0,0,1,6.1,7Zm5.71-1.78A9.77,9.77,0,0,1,9.24,7.18h0a5.25,5.25,0,0,1-1.17.28l-.58,0,.65-.78a21.29,21.29,0,0,0,2.1-3.12c.22-.41.42-.76.44-.79s.5.43.9,1.24L12,5ZM13.41,3a2.84,2.84,0,0,1-.45.64,11,11,0,0,1-.9-.91l-.84-.9.19-.45c.34-.79.39-.8,1-.31A9.4,9.4,0,0,1,13.80,2.33q-.18.34-.39.69Z"
+            />
+          </svg>
+          <div class="app-name">
+            <div class="app-name__company">RanchiMall</div>
+            <h4 class="app-name__title">Polkadot Wallet</h4>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+            <i class="fas fa-moon" id="themeIcon"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar Overlay (for mobile) -->
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar Navigation (Desktop) -->
+    <aside id="sidebar" class="sidebar">
+      <ul class="sidebar-menu">
+        <li>
+          <a href="#" class="nav-link active" data-page="generate">
+            <i class="fas fa-plus-circle"></i>
+            <span>Generate</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-page="transactions">
+            <i class="fas fa-history"></i>
+            <span>Transactions</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-page="send">
+            <i class="fas fa-paper-plane"></i>
+            <span>Send</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" data-page="recover">
+            <i class="fas fa-key"></i>
+            <span>Recover</span>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <div class="container">
+      <main class="main-content">
+        <!-- Generate Page -->
+        <div id="generate-tab" class="page tab-content active">
+          <div class="page-header">
+            <h2>
+              <i class="fas fa-wallet"></i> Generate Multi-Blockchain Addresses
+            </h2>
+            <p>
+              Generate addresses for BTC, FLO, DOT from a single private key
+            </p>
+          </div>
+
+          <div class="generate-wallet-intro">
+            <div class="intro-icon">
+              <i class="fas fa-wallet"></i>
+            </div>
+            <div class="intro-content">
+              <h3>One Key, Multiple Blockchains</h3>
+              <p>
+                Generate a single private key that works across BTC, FLO, DOT
+                networks. This creates a unified experience across multiple
+                blockchains.
+              </p>
+            </div>
+          </div>
+
+          <div class="card generate-actions">
+            <button
+              id="generateBtn"
+              class="btn btn-primary btn-block"
+              onclick="generateWallet()"
+            >
+              <i class="fas fa-wallet"></i> Generate
+            </button>
+          </div>
+
+          <div id="generate-results" class="output" style="display: none">
+            <!-- DOT Section -->
+            <div class="blockchain-section dot-primary">
+              <div class="blockchain-header">
+                <h4>
+                  <img
+                    src="polkadot_favicon.svg"
+                    alt="Polkadot"
+                    class="polkadot-logo"
+                    style="width: 20px; height: 20px; vertical-align: middle"
+                  />
+                  DOT (Polkadot)
+                </h4>
+                <span class="blockchain-badge primary">Primary</span>
+              </div>
+              <div class="detail-row">
+                <label>Address</label>
+                <div class="detail-value-wrapper">
+                  <code id="dot-address" class="detail-value">-</code>
+                  <button
+                    class="input-action-btn clear-btn"
+                    onclick="copyToClipboard('dot-address')"
+                  >
+                    <i class="fa-regular fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="detail-row">
+                <label>Private Key</label>
+                <div class="input-with-actions">
+                  <input
+                    type="password"
+                    id="dot-privateKey"
+                    class="form-input"
+                    value="-"
+                    readonly
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn password-toggle"
+                    onclick="toggleVisibility('dot-privateKey')"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="copyPrivateKey('dot-privateKey')"
+                  >
+                    <i class="fa-regular fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- FLO Section -->
+            <div class="blockchain-section">
+              <div class="blockchain-header">
+                <h4><i class="fas fa-spa"></i> FLO</h4>
+                <span class="blockchain-badge secondary">Secondary</span>
+              </div>
+              <div class="detail-row">
+                <label>Address</label>
+                <div class="detail-value-wrapper">
+                  <code id="flo-address" class="detail-value">-</code>
+                  <button
+                    class="input-action-btn clear-btn"
+                    onclick="copyToClipboard('flo-address')"
+                  >
+                    <i class="fa-regular fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="detail-row">
+                <label>Private Key</label>
+                <div class="input-with-actions">
+                  <input
+                    type="password"
+                    id="flo-privateKey"
+                    class="form-input"
+                    value="-"
+                    readonly
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn password-toggle"
+                    onclick="toggleVisibility('flo-privateKey')"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="copyPrivateKey('flo-privateKey')"
+                  >
+                    <i class="fa-regular fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- BTC Section -->
+            <div class="blockchain-section">
+              <div class="blockchain-header">
+                <h4><i class="fab fa-bitcoin"></i> BTC</h4>
+                <span class="blockchain-badge secondary">Secondary</span>
+              </div>
+              <div class="detail-row">
+                <label>Address</label>
+                <div class="detail-value-wrapper">
+                  <code id="btc-address" class="detail-value">-</code>
+                  <button
+                    class="input-action-btn clear-btn"
+                    onclick="copyToClipboard('btc-address')"
+                  >
+                    <i class="fa-regular fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="detail-row">
+                <label>Private Key</label>
+                <div class="input-with-actions">
+                  <input
+                    type="password"
+                    id="btc-privateKey"
+                    class="form-input"
+                    value="-"
+                    readonly
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn password-toggle"
+                    onclick="toggleVisibility('btc-privateKey')"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="copyPrivateKey('btc-privateKey')"
+                  >
+                    <i class="fa-regular fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="wallet-security-notice">
+            <div class="notice-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="notice-content">
+              <h4>Security Notice</h4>
+              <p>
+                Your private keys are generated locally and never leave your
+                device. Make sure to backup your keys securely before using.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transactions Page -->
+        <div id="transactions-tab" class="page tab-content hidden">
+          <div class="page-header">
+            <h2><i class="fas fa-exchange-alt"></i> DOT Transactions</h2>
+            <p>
+              Check balance and transaction history for any Polkadot (DOT)
+              address
+            </p>
+          </div>
+
+          <div class="card">
+            <!-- Search Type Selector -->
+            <div class="search-type-selector">
+              <div class="search-type-label">Search Type</div>
+              <div class="search-type-options">
+                <label
+                  class="radio-button-container active"
+                  id="addressSearchType"
+                >
+                  <input
+                    type="radio"
+                    name="searchType"
+                    value="address"
+                    checked
+                  />
+                  <div class="radio-icon"><i class="fas fa-wallet"></i></div>
+                  <span>DOT Address</span>
+                </label>
+                <label class="radio-button-container" id="hashSearchType">
+                  <input type="radio" name="searchType" value="hash" />
+                  <div class="radio-icon">
+                    <i class="fas fa-fingerprint"></i>
+                  </div>
+                  <span>Transaction Hash</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Address Search Section -->
+            <div id="address-search" class="search-section">
+              <div class="form-group">
+                <label for="tx-search-input"
+                  ><i class="fas fa-wallet"></i> Polkadot Address or Private
+                  Key</label
+                >
+                <div class="input-with-actions">
+                  <input
+                    type="text"
+                    id="tx-search-input"
+                    class="form-input"
+                    placeholder="Enter Polkadot address or private key (DOT/FLO/BTC)"
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('tx-search-input')"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <div class="form-text">
+                  Enter a Polkadot address or BTC/FLO/DOT private key to view
+                  transactions
+                </div>
+              </div>
+            </div>
+
+            <!-- Transaction Hash Search Section -->
+            <div
+              id="txhash-search"
+              class="search-section"
+              style="display: none"
+            >
+              <div class="form-group">
+                <label for="txhash-input"
+                  ><i class="fas fa-fingerprint"></i> Transaction ID</label
+                >
+                <div class="input-with-actions">
+                  <input
+                    type="text"
+                    id="txhash-input"
+                    class="form-input"
+                    placeholder="Enter transaction ID/hash"
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('txhash-input')"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button
+              class="btn btn-primary btn-block"
+              onclick="handleSearch()"
+              id="searchBtn"
+            >
+              <i class="fas fa-search"></i> Search
+            </button>
+          </div>
+
+          <!-- Address Results - Balance Display -->
+          <div id="tx-results" class="balance-info card" style="display: none">
+            <div class="balance-header">
+              <h3><i class="fas fa-wallet"></i>AssetHub Balance</h3>
+            </div>
+            <div class="balance-display">
+              <div class="balance-amount" id="dot-balance">
+                0 <span class="currency">DOT</span>
+              </div>
+            </div>
+            <div class="address-display">
+              <span class="address-label">Address:</span>
+              <span class="address-value" id="dot-display-address">-</span>
+            </div>
+          </div>
+
+          <!-- Transaction History Section -->
+          <div
+            id="transactionFilterSection"
+            class="transaction-section"
+            style="display: none"
+          >
+            <div class="transaction-header">
+              <h3>Transactions</h3>
+              <div class="transaction-filters">
+                <button
+                  class="filter-btn active"
+                  data-filter="all"
+                  onclick="filterTransactions('all')"
+                  title="All Transactions"
+                >
+                  <i class="fas fa-exchange-alt"></i>
+                </button>
+                <button
+                  class="filter-btn"
+                  data-filter="received"
+                  onclick="filterTransactions('received')"
+                  title="Received"
+                >
+                  <i class="fas fa-arrow-down"></i>
+                </button>
+                <button
+                  class="filter-btn"
+                  data-filter="sent"
+                  onclick="filterTransactions('sent')"
+                  title="Sent"
+                >
+                  <i class="fas fa-arrow-up"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div id="tx-history" class="output"></div>
+
+          <div
+            id="tx-pagination"
+            class="pagination-section"
+            style="display: none"
+          >
+            <div class="pagination-info">
+              <span id="paginationInfo">Page 1 of 1</span>
+            </div>
+            <div class="pagination-controls">
+              <button
+                class="pagination-btn"
+                id="prev-page-btn"
+                onclick="prevPage()"
+              >
+                <i class="fas fa-chevron-left"></i>
+                <span class="btn-text">Prev</span>
+              </button>
+              <button
+                class="pagination-btn"
+                id="next-page-btn"
+                onclick="nextPage()"
+              >
+                <span class="btn-text">Next</span>
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Recent Searches -->
+          <div
+            id="recent-searches"
+            class="recent-searches"
+            style="display: none"
+          >
+            <div class="recent-header">
+              <h4><i class="fas fa-history"></i> Recent Searches</h4>
+              <button
+                class="btn-clear-all"
+                onclick="clearAllRecentSearches()"
+                title="Clear All"
+              >
+                <i class="fas fa-trash-alt"></i> Clear All
+              </button>
+            </div>
+            <div id="recent-searches-list" class="recent-list">
+              <!-- Recent searches will be inserted here -->
+            </div>
+          </div>
+
+          <!-- Transaction Hash Results -->
+          <div id="txhash-results" style="display: none">
+            <div class="tx-details-card card">
+              <div class="tx-details-header">
+                <div class="tx-status" id="tx-status">
+                  <i class="fa-solid fa-circle-check"></i>
+                  <span>Confirmed</span>
+                </div>
+                <a
+                  class="explorer-link"
+                  id="tx-explorer-link"
+                  href="#"
+                  target="_blank"
+                >
+                  <i class="fa-solid fa-external-link-alt"></i> View on Explorer
+                </a>
+              </div>
+
+              <div class="tx-details-body">
+                <div class="tx-detail-row">
+                  <span class="detail-label">Transaction ID</span>
+                  <div class="detail-value-wrapper">
+                    <code class="detail-value" id="tx-detail-id">-</code>
+                    <button
+                      class="input-action-btn clear-btn"
+                      onclick="copyToClipboard('tx-detail-id')"
+                    >
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="tx-detail-row">
+                  <span class="detail-label">From</span>
+                  <div class="detail-value-wrapper">
+                    <code class="detail-value" id="tx-detail-from">-</code>
+                    <button
+                      class="input-action-btn clear-btn"
+                      onclick="copyToClipboard('tx-detail-from')"
+                    >
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="tx-detail-row">
+                  <span class="detail-label">To</span>
+                  <div class="detail-value-wrapper">
+                    <code class="detail-value" id="tx-detail-to">-</code>
+                    <button
+                      class="input-action-btn clear-btn"
+                      onclick="copyToClipboard('tx-detail-to')"
+                    >
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="tx-detail-row highlight">
+                  <span class="detail-label">Amount</span>
+                  <span class="detail-value amount" id="tx-detail-amount"
+                    >-</span
+                  >
+                </div>
+                <div class="tx-detail-row">
+                  <span class="detail-label">Fee</span>
+                  <span class="detail-value fee" id="tx-detail-fee">-</span>
+                </div>
+                <div class="tx-detail-row">
+                  <span class="detail-label">Block</span>
+                  <span class="detail-value" id="tx-detail-round">-</span>
+                </div>
+                <div class="tx-detail-row">
+                  <span class="detail-label">Timestamp</span>
+                  <span class="detail-value" id="tx-detail-time">-</span>
+                </div>
+                <div
+                  class="tx-detail-row"
+                  id="tx-note-row"
+                  style="display: none"
+                >
+                  <span class="detail-label">Note</span>
+                  <span class="detail-value" id="tx-detail-note">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Send Page -->
+        <div id="send-tab" class="page tab-content hidden">
+          <div class="page-header">
+            <h2><i class="fas fa-paper-plane"></i> Send Transaction</h2>
+            <p>Send DOT to another Polkadot address</p>
+          </div>
+
+          <div class="card">
+            <form id="sendForm" onsubmit="event.preventDefault(); sendDot();">
+              <div class="form-group">
+                <label for="send-privatekey"
+                  ><i class="fas fa-key"></i> Private Key (BTC/FLO/DOT)</label
+                >
+                <div class="input-with-actions">
+                  <input
+                    type="password"
+                    id="send-privatekey"
+                    class="form-input"
+                    placeholder="Enter BTC/FLO/DOT private key"
+                    required
+                    oninput="loadSendWalletInfo()"
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn password-toggle"
+                    onclick="toggleSendKeyVisibility()"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('send-privatekey')"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div
+                id="send-wallet-info"
+                class="balance-info card"
+                style="display: none; margin-bottom: 1.5rem"
+              >
+                <div class="balance-header">
+                  <h3><i class="fas fa-wallet"></i> Sender Balance</h3>
+                </div>
+                <div class="balance-display">
+                  <div class="balance-amount" id="send-balance">
+                    0 <span class="currency">DOT</span>
+                  </div>
+                </div>
+                <div class="detail-row">
+                  <label>From Address</label>
+                  <div class="detail-value-wrapper">
+                    <code id="send-from-address" class="detail-value">-</code>
+                    <button
+                      class="input-action-btn clear-btn"
+                      onclick="copyToClipboard('send-from-address')"
+                      title="Copy address"
+                    >
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="send-recipient"
+                  ><i class="fas fa-user"></i> To Address</label
+                >
+                <div class="input-with-actions">
+                  <input
+                    type="text"
+                    id="send-recipient"
+                    class="form-input"
+                    placeholder="Enter recipient Polkadot address"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('send-recipient')"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="send-amount"
+                  ><i class="fas fa-coins"></i> Amount (DOT)</label
+                >
+                <div class="input-with-actions">
+                  <input
+                    type="number"
+                    id="send-amount"
+                    class="form-input"
+                    placeholder="Enter the amount to send"
+                    min="0.000001"
+                    step="0.000001"
+                    required
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('send-amount')"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block send-btn">
+                <i class="fas fa-paper-plane"></i> Send Transaction
+              </button>
+            </form>
+          </div>
+
+          <div id="sendOutput" class="output"></div>
+        </div>
+
+        <!-- Recover Page -->
+        <div id="recover-tab" class="page tab-content hidden">
+          <div class="page-header">
+            <h2>
+              <i class="fas fa-sync-alt"></i> Recover Multi-Blockchain Addresses
+            </h2>
+            <p>
+              Recover all blockchain addresses (BTC, FLO, DOT) from a single
+              private key
+            </p>
+          </div>
+
+          <div class="card">
+            <div class="form-group">
+              <label for="privateKeyInput"
+                ><i class="fas fa-key"></i> Private Key (BTC/FLO/DOT)</label
+              >
+              <div class="input-with-actions">
+                <input
+                  type="password"
+                  id="privateKeyInput"
+                  class="form-input"
+                  placeholder="Enter BTC/FLO/DOT private key"
+                  required
+                />
+                <button
+                  type="button"
+                  class="input-action-btn password-toggle"
+                  onclick="toggleRecoverKeyVisibility()"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button
+                  type="button"
+                  class="input-action-btn clear-btn"
+                  onclick="clearInput('privateKeyInput')"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="form-text">Only private keys accepted</div>
+            </div>
+
+            <button
+              id="recoverBtn"
+              class="btn btn-primary btn-block"
+              onclick="recoverWallet()"
+            >
+              <i class="fas fa-sync-alt"></i> Recover
+            </button>
+
+            <div id="recover-results" class="output" style="display: none">
+              <!-- DOT Section -->
+              <div class="blockchain-section dot-primary">
+                <div class="blockchain-header">
+                  <h4>
+                    <img
+                      src="polkadot_favicon.svg"
+                      alt="Polkadot"
+                      class="polkadot-logo"
+                      style="width: 20px; height: 20px; vertical-align: middle"
+                    />
+                    DOT (Polkadot)
+                  </h4>
+                  <span class="blockchain-badge primary">Primary</span>
+                </div>
+                <div class="detail-row">
+                  <label>Address</label>
+                  <div class="detail-value-wrapper">
+                    <code id="recover-dot-address" class="detail-value">-</code>
+                    <button
+                      class="input-action-btn clear-btn"
+                      onclick="copyToClipboard('recover-dot-address')"
+                    >
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="detail-row">
+                  <label>Private Key</label>
+                  <div class="input-with-actions">
+                    <input
+                      type="password"
+                      id="recover-dot-privateKey"
+                      class="form-input"
+                      value="-"
+                      readonly
+                    />
+                    <button
+                      type="button"
+                      class="input-action-btn password-toggle"
+                      onclick="toggleVisibility('recover-dot-privateKey')"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="input-action-btn clear-btn"
+                      onclick="copyPrivateKey('recover-dot-privateKey')"
+                    >
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- FLO Section -->
+              <div class="blockchain-section">
+                <div class="blockchain-header">
+                  <h4><i class="fas fa-spa"></i> FLO</h4>
+                  <span class="blockchain-badge secondary">Secondary</span>
+                </div>
+                <div class="detail-row">
+                  <label>Address</label>
+                  <div class="detail-value-wrapper">
+                    <code id="recover-flo-address" class="detail-value">-</code>
+                    <button
+                      class="input-action-btn clear-btn"
+                      onclick="copyToClipboard('recover-flo-address')"
+                    >
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="detail-row">
+                  <label>Private Key</label>
+                  <div class="input-with-actions">
+                    <input
+                      type="password"
+                      id="recover-flo-privateKey"
+                      class="form-input"
+                      value="-"
+                      readonly
+                    />
+                    <button
+                      type="button"
+                      class="input-action-btn password-toggle"
+                      onclick="toggleVisibility('recover-flo-privateKey')"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="input-action-btn clear-btn"
+                      onclick="copyPrivateKey('recover-flo-privateKey')"
+                    >
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- BTC Section -->
+              <div class="blockchain-section">
+                <div class="blockchain-header">
+                  <h4><i class="fab fa-bitcoin"></i> BTC</h4>
+                  <span class="blockchain-badge secondary">Secondary</span>
+                </div>
+                <div class="detail-row">
+                  <label>Address</label>
+                  <div class="detail-value-wrapper">
+                    <code id="recover-btc-address" class="detail-value">-</code>
+                    <button
+                      class="input-action-btn clear-btn"
+                      onclick="copyToClipboard('recover-btc-address')"
+                    >
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="detail-row">
+                  <label>Private Key</label>
+                  <div class="input-with-actions">
+                    <input
+                      type="password"
+                      id="recover-btc-privateKey"
+                      class="form-input"
+                      value="-"
+                      readonly
+                    />
+                    <button
+                      type="button"
+                      class="input-action-btn password-toggle"
+                      onclick="toggleVisibility('recover-btc-privateKey')"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="input-action-btn clear-btn"
+                      onclick="copyPrivateKey('recover-btc-privateKey')"
+                    >
+                      <i class="fa-regular fa-copy"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="wallet-security-notice">
+            <div class="notice-icon">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="notice-content">
+              <h4>Privacy Notice</h4>
+              <p>
+                Your private key is processed locally and never transmitted to
+                any server. All recovery operations happen in your browser.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content confirm-modal">
+        <div class="modal-header">
+          <h3><i class="fa-solid fa-paper-plane"></i> Confirm Transaction</h3>
+          <button class="modal-close" onclick="closeConfirmModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="confirm-details">
+            <div class="confirm-row">
+              <span class="confirm-label">From:</span>
+              <span class="confirm-value" id="confirm-from">-</span>
+            </div>
+            <div class="confirm-row">
+              <span class="confirm-label">To:</span>
+              <span class="confirm-value" id="confirm-to">-</span>
+            </div>
+            <div class="confirm-row highlight">
+              <span class="confirm-label">Amount:</span>
+              <span class="confirm-value" id="confirm-amount"
+                >0.0000000 DOT</span
+              >
+            </div>
+            <div class="confirm-row fee-row">
+              <span class="confirm-label">Network Fee:</span>
+              <span class="confirm-value fee" id="confirm-fee"
+                >0.00001 DOT</span
+              >
+            </div>
+            <div class="confirm-divider"></div>
+            <div class="confirm-row total-row">
+              <span class="confirm-label">Total:</span>
+              <span class="confirm-value total" id="confirm-total"
+                >0.00001 DOT</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn cancel" onclick="closeConfirmModal()">
+            <i class="fa-solid fa-xmark"></i> Cancel
+          </button>
+          <button
+            class="modal-btn confirm"
+            id="confirm-send-btn"
+            onclick="confirmAndSend()"
+          >
+            <i class="fa-solid fa-check"></i> Confirm & Send
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="modal-overlay" style="display: none">
+      <div class="modal-content success-modal">
+        <div class="modal-header success">
+          <div class="success-icon">
+            <i class="fa-solid fa-check-circle"></i>
+          </div>
+          <h3>Transaction Sent!</h3>
+        </div>
+        <div class="modal-body">
+          <div class="success-details">
+            <div class="success-row">
+              <span class="success-label">Transaction ID:</span>
+              <div class="tx-id-wrapper">
+                <code id="success-txid">-</code>
+                <button class="input-action-btn clear-btn" onclick="copyTxId()">
+                  <i class="fa-regular fa-copy"></i>
+                </button>
+              </div>
+            </div>
+            <div class="success-row">
+              <span class="success-label">Amount Sent:</span>
+              <span class="success-value" id="success-amount"
+                >0.0000000 DOT</span
+              >
+            </div>
+            <div class="success-row">
+              <span class="success-label">To:</span>
+              <span class="success-value" id="success-to">-</span>
+            </div>
+            <div class="success-row">
+              <span class="success-label">Fee:</span>
+              <span class="success-value" id="success-fee">0.00001 DOT</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="modal-btn secondary" onclick="viewOnExplorer()">
+            <i class="fa-solid fa-external-link-alt"></i> View on Explorer
+          </button>
+          <button class="modal-btn confirm" onclick="closeSuccessModal()">
+            <i class="fa-solid fa-check"></i> Done
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Polkadot libraries - Full API bundle -->
+    <script src="https://unpkg.com/@polkadot/util@12.6.2/bundle-polkadot-util.js"></script>
+    <script src="https://unpkg.com/@polkadot/util-crypto@12.6.2/bundle-polkadot-util-crypto.js"></script>
+    <script src="polkadot-api-bundle.js"></script>
+    <script src="lib.polkadot.js"></script>
+    <script src="polkadotCrypto.js"></script>
+    <!-- Polkadot blockchain API integration -->
+    <script src="polkadotBlockchainAPI.js"></script>
+    <script src="polkadotSearchDB.js"></script>
+
+    <script>
+      let currentDotAddress = null;
+      let currentDotPrivateKey = null;
+      let txNextToken = null;
+      let currentSearchType = "address";
+
+      // SearchDB for storing recent searches
+      let searchDB = new PolkadotSearchDB();
+      let currentTxFilter = "all";
+
+      let allTransactions = [];
+      let currentPage = 1;
+      let transactionsPerPage = 20;
+      let hasMoreTransactions = false;
+
+      // Utility functions
+      function showNotification(message, type = "info") {
+        const existingNotif = document.querySelector(".notification");
+        if (existingNotif) {
+          existingNotif.remove();
+        }
+
+        const notification = document.createElement("div");
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => notification.classList.add("show"), 10);
+
+        setTimeout(() => {
+          notification.classList.remove("show");
+          setTimeout(() => notification.remove(), 300);
+        }, 8000);
+      }
+
+      function showLoading(show) {
+        document.querySelectorAll(".primary-btn").forEach((btn) => {
+          btn.disabled = show;
+          show ? btn.classList.add("loading") : btn.classList.remove("loading");
+        });
+      }
+
+      function filterTransactions(type) {
+        currentTxFilter = type;
+
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          btn.classList.remove("active");
+          if (btn.getAttribute("data-filter") === type) {
+            btn.classList.add("active");
+          }
+        });
+
+        currentPage = 1;
+        displayCurrentPage();
+      }
+
+      function displayCurrentPage() {
+        if (!allTransactions || !Array.isArray(allTransactions)) {
+          console.warn(
+            "[displayCurrentPage] allTransactions is not valid:",
+            allTransactions
+          );
+          allTransactions = [];
+        }
+
+        let filteredTransactions = allTransactions;
+
+        if (currentTxFilter === "sent") {
+          filteredTransactions = allTransactions.filter(
+            (tx) => tx.type === "sent"
+          );
+        } else if (currentTxFilter === "received") {
+          filteredTransactions = allTransactions.filter(
+            (tx) => tx.type === "received"
+          );
+        }
+
+        const startIndex = (currentPage - 1) * transactionsPerPage;
+        const endIndex = startIndex + transactionsPerPage;
+        const pageTransactions = filteredTransactions.slice(
+          startIndex,
+          endIndex
+        );
+
+        displayTransactions(pageTransactions);
+        updatePaginationUI(filteredTransactions.length);
+      }
+
+      // Update pagination controls
+      function updatePaginationUI(totalFiltered) {
+        const totalPages = Math.ceil(totalFiltered / transactionsPerPage) || 1;
+        const paginationSection = document.getElementById("tx-pagination");
+        const prevBtn = document.getElementById("prev-page-btn");
+        const nextBtn = document.getElementById("next-page-btn");
+        const pageInfo = document.getElementById("paginationInfo");
+
+        if (totalFiltered > 0) {
+          paginationSection.style.display = "flex";
+          pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+          if (prevBtn) {
+            prevBtn.disabled = currentPage === 1;
+          }
+
+          if (nextBtn) {
+            const isLastPage = currentPage >= totalPages;
+            const hasMore = hasMoreTransactions && currentTxFilter === "all";
+            nextBtn.disabled = isLastPage && !hasMore;
+          }
+        } else {
+          paginationSection.style.display = "none";
+        }
+      }
+
+      async function nextPage() {
+        let filteredTransactions = allTransactions;
+        if (currentTxFilter === "sent") {
+          filteredTransactions = allTransactions.filter(
+            (tx) => tx.type === "sent"
+          );
+        } else if (currentTxFilter === "received") {
+          filteredTransactions = allTransactions.filter(
+            (tx) => tx.type === "received"
+          );
+        }
+
+        const totalPages =
+          Math.ceil(filteredTransactions.length / transactionsPerPage) || 1;
+
+        if (
+          currentPage >= totalPages &&
+          hasMoreTransactions &&
+          currentTxFilter === "all"
+        ) {
+          try {
+            await loadMoreTransactions();
+          } catch (error) {
+            console.error("Error loading more transactions:", error);
+            showNotification("❌ Error loading more transactions", "error");
+          }
+        } else if (currentPage < totalPages) {
+          currentPage++;
+          displayCurrentPage();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }
+
+      function prevPage() {
+        if (currentPage > 1) {
+          currentPage--;
+          displayCurrentPage();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }
+
+      async function loadMoreTransactions() {
+        if (!currentDotAddress) return;
+
+        try {
+          const nextPageNum = Math.floor(allTransactions.length / 20);
+          const newTransactions = await polkadotAPI.getTransactions(
+            currentDotAddress,
+            nextPageNum,
+            20
+          );
+
+          if (newTransactions.length > 0) {
+            allTransactions = [...allTransactions, ...newTransactions];
+            hasMoreTransactions = newTransactions.length >= 20;
+            currentPage++;
+            displayCurrentPage();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          } else {
+            hasMoreTransactions = false;
+            showNotification("ℹ️ No more transactions", "info");
+          }
+        } catch (error) {
+          console.error("Error loading more transactions:", error);
+          hasMoreTransactions = false;
+          throw error;
+        }
+      }
+
+      // Clear input helper
+      function clearInput(inputId) {
+        const input = document.getElementById(inputId);
+        if (input) {
+          input.value = "";
+          input.focus();
+        }
+      }
+
+      // Handle unified search button
+      function handleSearch() {
+        if (currentSearchType === "address") {
+          searchDotAddress();
+        } else {
+          searchTransactionHash();
+        }
+      }
+
+      async function searchDotAddress() {
+        const input = document.getElementById("tx-search-input").value.trim();
+
+        if (!input) {
+          showNotification(
+            "⚠️ Please enter a Polkadot address or private key",
+            "warning"
+          );
+          return;
+        }
+
+        let sourceInfo = null;
+
+        try {
+          const searchBtn = document.getElementById("searchBtn");
+          searchBtn.disabled = true;
+          searchBtn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Searching...';
+
+          let address = input;
+
+          const isHexKey = /^[0-9a-fA-F]{64,128}$/.test(input);
+          const isWifKey =
+            input.length >= 51 &&
+            input.length <= 52 &&
+            !/^[A-Z2-7]+$/.test(input);
+
+          if (isHexKey || isWifKey) {
+            const result = await polkadotCrypto.generateMultiChain(input);
+            address = result.DOT.address;
+          }
+
+          const balanceData = await polkadotAPI.getBalance(address);
+
+          // Update UI
+          document.getElementById("dot-balance").textContent =
+            balanceData.balance.toFixed(7) + " ";
+          document.getElementById("dot-display-address").textContent = address;
+          document.getElementById("tx-results").style.display = "block";
+
+          // Update URL with address parameter and clear tx parameter
+          const url = new URL(window.location);
+          url.searchParams.set("address", address);
+          url.searchParams.delete("tx");
+          window.history.pushState({}, "", url);
+
+          // Store current address
+          currentDotAddress = address;
+
+          try {
+            await loadTransactions(address);
+          } catch (txError) {
+            console.warn("Could not load transactions:", txError);
+            // Show a friendly message
+            document.getElementById("tx-history").innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                            <i class="fas fa-info-circle" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+                            <p style="margin-bottom: 0.5rem;"><strong>Transaction history temporarily unavailable</strong></p>
+                            <p style="font-size: 0.9rem;">Subscan API requires an API key for transaction history.</p>
+                            <p style="font-size: 0.9rem; margin-top: 0.5rem;">
+                                <a href="https://support.subscan.io/#introduction" target="_blank" style="color: var(--primary-light);">
+                                    Get a free API key →
+                                </a>
+                            </p>
+                        </div>
+                    `;
+            document.getElementById("transactionFilterSection").style.display =
+              "none";
+          }
+
+          if (searchDB) {
+            if (isHexKey || isWifKey) {
+              const result = await polkadotCrypto.generateMultiChain(input);
+              sourceInfo = {
+                btcAddress: result.BTC.address,
+                floAddress: result.FLO.address,
+              };
+            }
+            searchDB.saveSearch(address, balanceData.balance, sourceInfo);
+          }
+
+          loadRecentSearches();
+
+          updateUrl("address", address);
+
+          showNotification(" Balance loaded successfully", "success");
+        } catch (error) {
+          console.error("Error searching address:", error);
+          showNotification("❌ Error: " + error.message, "error");
+          document.getElementById("tx-results").style.display = "none";
+          document.getElementById("tx-history").innerHTML = "";
+          document.getElementById("transactionFilterSection").style.display = "none";
+        } finally {
+          const searchBtn = document.getElementById("searchBtn");
+          searchBtn.disabled = false;
+          searchBtn.innerHTML = '<i class="fas fa-search"></i> Search';
+        }
+      }
+
+      async function searchTransactionHash() {
+        const hash = document.getElementById("txhash-input").value.trim();
+
+        if (!hash) {
+          showNotification("⚠️ Please enter a transaction hash", "warning");
+          return;
+        }
+
+        try {
+          const searchBtn = document.getElementById("searchBtn");
+          searchBtn.disabled = true;
+          searchBtn.innerHTML =
+            '\u003ci class="fas fa-spinner fa-spin"\u003e\u003c/i\u003e Searching...';
+
+          // Fetch transaction details
+          const tx = await polkadotAPI.getTransaction(hash);
+
+          // Update URL with transaction hash and clear address parameter
+          const url = new URL(window.location);
+          url.searchParams.set("tx", hash);
+          url.searchParams.delete("address");
+          window.history.pushState({}, "", url);
+
+          // Hide address results and recent searches, show tx hash results
+          document.getElementById("tx-results").style.display = "none";
+          document.getElementById("transactionFilterSection").style.display =
+            "none";
+          document.getElementById("tx-history").style.display = "none";
+          document.getElementById("tx-pagination").style.display = "none";
+          document.getElementById("recent-searches").style.display = "none";
+          document.getElementById("txhash-results").style.display = "block";
+
+          // Populate transaction details
+          document.getElementById("tx-detail-id").textContent = tx.hash || "-";
+          document.getElementById("tx-detail-from").textContent =
+            tx.from || "-";
+          document.getElementById("tx-detail-to").textContent = tx.to || "-";
+          document.getElementById("tx-detail-amount").textContent =
+            tx.amountDot > 0 ? tx.amountDot.toFixed(7) + " DOT" : "0 DOT";
+          document.getElementById("tx-detail-fee").textContent =
+            tx.feeDot.toFixed(6) + " DOT";
+          document.getElementById("tx-detail-round").textContent = tx.block;
+          document.getElementById("tx-detail-time").textContent = new Date(
+            tx.timestamp * 1000
+          ).toLocaleString();
+
+          // Update explorer link
+          const explorerLink = document.getElementById("tx-explorer-link");
+          explorerLink.href = `https://assethub-polkadot.subscan.io/extrinsic/${tx.hash}`;
+
+          // Update status
+          const statusElement = document.getElementById("tx-status");
+          if (tx.success) {
+            statusElement.innerHTML =
+              '\u003ci class="fa-solid fa-circle-check"\u003e\u003c/i\u003e\u003cspan\u003eConfirmed\u003c/span\u003e';
+            statusElement.className = "tx-status success";
+          } else {
+            statusElement.innerHTML =
+              '\u003ci class="fa-solid fa-circle-xmark"\u003e\u003c/i\u003e\u003cspan\u003eFailed\u003c/span\u003e';
+            statusElement.className = "tx-status failed";
+          }
+
+          showNotification("Transaction found", "success");
+        } catch (error) {
+          console.error("Error searching transaction:", error);
+          showNotification("❌ Error: " + error.message, "error");
+          document.getElementById("txhash-results").style.display = "none";
+        } finally {
+          const searchBtn = document.getElementById("searchBtn");
+          searchBtn.disabled = false;
+          searchBtn.innerHTML =
+            '\u003ci class="fas fa-search"\u003e\u003c/i\u003e Search';
+        }
+      }
+
+      // Load transactions for an address
+      async function loadTransactions(address, page = 0) {
+        try {
+          const transactions = await polkadotAPI.getTransactions(
+            address,
+            page,
+            20
+          );
+
+          if (transactions.length > 0) {
+            // Store all transactions
+            allTransactions = transactions;
+            hasMoreTransactions = transactions.length >= 20;
+            currentPage = 1;
+            currentTxFilter = "all";
+
+            // Show the filter section and transaction history container
+            const filterSection = document.getElementById(
+              "transactionFilterSection"
+            );
+            const historySection = document.getElementById("tx-history");
+
+            if (filterSection) {
+              filterSection.style.display = "block";
+            }
+
+            if (historySection) {
+              historySection.style.display = "block";
+            }
+
+            // Display using pagination system
+            displayCurrentPage();
+          } else {
+            allTransactions = [];
+            document.getElementById("tx-history").innerHTML =
+              '<div class="no-transactions">No transactions found</div>';
+            document.getElementById("transactionFilterSection").style.display =
+              "none";
+            document.getElementById("tx-pagination").style.display = "none";
+          }
+
+          // Hide tx hash results if showing
+          document.getElementById("txhash-results").style.display = "none";
+        } catch (error) {
+          console.error("Error loading transactions:", error);
+          allTransactions = [];
+          document.getElementById("tx-history").innerHTML =
+            '<div class="no-transactions">Error loading transactions</div>';
+          document.getElementById("transactionFilterSection").style.display =
+            "none";
+          document.getElementById("tx-pagination").style.display = "none";
+        }
+      }
+
+      // Initialize search type radio buttons
+      function initializeSearchTypeSelectors() {
+        const addressType = document.getElementById("addressSearchType");
+        const hashType = document.getElementById("hashSearchType");
+
+        if (addressType) {
+          addressType.addEventListener("click", function () {
+            switchSearchType("address");
+          });
+        }
+        if (hashType) {
+          hashType.addEventListener("click", function () {
+            switchSearchType("txhash");
+          });
+        }
+      }
+
+      // Switch between address and transaction hash search
+      function switchSearchType(type) {
+        currentSearchType = type === "txhash" ? "hash" : "address";
+
+        const addressSearch = document.getElementById("address-search");
+        const txhashSearch = document.getElementById("txhash-search");
+        const addressTypeBtn = document.getElementById("addressSearchType");
+        const hashTypeBtn = document.getElementById("hashSearchType");
+
+        if (type === "txhash") {
+          addressSearch.style.display = "none";
+          txhashSearch.style.display = "block";
+          addressTypeBtn?.classList.remove("active");
+          hashTypeBtn?.classList.add("active");
+        } else {
+          addressSearch.style.display = "block";
+          txhashSearch.style.display = "none";
+          addressTypeBtn?.classList.add("active");
+          hashTypeBtn?.classList.remove("active");
+        }
+      }
+
+      function switchTab(tab) {
+        // Remove active from all tab buttons
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((btn) => btn.classList.remove("active"));
+
+        // Hide all tab content
+        document.querySelectorAll(".tab-content").forEach((content) => {
+          content.classList.remove("active");
+          content.classList.add("hidden");
+        });
+
+        // Show selected tab content
+        const tabContent = document.getElementById(`${tab}-tab`);
+        if (tabContent) {
+          tabContent.classList.add("active");
+          tabContent.classList.remove("hidden");
+        }
+
+        // Update old tab buttons if present
+        if (event && event.target) {
+          const btn = event.target.closest(".tab-btn");
+          if (btn) btn.classList.add("active");
+        }
+      }
+
+      async function generateWallet() {
+        try {
+          showLoading(true);
+          const result = await polkadotCrypto.generateMultiChain();
+
+          // Display in Generate tab
+          document.getElementById("btc-address").textContent =
+            result.BTC.address;
+          document.getElementById("btc-privateKey").value =
+            result.BTC.privateKey;
+          document.getElementById("flo-address").textContent =
+            result.FLO.address;
+          document.getElementById("flo-privateKey").value =
+            result.FLO.privateKey;
+          document.getElementById("dot-address").textContent =
+            result.DOT.address;
+          document.getElementById("dot-privateKey").value =
+            result.DOT.privateKey;
+
+          // Store DOT keys
+          currentDotAddress = result.DOT.address;
+          currentDotPrivateKey = result.DOT.privateKey;
+
+          document.getElementById("generate-results").style.display = "block";
+          showNotification(" New address generated!", "success");
+        } catch (error) {
+          console.error("Error generating wallet:", error);
+          showNotification("❌ Error: " + error.message, "error");
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      async function recoverWallet() {
+        const privateKey = document
+          .getElementById("privateKeyInput")
+          .value.trim();
+
+        if (!privateKey) {
+          showNotification("⚠️ Please enter a private key", "warning");
+          return;
+        }
+
+        // Validate input - reject addresses, only accept private keys
+        const hexOnly = /^[0-9a-fA-F]+$/.test(privateKey);
+        const isHexKey =
+          hexOnly && (privateKey.length === 64 || privateKey.length === 128);
+        const isWifKey =
+          !hexOnly &&
+          !/^[A-Z2-7]+$/.test(privateKey) &&
+          privateKey.length >= 51 &&
+          privateKey.length <= 52;
+
+        // Reject if it's not a valid private key format
+        if (!isHexKey && !isWifKey) {
+          if (/^[A-Z2-7]+$/.test(privateKey) && privateKey.length === 52) {
+            showNotification(
+              "⚠️ This looks like a transaction ID, not a private key. Private keys cannot be recovered from transaction IDs.",
+              "error"
+            );
+          } else {
+            showNotification(
+              "⚠️ Invalid private key format. Please enter a valid private key (hex or WIF)",
+              "error"
+            );
+          }
+          return;
+        }
+
+        try {
+          showLoading(true);
+          const result = await polkadotCrypto.generateMultiChain(privateKey);
+
+          // Display in Recover tab
+          document.getElementById("recover-btc-address").textContent =
+            result.BTC.address;
+          document.getElementById("recover-btc-privateKey").value =
+            result.BTC.privateKey;
+          document.getElementById("recover-flo-address").textContent =
+            result.FLO.address;
+          document.getElementById("recover-flo-privateKey").value =
+            result.FLO.privateKey;
+          document.getElementById("recover-dot-address").textContent =
+            result.DOT.address;
+          document.getElementById("recover-dot-privateKey").value =
+            result.DOT.privateKey;
+
+          // Store DOT keys
+          currentDotAddress = result.DOT.address;
+          currentDotPrivateKey = result.DOT.privateKey;
+
+          document.getElementById("recover-results").style.display = "block";
+          showNotification("Address recovered!", "success");
+        } catch (error) {
+          console.error("Error recovering address:", error);
+          showNotification("❌ Error: " + error.message, "error");
+        } finally {
+          showLoading(false);
+        }
+      }
+
+      // Send Functionality
+      let lastTxId = null;
+      let pendingTx = null;
+
+      async function loadSendWalletInfo() {
+        const privateKey = document
+          .getElementById("send-privatekey")
+          .value.trim();
+
+        if (!privateKey) {
+          return;
+        }
+
+        try {
+          // Generate address from private key
+          const result = await polkadotCrypto.generateMultiChain(privateKey);
+          const address = result.DOT.address;
+
+          // Fetch balance
+          const balanceData = await polkadotAPI.getBalance(address);
+
+          // Update UI
+          document.getElementById("send-from-address").textContent = address;
+          document.getElementById("send-balance").textContent =
+            balanceData.balance.toFixed(7) + " ";
+          document.getElementById("send-wallet-info").style.display = "block";
+
+          currentDotAddress = address;
+          currentDotPrivateKey = result.DOT.privateKey;
+        } catch (error) {
+          console.error("Error loading wallet:", error);
+          showNotification(
+            "❌ Error loading wallet: " + error.message,
+            "error"
+          );
+        }
+      }
+
+      async function sendDot() {
+        const privateKey = document
+          .getElementById("send-privatekey")
+          .value.trim();
+        const recipient = document
+          .getElementById("send-recipient")
+          .value.trim();
+        const amount = document.getElementById("send-amount").value.trim();
+
+        // Validation
+        if (!privateKey) {
+          showNotification("⚠️ Please enter your private key", "warning");
+          return;
+        }
+
+        if (!recipient) {
+          showNotification("⚠️ Please enter recipient address", "warning");
+          return;
+        }
+
+        if (!amount || parseFloat(amount) <= 0) {
+          showNotification("⚠️ Please enter a valid amount", "warning");
+          return;
+        }
+
+        const sendBtn = document.querySelector(
+          '#sendForm button[type="submit"]'
+        );
+        if (sendBtn) {
+          sendBtn.disabled = true;
+          sendBtn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        }
+
+        try {
+          // Generate address from private key
+          const result = await polkadotCrypto.generateMultiChain(privateKey);
+          const sourceAddress = result.DOT.address;
+
+          // Get balance
+          const balanceData = await polkadotAPI.getBalance(sourceAddress);
+
+          // Estimate fee
+          showNotification("Estimating fee...", "success");
+          const feeData = await polkadotAPI.estimateFee(
+            sourceAddress,
+            recipient,
+            amount
+          );
+          const fee = feeData.feeDot;
+
+          // Check if recipient account is active
+          showNotification("Checking recipient account...", "success");
+          const recipientStatus = await polkadotAPI.checkAccountActive(
+            recipient
+          );
+
+          if (!recipientStatus.isActive) {
+            // Account is not active, enforce minimum amount
+            if (parseFloat(amount) < recipientStatus.minimumRequired) {
+              showNotification(
+                `⚠️ Recipient account is not active. Minimum ${
+                  recipientStatus.minimumRequired
+                } DOT required to activate the account. You're trying to send ${parseFloat(
+                  amount
+                ).toFixed(7)} DOT.`,
+                "warning"
+              );
+              if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML =
+                  '<i class="fas fa-paper-plane"></i> Send Transaction';
+              }
+              return;
+            }
+          }
+
+          // Check if enough balance
+          const total = parseFloat(amount) + fee;
+          if (balanceData.balance < total) {
+            showNotification(
+              `❌ Insufficient balance. You have ${balanceData.balance.toFixed(
+                7
+              )} DOT but need ${total.toFixed(7)} DOT (including ${fee.toFixed(
+                7
+              )} DOT fee)`,
+              "error"
+            );
+            if (sendBtn) {
+              sendBtn.disabled = false;
+              sendBtn.innerHTML =
+                '<i class="fas fa-paper-plane"></i> Send Transaction';
+            }
+            return;
+          }
+
+          // Store pending transaction
+          pendingTx = {
+            from: sourceAddress,
+            to: recipient,
+            amount: parseFloat(amount),
+            fee: fee,
+            feeDot: fee,
+            privateKey: result.DOT.privateKey,
+          };
+
+          // Show confirmation modal
+          document.getElementById("confirm-from").textContent = sourceAddress;
+          document.getElementById("confirm-to").textContent = recipient;
+          document.getElementById("confirm-amount").textContent =
+            amount + " DOT";
+          document.getElementById("confirm-fee").textContent =
+            fee.toFixed(7) + " DOT";
+          document.getElementById("confirm-total").textContent =
+            total.toFixed(7) + " DOT";
+          document.getElementById("confirm-modal").style.display = "flex";
+        } catch (error) {
+          console.error("Error preparing transaction:", error);
+          showNotification("❌ Error: " + error.message, "error");
+        } finally {
+          if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML =
+              '<i class="fas fa-paper-plane"></i> Send Transaction';
+          }
+        }
+      }
+
+      function closeConfirmModal() {
+        document.getElementById("confirm-modal").style.display = "none";
+        pendingTx = null;
+      }
+
+      async function confirmAndSend() {
+        if (!pendingTx) return;
+
+        const confirmBtn = document.getElementById("confirm-send-btn");
+        if (confirmBtn) {
+          confirmBtn.disabled = true;
+          confirmBtn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        }
+
+        try {
+          // Build and sign transaction
+          showNotification("🔐 Building transaction...", "success");
+          const signedTx = await polkadotAPI.buildAndSignTransaction({
+            sourceAddress: pendingTx.from,
+            destinationAddress: pendingTx.to,
+            amount: pendingTx.amount.toString(),
+            privateKeyHex: pendingTx.privateKey,
+            memo: null,
+          });
+
+          // Submit transaction
+          showNotification("Submitting to network...", "success");
+          const result = await polkadotAPI.submitTransaction(signedTx);
+          lastTxId = result.hash;
+
+          // Save values before closing modal
+          const txAmount = pendingTx.amount;
+          const txTo = pendingTx.to;
+          const txFee = pendingTx.feeDot;
+
+          // Close confirm modal and show success
+          closeConfirmModal();
+          showSuccessModal(result.hash, txAmount, txTo, txFee);
+
+          // Clear all form fields
+          document.getElementById("send-privatekey").value = "";
+          document.getElementById("send-recipient").value = "";
+          document.getElementById("send-amount").value = "";
+
+          // Hide balance info
+          document.getElementById("send-wallet-info").style.display = "none";
+
+          // Refresh balance after delay
+          setTimeout(() => loadSendWalletInfo(), 5000);
+        } catch (error) {
+          console.error("Error sending:", error);
+          showNotification("❌ Failed: " + error.message, "error");
+        } finally {
+          if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML =
+              '<i class="fa-solid fa-check"></i> Confirm & Send';
+          }
+        }
+      }
+
+      function showSuccessModal(txId, amount, to, fee) {
+        document.getElementById("success-txid").textContent = txId || "-";
+        document.getElementById("success-amount").textContent =
+          (amount ? amount.toFixed(7) : "0.0000000") + " DOT";
+        document.getElementById("success-to").textContent = to
+          ? to.substring(0, 12) + "..." + to.substring(to.length - 12)
+          : "-";
+        document.getElementById("success-fee").textContent =
+          (fee ? fee.toFixed(7) : "0.0001000") + " DOT";
+
+        document.getElementById("success-modal").style.display = "flex";
+      }
+
+      function closeSuccessModal() {
+        document.getElementById("success-modal").style.display = "none";
+      }
+
+      function viewOnExplorer() {
+        if (lastTxId) {
+          window.open(
+            `https://assethub-polkadot.subscan.io/extrinsic/${lastTxId}`,
+            "_blank"
+          );
+        }
+      }
+
+      function copyTxId() {
+        const txId = document.getElementById("success-txid").textContent;
+        navigator.clipboard.writeText(txId).then(() => {
+          showNotification("Transaction ID copied!", "success");
+        });
+      }
+
+      function copyToClipboard(elementIdOrText) {
+        // Check if it's an element ID or direct text
+        let text;
+        const element = document.getElementById(elementIdOrText);
+        if (element) {
+          text = element.textContent;
+        } else {
+          text = elementIdOrText;
+        }
+
+        navigator.clipboard.writeText(text).then(() => {
+          showNotification("Copied!", "success");
+        });
+      }
+
+      function copyPrivateKey(elementId) {
+        const text = document.getElementById(elementId).value;
+        navigator.clipboard.writeText(text).then(() => {
+          showNotification("Copied!", "success");
+        });
+      }
+
+      function toggleVisibility(elementId) {
+        const input = document.getElementById(elementId);
+
+        let icon = input
+          .closest(".input-with-actions")
+          ?.querySelector(".password-toggle i");
+        if (!icon) {
+          icon = input
+            .closest(".field-wrapper")
+            ?.querySelector(".toggle-btn i");
+        }
+        if (!icon) {
+          icon = input
+            .closest(".detail-row")
+            ?.querySelector(".password-toggle i");
+        }
+
+        if (input.type === "password") {
+          input.type = "text";
+          if (icon) icon.className = "fas fa-eye-slash";
+        } else {
+          input.type = "password";
+          if (icon) icon.className = "fas fa-eye";
+        }
+      }
+
+      function clearInput(elementId) {
+        document.getElementById(elementId).value = "";
+      }
+
+      function switchSearchType(type) {
+        currentSearchType = type;
+
+        // Update new radio button selectors (labels)
+        const addressType = document.getElementById("addressSearchType");
+        const hashType = document.getElementById("hashSearchType");
+        
+        // Update the actual radio inputs
+        const addressRadio = document.querySelector('input[name="searchType"][value="address"]');
+        const hashRadio = document.querySelector('input[name="searchType"][value="hash"]');
+        
+        if (addressType && hashType) {
+          if (type === "address") {
+            addressType.classList.add("active");
+            hashType.classList.remove("active");
+            if (addressRadio) addressRadio.checked = true;
+          } else {
+            addressType.classList.remove("active");
+            hashType.classList.add("active");
+            if (hashRadio) hashRadio.checked = true;
+          }
+        }
+
+        // Show/hide search sections
+        // Show/hide search sections and clear results
+        if (type === "address") {
+          document.getElementById("address-search").style.display = "block";
+          document.getElementById("txhash-search").style.display = "none";
+
+          // Show history container
+          document.getElementById("tx-history").style.display = "block";
+
+          // Clear Hash Results
+          document.getElementById("txhash-results").style.display = "none";
+          document.getElementById("txhash-input").value = "";
+
+          // Show recent searches initially (before search)
+          loadRecentSearches();
+        } else {
+          document.getElementById("address-search").style.display = "none";
+          document.getElementById("txhash-search").style.display = "block";
+
+          // Clear Address Results
+          document.getElementById("tx-results").style.display = "none";
+          document.getElementById("transactionFilterSection").style.display =
+            "none";
+          document.getElementById("tx-search-input").value = "";
+          currentDotAddress = null;
+
+          // Reset pagination and hide history
+          allTransactions = [];
+          currentPage = 1;
+          totalPages = 1;
+          document.getElementById("tx-history").innerHTML = "";
+          document.getElementById("tx-history").style.display = "none";
+          document.getElementById("tx-pagination").style.display = "none";
+
+          // Hide recent searches in transaction hash mode
+          document.getElementById("recent-searches").style.display = "none";
+          return;
+        }
+      }
+
+      function updateUrl(type, value) {
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.delete("address");
+          url.searchParams.delete("tx");
+          if (value) {
+            url.searchParams.set(type, value);
+          }
+          window.history.pushState({}, "", url.toString());
+        } catch (error) {
+          console.error("Error updating URL:", error);
+        }
+      }
+
+      function showLoading(show) {
+        document.querySelectorAll(".primary-btn").forEach((btn) => {
+          btn.disabled = show;
+          show ? btn.classList.add("loading") : btn.classList.remove("loading");
+        });
+      }
+
+      // Theme Management
+      function initializeTheme() {
+        const savedTheme = localStorage.getItem("theme") || "dark";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+        updateThemeIcon(savedTheme);
+      }
+
+      function updateThemeIcon(theme) {
+        const icon = document.querySelector("#themeToggle i");
+        if (icon) {
+          icon.className = theme === "dark" ? "fas fa-sun" : "fas fa-moon";
+        }
+      }
+
+      // Navigation for sidebar and bottom nav
+      function initializeNavigation() {
+        const navLinks = document.querySelectorAll(".nav-link, .nav-btn");
+        const sidebarOverlay = document.getElementById("sidebarOverlay");
+        const sidebar = document.getElementById("sidebar");
+
+        navLinks.forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            const page = link.getAttribute("data-page");
+
+            // Use existing switchTab function
+            switchTabByPage(page);
+
+            // Update active states for both sidebar and bottom nav
+            document
+              .querySelectorAll(".nav-link, .nav-btn")
+              .forEach((l) => l.classList.remove("active"));
+            document
+              .querySelectorAll(`[data-page="${page}"]`)
+              .forEach((l) => l.classList.add("active"));
+
+            document.querySelectorAll(".tabs .tab-btn").forEach((btn) => {
+              btn.classList.remove("active");
+              if (btn.getAttribute("onclick")?.includes(page)) {
+                btn.classList.add("active");
+              }
+            });
+
+            // Close sidebar on mobile
+            if (sidebar) sidebar.classList.remove("active");
+            if (sidebarOverlay) sidebarOverlay.classList.remove("active");
+          });
+        });
+
+        if (sidebarOverlay) {
+          sidebarOverlay.addEventListener("click", () => {
+            sidebar?.classList.remove("active");
+            sidebarOverlay.classList.remove("active");
+          });
+        }
+      }
+
+      function initializeSearchTypeSelectors() {
+        // Set up event listeners for search type radio buttons
+        const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
+        searchTypeRadios.forEach((radio) => {
+          radio.addEventListener("change", (e) => {
+            const selectedType = e.target.value === "address" ? "address" : "txhash";
+            switchSearchType(selectedType);
+          });
+        });
+      }
+
+      function switchTabByPage(page) {
+        // Hide all tab contents
+        document.querySelectorAll(".tab-content").forEach((content) => {
+          content.classList.remove("active");
+          content.classList.add("hidden");
+        });
+        // Show selected tab
+        const targetTab = document.getElementById(`${page}-tab`);
+        if (targetTab) {
+          targetTab.classList.add("active");
+          targetTab.classList.remove("hidden");
+        }
+      }
+
+      // Theme Toggle Functions
+      function initializeTheme() {
+        const themeToggle = document.getElementById("themeToggle");
+        const themeIcon = document.getElementById("themeIcon");
+
+        // Check for saved theme preference or default to 'dark'
+        const currentTheme = localStorage.getItem("theme") || "dark";
+        document.documentElement.setAttribute("data-theme", currentTheme);
+        updateThemeIcon(currentTheme);
+
+        if (themeToggle) {
+          themeToggle.addEventListener("click", () => {
+            const theme = document.documentElement.getAttribute("data-theme");
+            const newTheme = theme === "dark" ? "light" : "dark";
+
+            document.documentElement.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme);
+
+            updateThemeIcon(newTheme);
+          });
+        } else {
+          console.error("[Theme] Toggle button not found!");
+        }
+      }
+
+      function updateThemeIcon(theme) {
+        const themeIcon = document.getElementById("themeIcon");
+        if (themeIcon) {
+          themeIcon.className = theme === "dark" ? "fas fa-sun" : "fas fa-moon";
+        }
+      }
+
+      // Toggle functions for Send and Recover tabs
+      function toggleSendKeyVisibility() {
+        toggleVisibility("send-privatekey");
+      }
+
+      function toggleRecoverKeyVisibility() {
+        toggleVisibility("privateKeyInput");
+      }
+
+      // Display transactions - Mobile-friendly UI
+      function displayTransactions(transactions) {
+        const container = document.getElementById("tx-history");
+        container.innerHTML = "";
+
+        if (!transactions || transactions.length === 0) {
+          container.innerHTML =
+            '<div class="no-transactions">No transactions found</div>';
+          return;
+        }
+
+        transactions.forEach((tx) => {
+          const txElement = document.createElement("div");
+          txElement.className = `tx-item ${tx.type}`;
+          txElement.onclick = () => viewTransactionDetails(tx.hash);
+
+          // Format date as "MM/DD/YYYY HH:MM AM"
+          const date = new Date(tx.timestamp * 1000);
+          const formattedDate = date.toLocaleString("en-US", {
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          });
+
+          const icon =
+            tx.type === "sent"
+              ? '<i class="fa-solid fa-arrow-up"></i>'
+              : '<i class="fa-solid fa-arrow-down"></i>';
+
+          // Show full address
+          const addressToShow = tx.type === "sent" ? tx.to : tx.from;
+          const fullAddr = addressToShow || "N/A";
+          const hashShort = tx.hash
+            ? `${tx.hash.substring(0, 8)}...${tx.hash.substring(
+                tx.hash.length - 8
+              )}`
+            : "N/A";
+
+          const typeText = tx.type.charAt(0).toUpperCase() + tx.type.slice(1);
+          const amountSign = tx.type === "sent" ? "-" : "+";
+
+          txElement.innerHTML = `
+                    <div class="tx-left">
+                        <div class="tx-icon ${tx.type}">
+                            ${icon}
+                        </div>
+                        <div class="tx-details">
+                            <div class="tx-type">${typeText}</div>
+                            <div class="tx-address">${fullAddr}</div>
+                            <div class="tx-date">${formattedDate}</div>
+                            <div class="tx-id">TX ID: ${hashShort}</div>
+                        </div>
+                    </div>
+                    <div class="tx-amount ${
+                      tx.type
+                    }">${amountSign}${tx.amountDot.toFixed(7)} DOT</div>
+                `;
+
+          container.appendChild(txElement);
+        });
+      }
+
+      // View transaction details (opens the transaction hash search) - Stellar Style
+      function viewTransactionDetails(hash) {
+        // Switch to transaction hash search mode
+        currentSearchType = "hash";
+        switchSearchType("txhash");
+
+        // Fill in the hash and search
+        document.getElementById("txhash-input").value = hash;
+        searchTransactionHash();
+      }
+
+      // Load recent searches
+      function loadRecentSearches() {
+        if (!searchDB) return;
+
+        const searches = searchDB.getRecentSearches(5);
+        const recentSearchesList = document.getElementById(
+          "recent-searches-list"
+        );
+        const recentSearchesContainer =
+          document.getElementById("recent-searches");
+
+        if (!recentSearchesList || !recentSearchesContainer) return;
+
+        // Clear existing
+        recentSearchesList.innerHTML = "";
+
+        if (searches.length === 0) {
+          recentSearchesContainer.style.display = "none";
+          return;
+        }
+
+        // Show container
+        recentSearchesContainer.style.display = "block";
+
+        // Populate searches
+        searches.forEach((search) => {
+          const item = document.createElement("div");
+          item.className = "recent-item";
+          item.setAttribute("data-current-address", search.address);
+          item.setAttribute("data-dot-address", search.address);
+          if (search.btcAddress)
+            item.setAttribute("data-btc-address", search.btcAddress);
+          if (search.floAddress)
+            item.setAttribute("data-flo-address", search.floAddress);
+
+          // Truncate address for display
+          const truncatedAddress =
+            search.address.length > 20
+              ? `${search.address.substring(
+                  0,
+                  12
+                )}...${search.address.substring(search.address.length - 6)}`
+              : search.address;
+
+          // Format date
+          const date = search.timestamp
+            ? new Date(search.timestamp).toLocaleDateString()
+            : new Date().toLocaleDateString();
+
+          item.innerHTML = `
+            ${
+              search.isFromPrivateKey
+                ? `
+              <div class="recent-chain-buttons">
+                <button class="chain-btn active" onclick="showAddressForChain(this, 'DOT')" title="DOT">
+                  <img src="polkadot_favicon.svg" class="chain-icon-img" alt="Polkadot">
+                </button>
+                <button class="chain-btn" onclick="showAddressForChain(this, 'BTC')" title="BTC">
+                  <i class="fab fa-bitcoin"></i>
+                </button>
+                <button class="chain-btn" onclick="showAddressForChain(this, 'FLO')" title="FLO">
+                  <i class="fas fa-spa"></i>
+                </button>
+              </div>
+            `
+                : ""
+            }
+            <div class="recent-address" title="${
+              search.address
+            }">${truncatedAddress}</div>
+            <div class="recent-bottom-row">
+              <div class="recent-balance-row">
+                <span class="recent-balance">${search.balance.toFixed(
+                  7
+                )} DOT</span>
+                <span class="recent-date">• ${date}</span>
+              </div>
+              <div class="recent-actions">
+                <button class="action-btn copy-recent-btn" onclick="copyRecentAddress(this)" title="Copy">
+                  <i class="fas fa-copy"></i>
+                </button>
+                <button class="action-btn" onclick="recheckRecentAddress(this)" title="Recheck">
+                  <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="action-btn" onclick="deleteRecentSearch('${
+                  search.address
+                }')" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          `;
+          recentSearchesList.appendChild(item);
+        });
+      }
+
+      // Search from recent address
+      async function searchRecentAddress(address) {
+        document.getElementById("tx-search-input").value = address;
+        await searchDotAddress();
+      }
+
+      // Show address for specific chain in recent searches
+      function showAddressForChain(btnElement, chain) {
+        const recentItem = btnElement.closest(".recent-item");
+        const chainButtons = recentItem.querySelector(".recent-chain-buttons");
+
+        // Update active button
+        chainButtons.querySelectorAll(".chain-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        btnElement.classList.add("active");
+
+        // Get the address for the selected chain
+        const address = recentItem.getAttribute(
+          `data-${chain.toLowerCase()}-address`
+        );
+
+        if (address) {
+          // Update displayed address
+          const addressEl = recentItem.querySelector(".recent-address");
+          const truncatedAddress =
+            address.length > 20
+              ? `${address.substring(0, 12)}...${address.substring(
+                  address.length - 6
+                )}`
+              : address;
+          addressEl.textContent = truncatedAddress;
+          addressEl.title = address;
+
+          // Update current address data attribute
+          recentItem.setAttribute("data-current-address", address);
+        }
+      }
+
+      // Copy address from recent search
+      function copyRecentAddress(btnElement) {
+        const recentItem = btnElement.closest(".recent-item");
+        const currentAddress = recentItem.getAttribute("data-current-address");
+        copyToClipboard(currentAddress);
+      }
+
+      // Recheck address from recent search
+      async function recheckRecentAddress(btnElement) {
+        const recentItem = btnElement.closest(".recent-item");
+        const currentAddress = recentItem.getAttribute("data-current-address");
+        document.getElementById("tx-search-input").value = currentAddress;
+        await searchDotAddress();
+      }
+
+      // Delete a recent search
+      function deleteRecentSearch(address) {
+        if (searchDB) {
+          searchDB.deleteSearch(address);
+          loadRecentSearches();
+        }
+      }
+
+      // Clear all recent searches
+      function clearAllRecentSearches() {
+        if (
+          searchDB &&
+          confirm("Are you sure you want to clear all recent searches?")
+        ) {
+          searchDB.clearAll();
+          loadRecentSearches();
+        }
+      }
+
+      // Check URL parameters
+      function checkUrlParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const address = urlParams.get("address");
+        const hash = urlParams.get("tx");
+
+        if (hash) {
+          // Switch to transactions tab
+          switchTabByPage("transactions");
+
+          // Switch to hash search type
+          switchSearchType("txhash");
+
+          // Load the transaction hash
+          document.getElementById("txhash-input").value = hash;
+          setTimeout(() => searchTransactionHash(), 500);
+        } else if (address) {
+          // Switch to transactions tab
+          switchTabByPage("transactions");
+
+          // Switch to address search type
+          switchSearchType("address");
+
+          // Load the address
+          document.getElementById("tx-search-input").value = address;
+          setTimeout(() => searchDotAddress(), 500);
+        }
+      }
+
+      // Update URL with parameters
+      function updateUrl(param, value) {
+        const url = new URL(window.location);
+        url.searchParams.set(param, value);
+        window.history.pushState({}, "", url);
+      }
+
+      // Initialize on DOM ready
+      document.addEventListener("DOMContentLoaded", () => {
+        initializeTheme();
+        initializeNavigation();
+        initializeSearchTypeSelectors();
+        checkUrlParams();
+        loadRecentSearches();
+      });
+
+      // Handle browser back/forward navigation
+      window.addEventListener("popstate", () => {
+        checkUrlParams();
+      });
+    </script>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="nav-box">
+      <button class="nav-btn active" data-page="generate">
+        <i class="fas fa-plus-circle"></i>
+        <span>Generate</span>
+      </button>
+      <button class="nav-btn" data-page="transactions">
+        <i class="fas fa-history"></i>
+        <span>Transactions</span>
+      </button>
+      <button class="nav-btn" data-page="send">
+        <i class="fas fa-paper-plane"></i>
+        <span>Send</span>
+      </button>
+      <button class="nav-btn" data-page="recover">
+        <i class="fas fa-key"></i>
+        <span>Recover</span>
+      </button>
+    </nav>
+  </body>
+</html>
