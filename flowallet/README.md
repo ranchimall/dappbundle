@@ -1,5 +1,5 @@
 # FLO Wallet
-FLO Web Wallet
+RanchiMall FLO Web Wallet
 
 These are client-side scripts that can generate FLO addresses, send FLO transactions to the blockchain and monitor FLO data from the blockchain
 
