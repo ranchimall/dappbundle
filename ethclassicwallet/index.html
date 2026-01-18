@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FLO Ethereum Classic</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap"
+        rel="stylesheet">
+
+</head>
+
+<body class="hidden">
+    <sm-notifications id="notification_drawer"></sm-notifications>
+    <sm-popup id="confirmation_popup">
+        <h4 id="confirm_title"></h4>
+        <p id="confirm_message" class="breakable"></p>
+        <div class="flex align-center gap-0-5 margin-left-auto">
+            <button class="button cancel-button">Cancel</button>
+            <button class="button button--primary confirm-button">OK</button>
+        </div>
+    </sm-popup>
+    <main>
+        <header id="main_header">
+            <div id="logo" class="app-brand">
+                <svg id="main_logo" class="icon" viewBox="0 0 27.25 32">
+                    <title>RanchiMall</title>
+                    <path
+                        d="M27.14,30.86c-.74-2.48-3-4.36-8.25-6.94a20,20,0,0,1-4.2-2.49,6,6,0,0,1-1.25-1.67,4,4,0,0,1,0-2.26c.37-1.08.79-1.57,3.89-4.55a11.66,11.66,0,0,0,3.34-4.67,6.54,6.54,0,0,0,.05-2.82C20,3.6,18.58,2,16.16.49c-.89-.56-1.29-.64-1.3-.24a3,3,0,0,1-.3.72l-.3.55L13.42.94C13,.62,12.4.26,12.19.15c-.4-.2-.73-.18-.72.05a9.39,9.39,0,0,1-.61,1.33s-.14,0-.27-.13C8.76.09,8-.27,8,.23A11.73,11.73,0,0,1,6.76,2.6C4.81,5.87,2.83,7.49.77,7.49c-.89,0-.88,0-.61,1,.22.85.33.92,1.09.69A5.29,5.29,0,0,0,3,8.33c.23-.17.45-.29.49-.26a2,2,0,0,1,.22.63A1.31,1.31,0,0,0,4,9.34a5.62,5.62,0,0,0,2.27-.87L7,8l.13.55c.19.74.32.82,1,.65a7.06,7.06,0,0,0,3.46-2.47l.6-.71-.06.64c-.17,1.63-1.3,3.42-3.39,5.42L6.73,14c-3.21,3.06-3,5.59.6,8a46.77,46.77,0,0,0,4.6,2.41c.28.13,1,.52,1.59.87,3.31,2,4.95,3.92,4.95,5.93a2.49,2.49,0,0,0,.07.77h0c.09.09,0,.1.9-.14a2.61,2.61,0,0,0,.83-.32,3.69,3.69,0,0,0-.55-1.83A11.14,11.14,0,0,0,17,26.81a35.7,35.7,0,0,0-5.1-2.91C9.37,22.64,8.38,22,7.52,21.17a3.53,3.53,0,0,1-1.18-2.48c0-1.38.71-2.58,2.5-4.23,2.84-2.6,3.92-3.91,4.67-5.65a3.64,3.64,0,0,0,.42-2A3.37,3.37,0,0,0,13.61,5l-.32-.74.29-.48c.17-.27.37-.63.46-.8l.15-.3.44.64a5.92,5.92,0,0,1,1,2.81,5.86,5.86,0,0,1-.42,1.94c0,.12-.12.3-.15.4a9.49,9.49,0,0,1-.67,1.1,28,28,0,0,1-4,4.29C8.62,15.49,8.05,16.44,8,17.78a3.28,3.28,0,0,0,1.11,2.76c.95,1,2.07,1.74,5.25,3.32,3.64,1.82,5.22,2.9,6.41,4.38A4.78,4.78,0,0,1,21.94,31a3.21,3.21,0,0,0,.14.92,1.06,1.06,0,0,0,.43-.05l.83-.22.46-.12-.06-.46c-.21-1.53-1.62-3.25-3.94-4.8a37.57,37.57,0,0,0-5.22-2.82A13.36,13.36,0,0,1,11,21.19a3.36,3.36,0,0,1-.8-4.19c.41-.85.83-1.31,3.77-4.15,2.39-2.31,3.43-4.13,3.43-6a5.85,5.85,0,0,0-2.08-4.29c-.23-.21-.44-.43-.65-.65A2.5,2.5,0,0,1,15.27.69a10.6,10.6,0,0,1,2.91,2.78A4.16,4.16,0,0,1,19,6.16a4.91,4.91,0,0,1-.87,3c-.71,1.22-1.26,1.82-4.27,4.67a9.47,9.47,0,0,0-2.07,2.6,2.76,2.76,0,0,0-.33,1.54,2.76,2.76,0,0,0,.29,1.47c.57,1.21,2.23,2.55,4.65,3.73a32.41,32.41,0,0,1,5.82,3.24c2.16,1.6,3.2,3.16,3.2,4.8a1.94,1.94,0,0,0,.09.76,4.54,4.54,0,0,0,1.66-.4C27.29,31.42,27.29,31.37,27.14,30.86ZM6.1,7h0a3.77,3.77,0,0,1-1.46.45L4,7.51l.68-.83a25.09,25.09,0,0,0,3-4.82A12,12,0,0,1,8.28.76c.11-.12.77.32,1.53,1l.63.58-.57.84A10.34,10.34,0,0,1,6.1,7Zm5.71-1.78A9.77,9.77,0,0,1,9.24,7.18h0a5.25,5.25,0,0,1-1.17.28l-.58,0,.65-.78a21.29,21.29,0,0,0,2.1-3.12c.22-.41.42-.76.44-.79s.5.43.9,1.24L12,5ZM13.41,3a2.84,2.84,0,0,1-.45.64,11,11,0,0,1-.9-.91l-.84-.9.19-.45c.34-.79.39-.8,1-.31A9.4,9.4,0,0,1,13.8,2.33q-.18.34-.39.69Z" />
+                </svg>
+                <div class="app-name">
+                    <div class="app-name__company">RanchiMall</div>
+                    <h4 class="app-name__title">
+                        FLO Ethereum Classic
+                    </h4>
+                </div>
+            </div>
+            <button id="meta_mask_status_button" class="button interactive flex align-center hidden"
+                data-status="disconnected" onclick="connectToMetaMask()">
+                <div class="icon-wrapper">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" id="Layer_1" x="0" y="0"
+                        version="1.1" viewBox="0 0 318.6 318.6">
+                        <style>
+                            .st1,
+                            .st6 {
+                                fill: #e4761b;
+                                stroke: #e4761b;
+                                stroke-linecap: round;
+                                stroke-linejoin: round
+                            }
+
+                            .st6 {
+                                fill: #f6851b;
+                                stroke: #f6851b
+                            }
+                        </style>
+                        <path fill="#e2761b" stroke="#e2761b" stroke-linecap="round" stroke-linejoin="round"
+                            d="m274.1 35.5-99.5 73.9L193 65.8z" />
+                        <path
+                            d="m44.4 35.5 98.7 74.6-17.5-44.3zm193.9 171.3-26.5 40.6 56.7 15.6 16.3-55.3zm-204.4.9L50.1 263l56.7-15.6-26.5-40.6z"
+                            class="st1" />
+                        <path
+                            d="m103.6 138.2-15.8 23.9 56.3 2.5-2-60.5zm111.3 0-39-34.8-1.3 61.2 56.2-2.5zM106.8 247.4l33.8-16.5-29.2-22.8zm71.1-16.5 33.9 16.5-4.7-39.3z"
+                            class="st1" />
+                        <path fill="#d7c1b3" stroke="#d7c1b3" stroke-linecap="round" stroke-linejoin="round"
+                            d="m211.8 247.4-33.9-16.5 2.7 22.1-.3 9.3zm-105 0 31.5 14.9-.2-9.3 2.5-22.1z" />
+                        <path fill="#233447" stroke="#233447" stroke-linecap="round" stroke-linejoin="round"
+                            d="m138.8 193.5-28.2-8.3 19.9-9.1zm40.9 0 8.3-17.4 20 9.1z" />
+                        <path fill="#cd6116" stroke="#cd6116" stroke-linecap="round" stroke-linejoin="round"
+                            d="m106.8 247.4 4.8-40.6-31.3.9zM207 206.8l4.8 40.6 26.5-39.7zm23.8-44.7-56.2 2.5 5.2 28.9 8.3-17.4 20 9.1zm-120.2 23.1 20-9.1 8.2 17.4 5.3-28.9-56.3-2.5z" />
+                        <path fill="#e4751f" stroke="#e4751f" stroke-linecap="round" stroke-linejoin="round"
+                            d="m87.8 162.1 23.6 46-.8-22.9zm120.3 23.1-1 22.9 23.7-46zm-64-20.6-5.3 28.9 6.6 34.1 1.5-44.9zm30.5 0-2.7 18 1.2 45 6.7-34.1z" />
+                        <path
+                            d="m179.8 193.5-6.7 34.1 4.8 3.3 29.2-22.8 1-22.9zm-69.2-8.3.8 22.9 29.2 22.8 4.8-3.3-6.6-34.1z"
+                            class="st6" />
+                        <path fill="#c0ad9e" stroke="#c0ad9e" stroke-linecap="round" stroke-linejoin="round"
+                            d="m180.3 262.3.3-9.3-2.5-2.2h-37.7l-2.3 2.2.2 9.3-31.5-14.9 11 9 22.3 15.5h38.3l22.4-15.5 11-9z" />
+                        <path fill="#161616" stroke="#161616" stroke-linecap="round" stroke-linejoin="round"
+                            d="m177.9 230.9-4.8-3.3h-27.7l-4.8 3.3-2.5 22.1 2.3-2.2h37.7l2.5 2.2z" />
+                        <path fill="#763d16" stroke="#763d16" stroke-linecap="round" stroke-linejoin="round"
+                            d="m278.3 114.2 8.5-40.8-12.7-37.9-96.2 71.4 37 31.3 52.3 15.3 11.6-13.5-5-3.6 8-7.3-6.2-4.8 8-6.1zM31.8 73.4l8.5 40.8-5.4 4 8 6.1-6.1 4.8 8 7.3-5 3.6 11.5 13.5 52.3-15.3 37-31.3-96.2-71.4z" />
+                        <path
+                            d="m267.2 153.5-52.3-15.3 15.9 23.9-23.7 46 31.2-.4h46.5zm-163.6-15.3-52.3 15.3-17.4 54.2h46.4l31.1.4-23.6-46zm71 26.4 3.3-57.7 15.2-41.1h-67.5l15 41.1 3.5 57.7 1.2 18.2.1 44.8h27.7l.2-44.8z"
+                            class="st6" />
+                    </svg>
+                </div>
+                <div id="meta_mask_status">Disconnected</div>
+            </button>
+            <theme-toggle></theme-toggle>
+        </header>
+        <nav id="main_navbar">
+            <ul>
+                <li>
+                    <a class="nav-item nav-item--active interactive" href="#/balance">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path
+                                d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z" />
+                            <circle cx="16" cy="12" r="1.5" />
+                        </svg>
+                        <span class="nav-item__title">
+                            Balance
+                        </span>
+                        <div class="nav-item__indicator"></div>
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-item interactive" href="#/send">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none"></path>
+                            <path
+                                d="M4.01 6.03l7.51 3.22-7.52-1 .01-2.22m7.5 8.72L4 17.97v-2.22l7.51-1M2.01 3L2 10l15 2-15 2 .01 7L23 12 2.01 3z">
+                            </path>
+                        </svg>
+                        <span class="nav-item__title">
+                            Send
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-item interactive" href="#/create">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none"></path>
+                            <path
+                                d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4V7zm-1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z">
+                            </path>
+                        </svg>
+                        <span class="nav-item__title">
+                            Create
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a class="nav-item interactive" href="#/retrieve">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z" />
+                        </svg>
+                        <span class="nav-item__title">
+                            Retrieve
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div id="page_container"></div>
+    </main>
+    <sm-popup id="transaction_result_popup">
+        <header slot="header" class="popup__header">
+            <div class="flex align-center">
+                <button class="popup__header__close" onclick="closePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+        <div id="transaction_result_popup__content" class="grid gap-2"></div>
+    </sm-popup>
+    <script>
+        /* FLO blockchain configuration - These constants must be defined before loading FLO scripts */
+        const floGlobals = {
+            blockchain: "FLO",
+            tokenURL: 'https://ranchimallflo.ranchimall.net/',
+            expirationDays: 60,
+        }
+    </script>
+
+    <!-- ethers.js version 5.6 -->
+
+    <script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
+    <script src="scripts/components.min.js" type="text/javascript"></script>
+    <script src="scripts/btcwallet_scripts_lib.js" type="text/javascript"></script>
+    <script src="scripts/btcOperator.js" type="text/javascript"></script>
+    <script src="scripts/floCrypto.js" type="text/javascript"></script>
+    <script src="scripts/tap_combined.js" type="text/javascript"></script>
+    <script src="scripts/keccak.js" type="text/javascript"></script>
+    <script src="scripts/floEthereum.js" type="text/javascript"></script>
+    <script src="scripts/compactIDB.js" type="text/javascript"></script>
+    <script src="scripts/ether.umd.min.js" type="text/javascript"> </script>
+    <script src="scripts/ethOperator.js" type="text/javascript"> </script>
+    <script>
+        const uiGlobals = {}
+        const { html, svg, render: renderElem } = uhtml;
+        uiGlobals.connectionErrorNotification = []
+        // Check for internet connection status and show notification if offline
+        if (!navigator.onLine)
+            uiGlobals.connectionErrorNotification.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
+        window.addEventListener('offline', () => {
+            uiGlobals.connectionErrorNotification.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
+        })
+        window.addEventListener('online', () => {
+            uiGlobals.connectionErrorNotification.forEach(notification => {
+                getRef('notification_drawer').remove(notification)
+            })
+            notify('We are back online.', 'success')
+        })
+        // Helper function to get element by ID (shorthand for document.getElementById)
+        function getRef(elementId) {
+            return document.getElementById(elementId)
+        }
+        let zIndex = 50
+        // Opens a popup/modal and manages the popup stack for proper layering
+        function openPopup(popupId, pinned) {
+            if (popupStack.peek() === undefined) {
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        closePopup()
+                    }
+                })
+            }
+            zIndex++
+            getRef(popupId).setAttribute('style', `z-index: ${zIndex}`)
+            return getRef(popupId).show({ pinned })
+        }
+
+        // hides the popup or modal
+        function closePopup(options = {}) {
+            if (popupStack.peek() === undefined)
+                return;
+            popupStack.peek().popup.hide(options)
+        }
+
+        document.addEventListener('popupopened', async e => {
+            switch (e.target.id) {
+
+            }
+        })
+        document.addEventListener('popupclosed', e => {
+            zIndex--
+            switch (e.target.id) {
+            }
+        })
+        // Display toast notifications. Pass 'error' or 'success' as mode parameter
+        function notify(message, mode, options = {}) {
+            let icon
+            switch (mode) {
+                case 'success':
+                    icon = `<svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"/></svg>`
+                    break;
+                case 'error':
+                    icon = `<svg class="icon icon--error" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z"/></svg>`
+                    options.pinned = true
+                    break;
+            }
+            if (mode === 'error') {
+                console.error(message)
+            }
+
+            // Ensure notification drawer element exists and is fully initialized
+            const notificationDrawer = getRef("notification_drawer");
+            if (!notificationDrawer || typeof notificationDrawer.push !== 'function') {
+                console.warn('Notification drawer not ready, logging message:', message);
+                // Queue the notification to show later when drawer is ready
+                if (!window._pendingNotifications) {
+                    window._pendingNotifications = [];
+                }
+                window._pendingNotifications.push({ message, mode, options, icon });
+                return null;
+            }
+
+            return notificationDrawer.push(message, { icon, ...options });
+        }
+        // displays a popup for asking permission. Use this instead of JS confirm
+        /**
+        @param {string} title - Title of the popup
+        @param {object} options - Options for the popup 
+        @param {string} options.message - Message to be displayed in the popup
+        @param {string} options.cancelText - Text for the cancel button
+        @param {string} options.confirmText - Text for the confirm button
+        @param {boolean} options.danger - If true, confirm button will be red
+        */
+        const getConfirmation = (title, options = {}) => {
+            return new Promise(resolve => {
+                const { message = '', cancelText = 'Cancel', confirmText = 'OK', danger = false } = options
+                getRef('confirm_title').innerText = title;
+                getRef('confirm_message').innerText = message;
+                const cancelButton = getRef('confirmation_popup').querySelector('.cancel-button');
+                const confirmButton = getRef('confirmation_popup').querySelector('.confirm-button')
+                confirmButton.textContent = confirmText
+                cancelButton.textContent = cancelText
+                if (danger)
+                    confirmButton.classList.add('button--danger')
+                else
+                    confirmButton.classList.remove('button--danger')
+                const { opened, closed } = openPopup('confirmation_popup')
+                confirmButton.onclick = () => {
+                    closePopup({ payload: true })
+                }
+                cancelButton.onclick = () => {
+                    closePopup()
+                }
+                closed.then((payload) => {
+                    confirmButton.onclick = null
+                    cancelButton.onclick = null
+                    if (payload)
+                        resolve(true)
+                    else
+                        resolve(false)
+                })
+            })
+        }
+        function createRipple(event, target) {
+            const circle = document.createElement("span");
+            const diameter = Math.max(target.clientWidth, target.clientHeight);
+            const radius = diameter / 2;
+            const targetDimensions = target.getBoundingClientRect();
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - (targetDimensions.left + radius)}px`;
+            circle.style.top = `${event.clientY - (targetDimensions.top + radius)}px`;
+            circle.classList.add("ripple");
+            const rippleAnimation = circle.animate(
+                [
+                    {
+                        opacity: 1,
+                        transform: `scale(0)`
+                    },
+                    {
+                        transform: "scale(4)",
+                        opacity: 0,
+                    },
+                ],
+                {
+                    duration: 600,
+                    fill: "forwards",
+                    easing: "ease-out",
+                }
+            );
+            target.append(circle);
+            rippleAnimation.onfinish = () => {
+                circle.remove();
+            };
+        }
+        function buttonLoader(id, show) {
+            const button = typeof id === 'string' ? document.getElementById(id) : id;
+            if (!button) return
+            if (!button.dataset.hasOwnProperty('wasDisabled'))
+                button.dataset.wasDisabled = button.disabled
+            const animOptions = {
+                duration: 200,
+                fill: 'forwards',
+                easing: 'ease'
+            }
+            if (show) {
+                button.disabled = true
+                button.parentNode.append(document.createElement('sm-spinner'))
+                button.animate([
+                    {
+                        clipPath: 'circle(100%)',
+                    },
+                    {
+                        clipPath: 'circle(0)',
+                    },
+                ], animOptions)
+            } else {
+                button.disabled = button.dataset.wasDisabled === 'true';
+                button.animate([
+                    {
+                        clipPath: 'circle(0)',
+                    },
+                    {
+                        clipPath: 'circle(100%)',
+                    },
+                ], animOptions).onfinish = (e) => {
+                    button.removeAttribute('data-original-state')
+                }
+                const potentialTarget = button.parentNode.querySelector('sm-spinner')
+                if (potentialTarget) potentialTarget.remove();
+            }
+        }
+        class Router {
+            /**
+             * @constructor {object} options - options for the router
+             * @param {object} options.routes - routes for the router
+             * @param {object} options.state - initial state for the router
+             * @param {function} options.routingStart - function to be called before routing
+             * @param {function} options.routingEnd - function to be called after routing
+             */
+            constructor(options = {}) {
+                const { routes = {}, state = {}, routingStart, routingEnd } = options
+                this.routes = routes
+                this.state = state
+                this.routingStart = routingStart
+                this.routingEnd = routingEnd
+                this.lastPage = null
+                window.addEventListener('hashchange', e => this.routeTo(window.location.hash))
+            }
+            /**
+             * @param {string} route - route to be added
+             * @param {function} callback - function to be called when route is matched
+             */
+            addRoute(route, callback) {
+                this.routes[route] = callback
+            }
+            /**
+             * @param {string} route
+             */
+            handleRouting = async (page) => {
+                if (this.routingStart) {
+                    this.routingStart(this.state)
+                }
+                if (this.routes[page]) {
+                    // Execute the route handler for the current page
+                    await this.routes[page](this.state)
+                    this.lastPage = page
+                } else {
+                    if (this.routes['404']) {
+                        this.routes['404'](this.state);
+                    } else {
+                        console.error(`No route found for '${page}' and no '404' route is defined.`);
+                    }
+                }
+                if (this.routingEnd) {
+                    this.routingEnd(this.state)
+                }
+            }
+            async routeTo(destination) {
+                try {
+                    let page
+                    let wildcards = []
+                    let params = {}
+                    let [path, queryString] = destination.split('?');
+                    if (path.includes('#'))
+                        path = path.split('#')[1];
+                    if (path.includes('/'))
+                        [, page, ...wildcards] = path.split('/')
+                    else
+                        page = path
+                    this.state = { page, wildcards, lastPage: this.lastPage, params }
+
+
+                    if (queryString) {
+                        params = new URLSearchParams(queryString)
+                        this.state.params = Object.fromEntries(params)
+                    }
+                    if (document.startViewTransition) {
+                        document.startViewTransition(async () => {
+                            await this.handleRouting(page)
+                        })
+                    } else {
+                        // Fallback for browsers that don't support View transition API:
+                        await this.handleRouting(page)
+                    }
+                } catch (e) {
+                    console.error(e)
+                }
+            }
+        }
+
+        //Moving notification draw so that it does not overlap the menu item
+        (function placeToasts() {
+            const drawer = document.getElementById('notification_drawer');
+            const panel = drawer?.shadowRoot?.querySelector('.notification-panel');
+            if (!panel) return;
+
+            const apply = () => {
+                if (window.matchMedia('(min-width: 640px)').matches) {
+                    // Desktop: offset from left navbar
+                    Object.assign(panel.style, {
+                        left: 'calc(10rem + 1rem)',
+                        bottom: '1rem',
+                        top: 'auto',
+                        right: '1rem',   // optional, lets long toasts wrap before content edge
+                        zIndex: '1000'
+                    });
+                } else {
+                    // Mobile: keep top-right or top-left as you prefer
+                    Object.assign(panel.style, {
+                        left: '0.5rem',
+                        top: '0.5rem',
+                        right: '0.5rem',
+                        bottom: 'auto',
+                        zIndex: '1000'
+                    });
+                }
+            };
+
+            apply();
+            window.addEventListener('resize', apply);
+        })();
+
+    </script>
+    <script>
+        const assetIcons = {
+            ETC: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"> <g clip-path="url(#clip0_201_2)"> <path d="M12 0L19.6368 12.4368L12.1633 16.8L4.36325 12.4368L12 0Z"/> <path d="M12 24L4.36325 13.6099L11.8367 18L19.6368 13.6099L12 24Z"/> </g> <defs> <clipPath id="clip0_201_2"> <rect width="24" height="24" fill="white"/> </clipPath> </defs> </svg>`,
+            usdc: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" data-name="86977684-12db-4850-8f30-233a7c267d11" viewBox="0 0 2000 2000"> <path d="M1000 2000c554.17 0 1000-445.83 1000-1000S1554.17 0 1000 0 0 445.83 0 1000s445.83 1000 1000 1000z" fill="#2775ca"/> <path d="M1275 1158.33c0-145.83-87.5-195.83-262.5-216.66-125-16.67-150-50-150-108.34s41.67-95.83 125-95.83c75 0 116.67 25 137.5 87.5 4.17 12.5 16.67 20.83 29.17 20.83h66.66c16.67 0 29.17-12.5 29.17-29.16v-4.17c-16.67-91.67-91.67-162.5-187.5-170.83v-100c0-16.67-12.5-29.17-33.33-33.34h-62.5c-16.67 0-29.17 12.5-33.34 33.34v95.83c-125 16.67-204.16 100-204.16 204.17 0 137.5 83.33 191.66 258.33 212.5 116.67 20.83 154.17 45.83 154.17 112.5s-58.34 112.5-137.5 112.5c-108.34 0-145.84-45.84-158.34-108.34-4.16-16.66-16.66-25-29.16-25h-70.84c-16.66 0-29.16 12.5-29.16 29.17v4.17c16.66 104.16 83.33 179.16 220.83 200v100c0 16.66 12.5 29.16 33.33 33.33h62.5c16.67 0 29.17-12.5 33.34-33.33v-100c125-20.84 208.33-108.34 208.33-220.84z" fill="#fff"/> <path d="M787.5 1595.83c-325-116.66-491.67-479.16-370.83-800 62.5-175 200-308.33 370.83-370.83 16.67-8.33 25-20.83 25-41.67V325c0-16.67-8.33-29.17-25-33.33-4.17 0-12.5 0-16.67 4.16-395.83 125-612.5 545.84-487.5 941.67 75 233.33 254.17 412.5 487.5 487.5 16.67 8.33 33.34 0 37.5-16.67 4.17-4.16 4.17-8.33 4.17-16.66v-58.34c0-12.5-12.5-29.16-25-37.5zM1229.17 295.83c-16.67-8.33-33.34 0-37.5 16.67-4.17 4.17-4.17 8.33-4.17 16.67v58.33c0 16.67 12.5 33.33 25 41.67 325 116.66 491.67 479.16 370.83 800-62.5 175-200 308.33-370.83 370.83-16.67 8.33-25 20.83-25 41.67V1700c0 16.67 8.33 29.17 25 33.33 4.17 0 12.5 0 16.67-4.16 395.83-125 612.5-545.84 487.5-941.67-75-237.5-258.34-416.67-487.5-491.67z" fill="#fff"/></svg>`,
+            usdt: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 339.43 295.27"><title>tether-usdt-logo</title><path d="M62.15,1.45l-61.89,130a2.52,2.52,0,0,0,.54,2.94L167.95,294.56a2.55,2.55,0,0,0,3.53,0L338.63,134.4a2.52,2.52,0,0,0,.54-2.94l-61.89-130A2.5,2.5,0,0,0,275,0H64.45a2.5,2.5,0,0,0-2.3,1.45h0Z" style="fill:#50af95;fill-rule:evenodd"/><path d="M191.19,144.8v0c-1.2.09-7.4,0.46-21.23,0.46-11,0-18.81-.33-21.55-0.46v0c-42.51-1.87-74.24-9.27-74.24-18.13s31.73-16.25,74.24-18.15v28.91c2.78,0.2,10.74.67,21.74,0.67,13.2,0,19.81-.55,21-0.66v-28.9c42.42,1.89,74.08,9.29,74.08,18.13s-31.65,16.24-74.08,18.12h0Zm0-39.25V79.68h59.2V40.23H89.21V79.68H148.4v25.86c-48.11,2.21-84.29,11.74-84.29,23.16s36.18,20.94,84.29,23.16v82.9h42.78V151.83c48-2.21,84.12-11.73,84.12-23.14s-36.09-20.93-84.12-23.15h0Zm0,0h0Z" style="fill:#fff;fill-rule:evenodd"/><script xmlns=""/></svg>`,
+        }
+        window.smCompConfig = {
+            'sm-input': [
+                {
+                    selector: '[data-ETC-address]',
+                    customValidation: (value) => {
+                        if (!value) return { isValid: false, errorText: 'Please enter an Ethereum Classic address' }
+                        return {
+                            isValid: ethOperator.isValidAddress(value),
+                            errorText: `Invalid address.<br> It usually starts with "0x"`
+                        }
+                    }
+                },
+                {
+                    selector: '[data-private-key]',
+                    customValidation: (value) => {
+                        if (!value) return { isValid: false, errorText: 'Please enter a private key' }
+                        return {
+                            isValid: floCrypto.getPubKeyHex(value),
+                            errorText: `Invalid private key.`
+                        }
+                    }
+                },
+                {
+                    selector: '#check_balance_input',
+                    customValidation: (value) => {
+                        if (!value) return { isValid: false, errorText: 'Please enter a private key or ETC address' }
+                        return {
+                            isValid: floCrypto.getPubKeyHex(value) || ethOperator.isValidAddress(value),
+                            errorText: `Invalid private key or ETC address"`
+                        }
+                    }
+                }
+            ]
+        }
+        const router = new Router({
+            routingStart(state) {
+            },
+            routingEnd(state) {
+                let { page } = state
+                if (!page)
+                    page = 'balance'
+                const previousTarget = getRef('main_navbar').querySelector('.nav-item--active')
+                if (previousTarget) {
+                    previousTarget.classList.remove('nav-item--active')
+                    previousTarget.querySelector('.nav-item__indicator')?.remove()
+                }
+                const target = getRef('main_navbar').querySelector(`.nav-item[href="#/${page}"]`)
+                if (target) {
+                    target.classList.add('nav-item--active')
+                    target.append(html.node`<div class="nav-item__indicator"></div>`)
+                }
+            }
+        })
+        function setMetaMaskStatus(isConnected) {
+            if (isConnected) {
+                getRef('meta_mask_status').textContent = 'Connected';
+                getRef('meta_mask_status_button').dataset.status = 'connected';
+            } else {
+                getRef('meta_mask_status').textContent = 'Disconnected';
+                getRef('meta_mask_status_button').dataset.status = 'disconnected';
+            }
+
+        }
+
+        // Initialize IndexedDB for storing contact addresses
+        let idbReady;
+
+        window.addEventListener('load', () => {
+            // Initialize the database before any routing or data reads
+            idbReady = compactIDB.initDB('floEthereum', { contacts: {} })
+                .then((res) => { console.log(res); })
+                .catch((err) => { console.error(err); });
+
+            // Set up event listeners and routing after database is ready
+            idbReady.then(() => {
+                const routeNow = () => router.routeTo(location.hash);
+
+                // Set up UI event listeners for copy notifications and ripple effects
+                document.addEventListener('copy', () => notify('copied', 'success'));
+                document.addEventListener('pointerdown', (e) => {
+                    const target = e.target.closest('button:not(:disabled), .interactive:not(:disabled)');
+                    if (target) createRipple(e, target);
+                });
+
+                // Handle Ethereum provider and MetaMask connection
+                if (window.ethereum) {
+                    window.ethereum.on('chainChanged', (chainId) => {
+                        window.currentChainId = chainId;
+                        if (chainId !== '0x3d') {
+                            renderError('Please switch MetaMask to Ethereum Classic Mainnet');
+                        } else {
+                            routeNow();
+                        }
+                    });
+
+                    window.ethereum.request({ method: 'eth_chainId' })
+                        .then((chainId) => {
+                            window.currentChainId = chainId;
+                            if (chainId !== '0x3d') {
+                                renderError('Please switch MetaMask to Ethereum Classic Mainnet');
+                            } else {
+                                routeNow();
+                            }
+                        })
+                        .catch(() => {
+                            // If reading chain id fails, still render the app
+                            routeNow();
+                        });
+
+                    // Listen for MetaMask account changes
+                    ethereum.on('accountsChanged', (accounts) => {
+                        getRef('eth_balance_wrapper').classList.add('hidden');
+                        setMetaMaskStatus(accounts.length > 0);
+                    });
+                    ethereum.on('connect', (accounts) => {
+                        setMetaMaskStatus(accounts.length > 0);
+                    });
+                    ethereum.on('disconnect', (accounts) => {
+                        setMetaMaskStatus(false);
+                    });
+                } else {
+                    // No MetaMask detected, proceed with normal routing
+                    routeNow();
+                }
+
+                // 3) Reveal UI only after we’re safe to render
+                document.body.classList.remove('hidden');
+            });
+        });
+
+        // Process pending notifications after a delay to ensure custom elements are ready
+        setTimeout(() => {
+            if (window._pendingNotifications && window._pendingNotifications.length > 0) {
+                const notificationDrawer = getRef("notification_drawer");
+                if (notificationDrawer && typeof notificationDrawer.push === 'function') {
+                    window._pendingNotifications.forEach(({ message, icon, options }) => {
+                        notificationDrawer.push(message, { icon, ...options });
+                    });
+                    window._pendingNotifications = [];
+                }
+            }
+        }, 1000); // Give custom elements time to fully initialize
+
+
+        router.addRoute('404', () => {
+            renderElem(getRef('page_container'), html`
+                <h1>Page not found</h1>
+            `)
+        })
+        router.addRoute('', renderHome)
+        router.addRoute('balance', renderHome)
+        function renderHome(state) {
+            getRef('page_container').dataset.page = 'home'
+            renderElem(getRef('page_container'), html`
+                <aside id="saved_addresses_wrapper" class="flex flex-direction-column">
+                    <h4>
+                        Searched addresses
+                    </h4>
+                    <ul id="searched_addresses_list" class="grid gap-0-5"></ul>
+                </aside>
+                <section id="balance_section" class="grid gap-1-5">
+                    <h2>
+                        Check ETC, USDC and USDT balance
+                    </h2>
+                    <sm-form oninvalid="handleInvalidSearch()">
+                        <div id="input_wrapper">
+                            <sm-input id="check_balance_input" class="password-field flex-1" placeholder="Address, private key, or tx hash"
+                                type="password" animate>
+                                <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
+                                <label slot="right" class="interact">
+                                    <input type="checkbox" class="hidden" autocomplete="off" readonly
+                                        onchange="togglePrivateKeyVisibility(this)">
+                                    <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"> </path> </svg>
+                                    <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"> </path> </svg>
+                                </label>
+                            </sm-input>
+                            <div class="multi-state-button">
+                                <button id="check_balance_button" class="button button--primary h-100 w-100" type="submit" onclick=${() => checkBalance()}>
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                    </sm-form>
+                    <div id="eth_balance_wrapper" class="grid gap-2 hidden"></div>
+                </section>
+            `)
+            if (window.ethereum && !(window.currentChainId && window.currentChainId === '0x3d')) {
+                renderError('Please switch MetaMask to Ethereum Classic Mainnet')
+            }
+            renderSearchedAddressList()
+
+            // Handle URL parameters after page is rendered
+            // Use setTimeout to ensure DOM is fully ready
+            setTimeout(() => {
+                handleUrlParams();
+            }, 100);
+        }
+        function renderError(title, description) {
+            if (!title)
+                title = 'MetaMask not installed'
+            if (!description)
+                description = ''
+            renderElem(getRef('page_container'), html`
+                <section id="error_section">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" xml:space="preserve" id="Layer_1" x="0" y="0" version="1.1" viewBox="0 0 318.6 318.6">
+                        <style>
+                            .st1,
+                            .st6 {
+                                fill: #e4761b;
+                                stroke: #e4761b;
+                                stroke-linecap: round;
+                                stroke-linejoin: round
+                            }
+
+                            .st6 {
+                                fill: #f6851b;
+                                stroke: #f6851b
+                            }
+                        </style>
+                        <path fill="#e2761b" stroke="#e2761b" stroke-linecap="round" stroke-linejoin="round" d="m274.1 35.5-99.5 73.9L193 65.8z" /> <path d="m44.4 35.5 98.7 74.6-17.5-44.3zm193.9 171.3-26.5 40.6 56.7 15.6 16.3-55.3zm-204.4.9L50.1 263l56.7-15.6-26.5-40.6z" class="st1" /> <path d="m103.6 138.2-15.8 23.9 56.3 2.5-2-60.5zm111.3 0-39-34.8-1.3 61.2 56.2-2.5zM106.8 247.4l33.8-16.5-29.2-22.8zm71.1-16.5 33.9 16.5-4.7-39.3z" class="st1" /> <path fill="#d7c1b3" stroke="#d7c1b3" stroke-linecap="round" stroke-linejoin="round" d="m211.8 247.4-33.9-16.5 2.7 22.1-.3 9.3zm-105 0 31.5 14.9-.2-9.3 2.5-22.1z" /> <path fill="#233447" stroke="#233447" stroke-linecap="round" stroke-linejoin="round" d="m138.8 193.5-28.2-8.3 19.9-9.1zm40.9 0 8.3-17.4 20 9.1z" /> <path fill="#cd6116" stroke="#cd6116" stroke-linecap="round" stroke-linejoin="round" d="m106.8 247.4 4.8-40.6-31.3.9zM207 206.8l4.8 40.6 26.5-39.7zm23.8-44.7-56.2 2.5 5.2 28.9 8.3-17.4 20 9.1zm-120.2 23.1 20-9.1 8.2 17.4 5.3-28.9-56.3-2.5z" /> <path fill="#e4751f" stroke="#e4751f" stroke-linecap="round" stroke-linejoin="round" d="m87.8 162.1 23.6 46-.8-22.9zm120.3 23.1-1 22.9 23.7-46zm-64-20.6-5.3 28.9 6.6 34.1 1.5-44.9zm30.5 0-2.7 18 1.2 45 6.7-34.1z" /> <path d="m179.8 193.5-6.7 34.1 4.8 3.3 29.2-22.8 1-22.9zm-69.2-8.3.8 22.9 29.2 22.8 4.8-3.3-6.6-34.1z" class="st6" /> <path fill="#c0ad9e" stroke="#c0ad9e" stroke-linecap="round" stroke-linejoin="round" d="m180.3 262.3.3-9.3-2.5-2.2h-37.7l-2.3 2.2.2 9.3-31.5-14.9 11 9 22.3 15.5h38.3l22.4-15.5 11-9z" /> <path fill="#161616" stroke="#161616" stroke-linecap="round" stroke-linejoin="round" d="m177.9 230.9-4.8-3.3h-27.7l-4.8 3.3-2.5 22.1 2.3-2.2h37.7l2.5 2.2z" /> <path fill="#763d16" stroke="#763d16" stroke-linecap="round" stroke-linejoin="round" d="m278.3 114.2 8.5-40.8-12.7-37.9-96.2 71.4 37 31.3 52.3 15.3 11.6-13.5-5-3.6 8-7.3-6.2-4.8 8-6.1zM31.8 73.4l8.5 40.8-5.4 4 8 6.1-6.1 4.8 8 7.3-5 3.6 11.5 13.5 52.3-15.3 37-31.3-96.2-71.4z" /> <path d="m267.2 153.5-52.3-15.3 15.9 23.9-23.7 46 31.2-.4h46.5zm-163.6-15.3-52.3 15.3-17.4 54.2h46.4l31.1.4-23.6-46zm71 26.4 3.3-57.7 15.2-41.1h-67.5l15 41.1 3.5 57.7 1.2 18.2.1 44.8h27.7l.2-44.8z" class="st6" />
+                    </svg>
+                    <h2 id="error__title">${title}</h2>
+                    <p>${description}</p>
+                </section>
+            `)
+        }
+        function renderSearchedAddressList() {
+            compactIDB.readAllData('contacts').then(contacts => {
+                if (!getRef('searched_addresses_list')) return
+                if (Object.keys(contacts).length === 0) {
+                    renderElem(getRef('searched_addresses_list'), html`<li class="flex align-center justify-center">
+                        <p>Your searched addresses will appear here for easier access in future.</p>    
+                    </li>`)
+                    return
+                }
+                const renderedContacts = []
+                for (const floAddress in contacts) {
+                    const { ethAddress } = contacts[floAddress]
+                    renderedContacts.push(html`
+                        <li class="contact" .dataset=${{ floAddress, ethAddress }}>
+                            ${floAddress === ethAddress ? html`
+                            `: html`
+                                <sm-chips onchange=${e => e.target.closest('.contact').querySelector('sm-copy').value = e.target.value}>
+                                    <sm-chip value=${floAddress} selected>FLO</sm-chip>
+                                    <sm-chip value=${ethAddress}>ETC</sm-chip>
+                                </sm-chips>
+                            `}
+                            <sm-copy value="${floAddress}"></sm-copy>
+                            <div class="flex align-center space-between gap-0-5">
+                                <button class="button button--small" onclick=${() => deleteContact(floAddress)}>
+                                    Delete
+                                </button>
+                                <button class="button button--colored button--small" onclick=${() => checkBalance(ethAddress, floAddress)}>Check balance</button>
+                            </div>
+                        </li>`)
+                }
+                renderElem(getRef('searched_addresses_list'), html`${renderedContacts}`)
+            }).catch((error) => {
+                console.error(error)
+            })
+        }
+        // Track current page and address for transaction pagination
+        let transactionCache = {}; // Cache for transaction pages
+        let currentPage = 1;
+        let currentAddress = '';
+        let currentFloAddress = '';
+        let currentFilter = 'all'; // Track current filter selection
+        let allTransactions = [];
+        const TRANSACTIONS_PER_PAGE = 10;
+
+        function checkBalance(ethAddress, floAddress) {
+            if (!ethAddress) {
+                let keyToConvert = document.querySelector('#check_balance_input').value.trim()
+
+                // Check if input is empty
+                if (!keyToConvert) {
+                    notify('Please enter an Ethereum Classic address, private key, or transaction hash', 'error');
+                    return;
+                }
+
+                // Check if it's a valid Ethereum address
+                if (ethOperator.isValidAddress(keyToConvert)) {
+                    ethAddress = keyToConvert
+                }
+                // Check if it's a transaction hash (0x followed by 64 hex characters)
+                else if (/^0x[0-9a-fA-F]{64}$/.test(keyToConvert)) {
+                    viewTransactionDetails(keyToConvert);
+                    return;
+                }
+                // Otherwise, try to convert as private key
+                else {
+                    try {
+                        if (/^[0-9a-fA-F]{64}$/.test(keyToConvert)) {
+                            keyToConvert = coinjs.privkey2wif(keyToConvert)
+                        }
+                        const ethPrivateKey = coinjs.wif2privkey(keyToConvert).privkey;
+                        ethAddress = floEthereum.ethAddressFromPrivateKey(ethPrivateKey)
+                        floAddress = floCrypto.getFloID(keyToConvert)
+                    } catch (error) {
+                        notify('Invalid input. Please enter a valid Ethereum address or private key.', 'error');
+                        return;
+                    }
+                }
+            }
+            if (!ethAddress) return
+
+            // Sync the search bar with the current address
+            const searchInput = document.querySelector('#check_balance_input');
+            if (searchInput) {
+                searchInput.value = ethAddress;
+                // Target the inner input of the custom element
+                const nativeInput = searchInput.querySelector('input');
+                if (nativeInput) nativeInput.value = ethAddress;
+            }
+
+            // Sync with URL parameters
+            const url = new URL(window.location);
+            if (url.searchParams.get('address') !== ethAddress) {
+                url.searchParams.set('address', ethAddress);
+                url.searchParams.delete('tx'); // Clear tx hash if we are viewing an address
+                window.history.pushState({}, '', url.pathname + url.search + url.hash);
+            }
+
+            // Clear old results and reset state for the new search
+            currentPage = 1;
+            currentAddress = ethAddress;
+            currentFloAddress = floAddress;
+            currentFilter = 'all';
+            transactionCache = {};
+            getRef('eth_balance_wrapper').classList.add('hidden'); // Immediate visual reset
+
+            loadTransactionsPage(ethAddress, floAddress, currentPage);
+        }
+
+        async function loadTransactionsPage(ethAddress, floAddress, page) {
+            buttonLoader('check_balance_button', true);
+
+            // Show loading in appropriate section
+            if (page === 1) {
+                // For new address search, show loading in the main wrapper
+                const balanceWrapper = getRef('eth_balance_wrapper');
+                if (balanceWrapper) {
+                    balanceWrapper.classList.remove('hidden');
+                    renderElem(balanceWrapper, html`
+                        <div class="flex flex-direction-column align-center justify-center" style="padding: 4rem; width: 100%;">
+                            <div class="flex flex-direction-column align-center text-center color-0-8">
+                                <sm-spinner></sm-spinner>
+                                <p class="margin-top-1">Fetching balance and transactions...</p>
+                            </div>
+                        </div>
+                    `);
+                }
+            } else {
+                // For pagination, show loading only in transaction list
+                const txList = getRef('transaction_list');
+                if (txList) {
+                    renderElem(txList, html`
+                        <li class="flex flex-direction-column align-center justify-center text-center color-0-8" style="padding: 2rem; width: 100%;">
+                            <sm-spinner></sm-spinner>
+                            <p class="margin-top-1">Loading transactions...</p>
+                        </li>
+                    `);
+                }
+            }
+
+            try {
+                // Check cache first for this page
+                const cacheKey = `${ethAddress}_page${page}`;
+                if (transactionCache[cacheKey]) {
+                    console.log(`Loading page ${page} from cache`);
+                    const cached = transactionCache[cacheKey];
+
+                    // Update only the transaction list, don't re-render the whole section
+                    const txList = getRef('transaction_list');
+                    if (txList) {
+                        const renderedList = renderTransactionList(cached.transactions, ethAddress, currentFilter);
+                        renderElem(txList, html`${renderedList}`);
+                    }
+
+                    // Update the filter chips selection state
+                    const filterChips = getRef('tx_filter_chips');
+                    if (filterChips) {
+                        Array.from(filterChips.querySelectorAll('sm-chip')).forEach(chip => {
+                            chip.selected = chip.value === currentFilter;
+                        });
+                    }
+
+                    // Update pagination UI elements  
+                    const paginationContainer = document.querySelector('.flex.align-center.space-between.gap-1.margin-top-1');
+                    if (paginationContainer) {
+                        const pageSpan = paginationContainer.querySelector('.color-0-7');
+                        const prevButton = paginationContainer.querySelector('button:first-child');
+                        const nextButton = paginationContainer.querySelector('button:last-child');
+
+                        if (pageSpan) pageSpan.textContent = `Page ${page}`;
+                        if (prevButton) prevButton.disabled = page <= 1;
+                        if (nextButton) nextButton.disabled = cached.transactions.length < TRANSACTIONS_PER_PAGE;
+                    }
+
+                    buttonLoader('check_balance_button', false);
+                    return;
+                }
+
+                // Not in cache, fetch from API
+                const results = await Promise.allSettled([
+                    ethOperator.getBalance(ethAddress),
+                    ethOperator.getTokenBalance(ethAddress, 'usdc'),
+                    ethOperator.getTokenBalance(ethAddress, 'usdt'),
+                    ethOperator.getTokenBalance(ethAddress, 'wetc'),
+                    ethOperator.getTransactionHistory(ethAddress, {
+                        page: page,
+                        offset: TRANSACTIONS_PER_PAGE,
+                        sort: 'desc'
+                    })
+                ]);
+
+                // Extract balance and transaction data, using defaults if any request failed
+                const etherBalance = results[0].status === 'fulfilled' ? results[0].value : '0';
+                const usdcBalance = results[1].status === 'fulfilled' ? results[1].value : '0';
+                const usdtBalance = results[2].status === 'fulfilled' ? results[2].value : '0';
+                const wetcBalance = results[3].status === 'fulfilled' ? results[3].value : '0';
+
+                let transactions = [];
+                if (results[4].status === 'fulfilled') {
+                    transactions = results[4].value;
+                } else {
+                    console.error('Failed to fetch transaction history:', results[4].reason);
+                    notify(`Failed to fetch transaction history: ${results[4].reason?.message || 'Unknown error'}`, 'error');
+                }
+
+                // Store in cache
+                transactionCache[cacheKey] = {
+                    etherBalance,
+                    usdcBalance,
+                    usdtBalance,
+                    wetcBalance,
+                    transactions
+                };
+                console.log(`Cached page ${page} for ${ethAddress}`);
+
+                // Store transactions for filtering
+                allTransactions = transactions;
+
+                // Log warnings if any API requests failed
+                if (results[0].status === 'rejected') {
+                    console.warn('Failed to fetch ETC balance:', results[0].reason);
+                }
+                if (results[1].status === 'rejected') {
+                    console.warn('Failed to fetch USDC balance:', results[1].reason);
+                }
+                if (results[2].status === 'rejected') {
+                    console.warn('Failed to fetch USDT balance:', results[2].reason);
+                }
+                if (results[3].status === 'rejected') {
+                    console.warn('Failed to fetch WETC balance:', results[3].reason);
+                }
+                // Save to indexed DB
+                compactIDB.readData('contacts', floAddress || ethAddress).then(result => {
+                    if (result) return
+                    compactIDB.addData('contacts', {
+                        ethAddress,
+                    }, floAddress || ethAddress).then(() => {
+                        renderSearchedAddressList()
+                    }).catch((error) => {
+                        console.error(error)
+                    })
+                })
+
+                // Use lightweight update for paginated pages, full render only for first page
+                if (page > 1) {
+                    // Update only the transaction list for pages 2+
+                    const txList = getRef('transaction_list');
+                    if (txList) {
+                        const renderedList = renderTransactionList(transactions, ethAddress, currentFilter);
+                        renderElem(txList, html`${renderedList}`);
+                    }
+
+                    // Update the filter chips selection state
+                    const filterChips = getRef('tx_filter_chips');
+                    if (filterChips) {
+                        Array.from(filterChips.querySelectorAll('sm-chip')).forEach(chip => {
+                            chip.selected = chip.value === currentFilter;
+                        });
+                    }
+
+                    // Update pagination UI elements  
+                    const paginationContainer = document.querySelector('.flex.align-center.space-between.gap-1.margin-top-1');
+                    if (paginationContainer) {
+                        const pageSpan = paginationContainer.querySelector('.color-0-7');
+                        const prevButton = paginationContainer.querySelector('button:first-child');
+                        const nextButton = paginationContainer.querySelector('button:last-child');
+
+                        if (pageSpan) pageSpan.textContent = `Page ${page}`;
+                        if (prevButton) prevButton.disabled = page <= 1;
+                        if (nextButton) nextButton.disabled = transactions.length < TRANSACTIONS_PER_PAGE;
+                    }
+                } else {
+                    // Full render for first page only
+                    renderBalanceAndTransactions(ethAddress, floAddress, etherBalance, usdcBalance, usdtBalance, wetcBalance, transactions, page);
+                }
+
+            } catch (error) {
+                notify(error.message || error, 'error');
+            } finally {
+                buttonLoader('check_balance_button', false);
+            }
+        }
+
+        function renderBalanceAndTransactions(ethAddress, floAddress, etherBalance, usdcBalance, usdtBalance, wetcBalance, transactions, page) {
+            // Update URL to reflect the current address being viewed
+            const url = new URL(window.location);
+            url.searchParams.set('address', ethAddress);
+            url.searchParams.delete('tx');
+            url.searchParams.delete('page');
+            // Update browser URL without reloading the page
+            window.history.pushState({}, '', url.pathname + url.search + url.hash);
+
+            // Determine if pagination buttons should be enabled
+            const hasNextPage = transactions.length >= TRANSACTIONS_PER_PAGE;
+            const hasPrevPage = page > 1;
+
+            renderElem(getRef('eth_balance_wrapper'), html`
+                <div class="grid">
+                    <div class="label">Ethereum Classic Address</div>
+                    <sm-copy id="eth_address" value=${ethAddress}></sm-copy>
+                </div>
+                ${floAddress && floAddress !== ethAddress ? html`
+                    <div class="grid">
+                        <div class="label">FLO address</div>
+                        <sm-copy id="flo_address" value=${floAddress}></sm-copy>
+                    </div>
+                `: ''}
+                <div class="grid gap-1">
+                    <h4>Balance</h4>
+                    <ul id="eth_address_balance" class="flex flex-direction-column gap-0-5">
+                        <li class="flex align-center space-between">
+                            <p>ETC</p>
+                            <b id="ether_balance">${etherBalance} ETC</b>
+                        </li>
+                        <li class="flex align-center space-between">
+                            <p>WETC</p>
+                            <b id="wetc_balance">${wetcBalance} WETC</b>
+                        </li>
+                    </ul>
+                </div>
+                <div class="grid gap-1 margin-top-1">
+                    <div class="flex align-center space-between">
+                        <h4>Transactions</h4>
+                        <sm-chips id="tx_filter_chips" onchange=${(e) => {
+                    const selectedValue = e.detail?.value || e.target.value || 'all';
+                    filterTransactions(selectedValue, transactions, ethAddress);
+                }}>
+                            <sm-chip value="all" ?selected=${currentFilter === 'all'}>All</sm-chip>
+                            <sm-chip value="sent" ?selected=${currentFilter === 'sent'}>Sent</sm-chip>
+                            <sm-chip value="received" ?selected=${currentFilter === 'received'}>Received</sm-chip>
+                        </sm-chips>
+                    </div>
+                    <ul id="transaction_list" class="grid gap-0-5">
+                        ${renderTransactionList(transactions, ethAddress, currentFilter)}
+                    </ul>
+                    <div class="flex align-center space-between gap-1 margin-top-1">
+                        <button 
+                            class="button button--small" 
+                            onclick=${() => loadPreviousPage()}
+                            ?disabled=${!hasPrevPage}
+                        >
+                             Previous
+                        </button>
+                        <span class="color-0-7">Page ${page}</span>
+                        <button 
+                            class="button button--small" 
+                            onclick=${() => loadNextPage()}
+                            ?disabled=${!hasNextPage}
+                        >
+                            Next 
+                        </button>
+                    </div>
+                </div>
+            `);
+
+            getRef('eth_balance_wrapper').classList.remove('hidden');
+            getRef('eth_balance_wrapper').animate([
+                {
+                    transform: 'translateY(-1rem)',
+                    opacity: 0
+                },
+                {
+                    transform: 'none',
+                    opacity: 1
+                }
+            ], {
+                easing: 'ease',
+                duration: 300,
+                fill: 'forwards'
+            });
+        }
+
+        function loadNextPage() {
+            currentPage++;
+            loadTransactionsPage(currentAddress, currentFloAddress, currentPage);
+        }
+
+        function loadPreviousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                loadTransactionsPage(currentAddress, currentFloAddress, currentPage);
+            }
+        }
+
+        function renderTransactionList(transactions, userAddress, filter = 'all') {
+            if (!transactions || transactions.length === 0) {
+                return html`<li class="text-center color-0-8"><p>No transactions found</p></li>`;
+            }
+
+            let filteredTxs = transactions;
+            if (filter === 'sent') {
+                filteredTxs = transactions.filter(tx => tx.isSent);
+            } else if (filter === 'received') {
+                filteredTxs = transactions.filter(tx => tx.isReceived);
+            }
+
+            if (filteredTxs.length === 0) {
+                return html`<li class="text-center color-0-8"><p>No ${filter} transactions found</p></li>`;
+            }
+
+            return filteredTxs.map(tx => {
+                const date = new Date(tx.timestamp * 1000);
+                const formattedDate = date.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const isReceived = tx.isReceived;
+                const type = isReceived ? 'in' : 'out';
+                const amountClass = isReceived ? 'tx-received' : 'tx-sent';
+                const amountPrefix = isReceived ? '+' : '-';
+                const displayAddress = isReceived ? tx.from : tx.to;
+                const directionText = isReceived ? 'Received from' : 'Sent to';
+
+                // Arrow icons matching BTC wallet
+                const icon = isReceived
+                    ? svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`
+                    : svg`<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
+
+                const className = `transaction grid ${type}`;
+
+                return html`
+                    <li class=${className}>
+                        <div class="transaction__icon">${icon}</div>
+                        <div class="grid gap-0-5">
+                            <div class="flex gap-1">
+                                <time class="transaction__time">${formattedDate}</time>
+                                <div class="transaction__amount">${amountPrefix}${tx.value.toFixed(8)} ${tx.symbol}</div>
+                            </div>
+                            <div class="transaction__receiver">
+                                ${directionText} <a href="#" class="tx-participant wrap-around" onclick=${(e) => { e.preventDefault(); checkBalance(displayAddress); }}>${displayAddress}</a>
+                            </div>
+                            <div class="flex gap-0-5 flex-wrap align-center">
+                                <button class="button button--small gap-0-3 align-center button--colored transaction__id" onclick=${() => viewTransactionDetails(tx.hash)}>
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                                    View details
+                                </button>
+                            </div>
+                        </div>
+                    </li>
+                `;
+            });
+        }
+
+        function filterTransactions(filter, transactions, userAddress) {
+            currentFilter = filter; // Save current filter selection
+            currentPage = 1; // Reset to page 1 when filter changes
+            const txList = getRef('transaction_list');
+            if (txList) {
+                const renderedList = renderTransactionList(transactions, userAddress, filter);
+                renderElem(txList, html`${renderedList}`);
+            }
+
+            // Update page number display
+            const paginationContainer = document.querySelector('.flex.align-center.space-between.gap-1.margin-top-1');
+            if (paginationContainer) {
+                const pageSpan = paginationContainer.querySelector('.color-0-7');
+                if (pageSpan) pageSpan.textContent = 'Page 1';
+            }
+        }
+
+        async function viewTransactionDetails(txHash, preserveAddress = false) {
+            try {
+                buttonLoader('check_balance_button', true);
+
+                // Update URL to show the transaction hash
+                const url = new URL(window.location);
+                url.searchParams.set('tx', txHash);
+                url.searchParams.delete('page');
+
+                // Remove address from URL unless viewing from transaction history
+                if (!preserveAddress) {
+                    url.searchParams.delete('address');
+                }
+
+                // Update browser URL without reloading the page
+                window.history.pushState({}, '', url.pathname + url.search + url.hash);
+
+                const txDetails = await ethOperator.getTransactionDetails(txHash);
+
+                // Update the search input field to reflect the transaction hash
+                const searchInput = document.querySelector('#check_balance_input');
+                if (searchInput) {
+                    searchInput.value = txHash;
+                    // Update native input inside custom element if necessary
+                    const nativeInput = searchInput.querySelector('input');
+                    if (nativeInput) nativeInput.value = txHash;
+                }
+
+                let formattedDate = 'Pending';
+                if (txDetails.timestamp) {
+                    const date = new Date(txDetails.timestamp * 1000);
+                    formattedDate = date.toLocaleString('en-US', {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                }
+
+                const statusClass = txDetails.status === 'success' ? 'tx-success' : txDetails.status === 'pending' ? 'color-0-7' : 'tx-failed';
+                const statusText = txDetails.status === 'success' ? 'Success' : txDetails.status === 'pending' ? 'Pending' : 'Failed';
+
+                // Show transaction details
+                renderElem(getRef('eth_balance_wrapper'), html`
+                    <div class="grid gap-1">
+                        <div class="flex align-center space-between">
+                            <h3>Transaction Details</h3>
+                            <button class="button button--small" onclick=${() => {
+                        const url = new URL(window.location);
+                        url.searchParams.delete('tx');
+                        window.history.pushState({}, '', url.pathname + url.search + url.hash);
+
+                        // Go back to address view
+                        handleUrlParams();
+                    }}>
+                                Back
+                            </button>
+                        </div>
+                        
+                        <div class="grid gap-0-5">
+                            <div class="label">Status</div>
+                            <strong class=${statusClass}>${statusText}</strong>
+                        </div>
+
+                        <div class="grid gap-0-5">
+                            <div class="label">Transaction Hash</div>
+                            <sm-copy value=${txDetails.hash}></sm-copy>
+                        </div>
+
+                        <div class="grid gap-0-5">
+                            <div class="label">From</div>
+                            <sm-copy value=${txDetails.from}></sm-copy>
+                        </div>
+
+                        <div class="grid gap-0-5">
+                            <div class="label">To</div>
+                            <sm-copy value=${txDetails.to}></sm-copy>
+                        </div>
+
+                        ${txDetails.tokenTransfer ? html`
+                            <div class="grid gap-0-5">
+                                <div class="label">Token Transfer</div>
+                                <strong>${txDetails.tokenTransfer.value} ${txDetails.tokenTransfer.symbol}</strong>
+                            </div>
+                        ` : html`
+                            <div class="grid gap-0-5">
+                                <div class="label">Value</div>
+                                <strong>${txDetails.value} ETC</strong>
+                            </div>
+                        `}
+
+                        <div class="grid gap-0-5">
+                            <div class="label">Gas Fee</div>
+                            <strong>${txDetails.gasFee ? txDetails.gasFee.toFixed(8) : 'N/A'} ETC</strong>
+                        </div>
+
+                        <div class="grid gap-0-5">
+                            <div class="label">Block Number</div>
+                            <strong>${txDetails.blockNumber || 'Pending'}</strong>
+                        </div>
+
+                        <div class="grid gap-0-5">
+                            <div class="label">Confirmations</div>
+                            <strong>${txDetails.confirmations}</strong>
+                        </div>
+
+                        <div class="grid gap-0-5">
+                            <div class="label">Timestamp</div>
+                            <strong>${formattedDate}</strong>
+                        </div>
+
+                        <a class="button button--primary" target="_blank" href=${'https://blockscout.com/etc/mainnet/tx/' + txHash}>
+                            View on BlockScout
+                        </a>
+                    </div>
+                `);
+
+                getRef('eth_balance_wrapper').classList.remove('hidden');
+            } catch (error) {
+                console.error('Error in viewTransactionDetails:', error);
+                notify(error.message || 'Failed to fetch transaction details', 'error');
+            } finally {
+                buttonLoader('check_balance_button', false);
+            }
+        }
+
+        // Function to handle URL parameters and load appropriate data
+        function handleUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // Check for transaction hash parameter
+            const txHash = urlParams.get('tx');
+            if (txHash && /^0x[0-9a-fA-F]{64}$/.test(txHash)) {
+                // Populate input with tx hash
+                const searchInput = document.querySelector('#check_balance_input');
+                if (searchInput) {
+                    searchInput.value = txHash;
+                    const nativeInput = searchInput.querySelector('input');
+                    if (nativeInput) {
+                        nativeInput.value = txHash;
+                    }
+                }
+                // viewTransactionDetails handles its own loading state
+                viewTransactionDetails(txHash);
+                return;
+            }
+
+            // Check for address parameter
+            const address = urlParams.get('address');
+            if (address && ethOperator.isValidAddress(address)) {
+                // Populate the input field - target both custom element and native input
+                const searchInput = document.querySelector('#check_balance_input');
+                const nativeInput = searchInput?.querySelector('input');
+
+                if (nativeInput) {
+                    nativeInput.value = address;
+                    nativeInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                if (searchInput) {
+                    searchInput.value = address;
+                    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+
+                // Load the address (checkBalance handles its own loading state)
+                checkBalance(address);
+            } else {
+                // No parameters, hide the balance wrapper
+                const balanceWrapper = getRef('eth_balance_wrapper');
+                if (balanceWrapper) {
+                    balanceWrapper.classList.add('hidden');
+                }
+            }
+        }
+
+        // Handle browser back/forward navigation
+        window.addEventListener('popstate', () => {
+            // Check if we're on the balance page
+            if (window.location.hash.includes('balance') || window.location.hash === '#/' || window.location.hash === '') {
+                handleUrlParams();
+            }
+        });
+        function handleInvalidSearch() {
+            if (document.startViewTransition)
+                document.startViewTransition(() => {
+                    getRef('eth_balance_wrapper').classList.add('hidden')
+                })
+            else {
+                getRef('eth_balance_wrapper').classList.add('hidden')
+            }
+
+        }
+        async function deleteContact(floAddress) {
+            const confirmed = await getConfirmation('Delete contact', {
+                message: 'Are you sure you want to delete this contact?'
+            })
+            if (!confirmed) return
+            compactIDB.removeData('contacts', floAddress).then(() => {
+                renderSearchedAddressList()
+            }).catch((error) => {
+                console.error(error)
+            })
+        }
+
+        router.addRoute('send', (state) => {
+            getRef('page_container').dataset.page = 'send'
+            renderElem(getRef('page_container'), html`
+                <sm-form id="send_tx_form" style="width: min(32rem, 100%)">
+                    <fieldset class="flex flex-direction-column gap-0-5">
+                        <div class="flex space-between align-center">
+                            <div class="flex flex-direction-column gap-0-5">
+                                <h4>Sender</h4>
+                                <p>Amount will be deducted from equivalent Ethereum Classic address</p>
+                            </div>
+                            <button id="check_balance_button" class="button button--small button--colored" onclick="checkSenderBalance()" disabled>
+                                Check balance
+                            </button>
+                        </div>
+                        <sm-input id="private_key_input" placeholder="Sender's FLO/BTC/ETC private key" oninput=${handleSenderInput} data-private-key class="password-field" type="password" animate required>
+                            <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
+                            <label slot="right" class="interact">
+                                <input type="checkbox" class="hidden" autocomplete="off" readonly onchange="togglePrivateKeyVisibility(this)">
+                                <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"> </path> </svg>
+                                <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"> </path> </svg>
+                            </label>
+                        </sm-input>
+                        <div id="sender_balance_container" class="flex align-center gap-0-3 hidden"></div>
+                    </fieldset>
+                    <fieldset class="flex flex-direction-column gap-1">
+                        <div class="flex flex-direction-column gap-0-5">
+                            <h4>Receiver</h4>
+                            <div class="grid gap-0-5">
+                                <sm-input class="receiver-address" placeholder="Receiver's Ethereum Classic address" data-ETC-address animate required ></sm-input>
+                                <div class="flex flex-direction-column gap-0-5">
+                                    <sm-input class="receiver-amount amount-shown flex-1" placeholder="Amount" type="number" step="0.000001" min="0.000001" error-text="Amount should be greater than 0.000001 ETC" animate required>
+                                        <div class="asset-symbol flex" slot="icon">
+                                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"> <g clip-path="url(#clip0_201_2)"> <path d="M12 0L19.6368 12.4368L12.1633 16.8L4.36325 12.4368L12 0Z"/> <path d="M12 24L4.36325 13.6099L11.8367 18L19.6368 13.6099L12 24Z"/> </g> <defs> <clipPath id="clip0_201_2"> <rect width="24" height="24" fill="white"/> </clipPath> </defs> </svg>
+                                        </div>
+                                    </sm-input>
+                                    <sm-chips id="asset_selector" onchange=${handleAssetChange}>
+                                        <sm-chip value="etc" selected>ETC</sm-chip>
+                                        <sm-chip value="wetc">WETC</sm-chip>
+                                    </sm-chips>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="multi-state-button">
+                            <button id="send_tx_button" class="button button--primary" type="submit" disabled onclick="sendTx()">Send ETC</button>
+                        </div>
+                    </fieldset>
+                </sm-form>
+            `)
+            if (window.ethereum && !(window.currentChainId && window.currentChainId === '0x3d')) {
+                renderError('Please switch MetaMask to Ethereum Classic Mainnet')
+            }
+        })
+        function togglePrivateKeyVisibility(input) {
+            const target = input.closest('sm-input')
+            target.type = target.type === 'password' ? 'text' : 'password';
+            target.focusIn()
+        }
+        function checkSenderBalance() {
+            let address;
+            const privateKey = getRef('private_key_input').value.trim()
+            if (!privateKey)
+                return notify(`Please enter sender's private key to check balance`)
+            if (privateKey.startsWith('R') || privateKey.startsWith('L') || privateKey.startsWith('K')) {
+                address = floEthereum.ethAddressFromPrivateKey(coinjs.wif2privkey(privateKey).privkey)
+            } else {
+                address = floEthereum.ethAddressFromPrivateKey(privateKey)
+            }
+            getRef('sender_balance_container').classList.remove('hidden')
+            renderElem(getRef('sender_balance_container'), html` Loading balance...<sm-spinner></sm-spinner> `)
+            const promises = [ethOperator.getBalance(address)]
+            const selectedAsset = getRef('asset_selector').value
+            if (selectedAsset !== 'etc')
+                promises.push(ethOperator.getTokenBalance(address, selectedAsset))
+            Promise.all(promises).then(([ethBalance, tokenBalance]) => {
+                renderElem(getRef('sender_balance_container'), html`
+                    <div class="grid gap-1 w-100" style="padding: 1rem; border-radius: 0.5rem; border: solid thin rgba(var(--text-color),0.3)">
+                        <div class="grid">
+                            <p class="label">Sender address</p>
+                            <sm-copy value=${address}><p>${address}<p></sm-copy>
+                        </div>
+                        <p>
+                            Balance: <b class="amount-shown">${ethBalance} ETC</b> ${selectedAsset !== 'etc' ? html`| <b class="amount-shown">${tokenBalance} ${selectedAsset.toUpperCase()}</b>` : ''}
+                        </p>
+                    </div>
+                `)
+            }).catch(err => {
+                notify(err, 'error')
+            })
+        }
+        //Handle Sender Input
+        function handleSenderInput(e) {
+            getRef('check_balance_button').disabled = !e.target.isValid
+            if (!e.target.isValid) {
+                getRef('sender_balance_container').classList.add('hidden')
+            }
+        }
+        function handleAssetChange(e) {
+            const asset = e.target.value
+            const amountInput = getRef('send_tx_form').querySelector('.receiver-amount')
+            amountInput.value = ''
+            amountInput.setAttribute('error-text', `Amount should be greater than 0.000001 ${asset.toUpperCase()}`)
+            document.querySelectorAll('.asset-symbol').forEach(elem => {
+                elem.innerHTML = assetIcons[asset]
+            })
+            getRef('send_tx_button').textContent = `Send ${asset.toUpperCase()}`
+        }
+        async function sendTx() {
+            const receiver = getRef('send_tx_form').querySelector('.receiver-address').value.trim();
+            const amount = getRef('send_tx_form').querySelector('.receiver-amount').value.trim();
+            const asset = getRef('asset_selector').value;
+
+            try {
+                // First, get basic confirmation
+                const initialConfirmation = await getConfirmation('Confirm transaction', {
+                    message: `Calculating gas fees for sending ${amount} ${asset.toUpperCase()} to ${receiver}...`,
+                    confirmText: 'Continue',
+                });
+
+                if (!initialConfirmation) return;
+
+                // Show loading state while calculating gas
+                buttonLoader('send_tx_button', true);
+
+                // Get private key
+                let privateKey = getRef('private_key_input').value.trim();
+                if (/^[0-9a-fA-F]{64}$/.test(privateKey)) {
+                    privateKey = coinjs.privkey2wif(privateKey);
+                }
+                privateKey = coinjs.wif2privkey(privateKey).privkey;
+
+                // Calculate gas fees
+                let gasEstimate, feeData, estimatedGasFee, maxGasFee, totalCostETC;
+
+                try {
+                    // Get provider for gas estimation
+                    const provider = ethOperator.getProvider(true);
+
+                    if (!provider) throw new Error('Provider not available');
+
+                    // Get gas price
+                    const gasPrice = await provider.getGasPrice();
+
+                    // Estimate gas limit
+                    if (asset === 'etc') {
+                        gasEstimate = await ethOperator.estimateGas({
+                            privateKey,
+                            receiver,
+                            amount
+                        });
+                    } else {
+                        // For token transfers, estimate is typically higher
+                        gasEstimate = ethers.BigNumber.from('65000'); // Typical ERC20 transfer gas
+                    }
+
+                    // Calculate estimated gas fee
+                    estimatedGasFee = parseFloat(ethers.utils.formatEther(gasEstimate.mul(gasPrice)));
+
+                    // Calculate total cost in ETC
+                    totalCostETC = asset === 'etc' ? (parseFloat(amount) + estimatedGasFee) : estimatedGasFee;
+
+                } catch (gasError) {
+                    console.error('Gas estimation error:', gasError);
+                    buttonLoader('send_tx_button', false);
+                    notify('Failed to estimate gas fees. Please try again.', 'error');
+                    return;
+                }
+
+                buttonLoader('send_tx_button', false);
+
+                // Show detailed confirmation with gas fees
+                const gasConfirmationPopup = html.node`
+                    <sm-popup id="gas_confirmation_popup">
+                        <header slot="header" class="popup__header">
+                            <h4>Review Transaction</h4>
+                        </header>
+                        <div class="grid gap-1-5" style="padding: 1.5rem;">
+                            <div class="grid gap-1">
+                                <h5>Transaction Details</h5>
+                                <div class="grid gap-0-5" style="padding: 1rem; border-radius: 0.5rem; background: rgba(var(--text-color), 0.06);">
+                                    <div class="flex space-between">
+                                        <span class="label">Amount:</span>
+                                        <strong class="amount-shown">${amount} ${asset.toUpperCase()}</strong>
+                                    </div>
+                                    <div class="flex space-between">
+                                        <span class="label">To:</span>
+                                        <span style="font-family: monospace; font-size: 0.9rem;">${receiver.slice(0, 10)}...${receiver.slice(-8)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid gap-1">
+                                <h5>Gas Fee Estimate</h5>
+                                <div class="grid gap-0-5" style="padding: 1rem; border-radius: 0.5rem; background: rgba(var(--text-color), 0.06);">
+                                    <div class="flex space-between">
+                                        <span class="label">Estimated Gas Fee:</span>
+                                        <strong class="amount-shown">${estimatedGasFee.toFixed(6)} ETC</strong>
+                                    </div>
+                                    <div class="flex space-between">
+                                        <span class="label">Gas Limit:</span>
+                                        <span>${gasEstimate.toString()}</span>
+                                    </div>
+                                    <hr style="border: none; border-top: 1px solid rgba(var(--text-color), 0.1); margin: 0.5rem 0;">
+                                    <div class="flex space-between">
+                                        <strong>Total Cost:</strong>
+                                        <strong class="amount-shown">${totalCostETC.toFixed(6)} ETC</strong>
+                                    </div>
+                                </div>
+                                <p style="font-size: 0.875rem; color: rgba(var(--text-color), 0.7);">
+                                    <svg class="icon" style="width: 16px; height: 16px; vertical-align: middle;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                                    Gas fees are calculated based on current network activity.
+                                </p>
+                            </div>
+                            
+                            <div class="flex gap-0-5">
+                                <button class="button flex-1" onclick="closeGasConfirmation()">Cancel</button>
+                                <button class="button button--primary flex-1" onclick="confirmAndSend()">Confirm & Send</button>
+                            </div>
+                        </div>
+                    </sm-popup>
+                `;
+
+                document.body.appendChild(gasConfirmationPopup);
+
+                // Store transaction data for confirmation
+                window.pendingTxData = {
+                    receiver,
+                    amount,
+                    asset,
+                    privateKey
+                };
+
+                // Define close function
+                window.closeGasConfirmation = () => {
+                    closePopup();
+                    setTimeout(() => {
+                        gasConfirmationPopup.remove();
+                        delete window.pendingTxData;
+                        delete window.closeGasConfirmation;
+                        delete window.confirmAndSend;
+                    }, 300);
+                };
+
+                // Define confirm and send function
+                window.confirmAndSend = async () => {
+                    closePopup();
+                    setTimeout(() => gasConfirmationPopup.remove(), 300);
+
+                    const { receiver, amount, asset, privateKey } = window.pendingTxData;
+                    delete window.pendingTxData;
+                    delete window.closeGasConfirmation;
+                    delete window.confirmAndSend;
+
+                    buttonLoader('send_tx_button', true);
+
+                    try {
+                        switch (asset) {
+                            case 'etc': {
+                                const tx = await ethOperator.sendTransaction({
+                                    privateKey,
+                                    receiver,
+                                    amount,
+                                });
+                                showTransactionResult('pending', { txHash: tx.hash });
+                                await tx.wait();
+                                showTransactionResult('confirmed', { txHash: tx.hash });
+                                break;
+                            }
+                            case 'wetc': {
+                                const tx = await ethOperator.sendToken({
+                                    privateKey,
+                                    receiver,
+                                    amount,
+                                    token: asset
+                                });
+                                showTransactionResult('pending', { txHash: tx.hash });
+                                await tx.wait();
+                                showTransactionResult('confirmed', { txHash: tx.hash });
+                                break;
+                            }
+                        }
+                        getRef('send_tx_form').reset();
+                        getRef('sender_balance_container').classList.add('hidden');
+                    } catch (e) {
+                        console.error(e.message);
+                        const regex = /\(error=({.*?}),/;
+                        const match = e.message.match(regex);
+                        if (match && match[1]) {
+                            const { code } = JSON.parse(match[1]);
+                            if (code === -32000)
+                                showTransactionResult('failed', { description: `Insufficient ${asset.toUpperCase()} balance` });
+                            else {
+                                showTransactionResult('failed', { description: e.message });
+                            }
+                        } else {
+                            showTransactionResult('failed', { description: e.message });
+                        }
+                    } finally {
+                        buttonLoader('send_tx_button', false);
+                    }
+                };
+
+                openPopup('gas_confirmation_popup');
+
+            } catch (e) {
+                console.error(e);
+                notify(e.message || 'Transaction failed', 'error');
+                buttonLoader('send_tx_button', false);
+            }
+        }
+        //Show transaction phase
+        function showTransactionResult(status, { txHash, description = '' }) {
+            switch (status) {
+                case 'pending':
+                    renderElem(getRef('transaction_result_popup__content'), html`
+                        <ul>
+                            <li class="transaction__phase">
+                                <svg class="icon confirmed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /> </svg>
+                                <h4>Transaction sent</h4>
+                            </li>
+                            <li class="transaction__phase">
+                                <sm-spinner></sm-spinner>
+                                <p>Waiting for transaction to be confirmed</p>
+                            </li>
+                        </ul>
+                        <div class="grid">
+                            <span class="label">Transaction ID</span>
+                            <sm-copy value=${txHash}></sm-copy>
+                        </div>
+                        <a class="button button--primary" target="_blank" href=${`https://blockscout.com/etc/mainnet/tx/${txHash}`}>Check transaction status</a>
+                    `)
+                    break;
+                case 'confirmed':
+                    renderElem(getRef('transaction_result_popup__content'), html`
+                        <svg class="icon user-action-result__icon confirmed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /> </svg>
+                        <div class="grid gap-0-5 justify-center text-center">
+                            <h4>Transaction confirmed</h4>
+                            <p>Transaction has been confirmed on the blockchain. </p>
+                        </div>
+                        <div class="grid">
+                            <span class="label">Transaction ID</span>
+                            <sm-copy value=${txHash}></sm-copy>
+                        </div>
+                        <a class="button button--primary" target="_blank" href=${`https://blockscout.com/etc/mainnet/tx/${txHash}`}>Check transaction status</a>
+                    `)
+                    break;
+                case 'failed':
+                    renderElem(getRef('transaction_result_popup__content'), html`
+                            <svg class="icon user-action-result__icon failed" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+                            <div class="grid gap-0-5 justify-center text-center">
+                                <h4>Transaction failed</h4>
+                                <p>${description}</p>
+                            </div>
+                        `)
+                    break;
+            }
+            openPopup('transaction_result_popup')
+        }
+
+        // ROUTE: Retrieve
+        router.addRoute('retrieve', (state) => {
+            const container = getRef('page_container');
+            container.dataset.page = 'retrieve';
+
+            renderElem(container, html`
+            <sm-form id="retrieve_form" style="width: min(32rem, 100%)">
+              <!-- Block 1 (like Sender block) -->
+              <fieldset class="flex flex-direction-column gap-0-5">
+                <div class="flex space-between align-center">
+                  <div class="flex flex-direction-column gap-0-5">
+                    <h4>Private key</h4>
+                    <p>Private key will be wiped out immediately, and page locked</p>
+                  </div>
+                </div>
+
+                <sm-input id="retrieve_key_input" placeholder="FLO/BTC/ETC private key" data-private-key="" class="password-field" type="password" animate required aria-label="FLO/BTC/ETC private key" role="textbox" oninput=${handleRetrieveInput}>
+
+                                    <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
+                                    <label slot="right" class="interact">
+                                        <input type="checkbox" class="hidden" autocomplete="off" readonly="" onchange="togglePrivateKeyVisibility(this)">
+                                        <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"> </path> </svg>
+                                        <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"> </path> </svg>
+                                    </label>
+                </sm-input>
+
+                <!-- Match send: results row -->
+                <div id="retrieve_result" class="flex align-center gap-0-3 hidden"></div>
+              </fieldset>
+
+              <!-- Block 2 (button row) -->
+              <fieldset class="flex flex-direction-column gap-1">
+                <div class="multi-state-button">
+                  <button id="retrieveButton" class="button button--primary w-100" type="button" disabled
+                          onclick=${retrieveAddress}>
+                    Retrieve
+                  </button>
+                </div>
+              </fieldset>
+            </sm-form>
+          `);
+        });
+
+
+        // ACTION: Retrieve/derive addresses based on input
+
+        //Enable the button when valid input is present
+        function handleRetrieveInput(e) {
+            getRef('retrieveButton').disabled = !e.target.isValid
+        }
+
+        function retrieveAddress() {
+            const outEl = getRef('retrieve_result');
+            const inpEl = getRef('retrieve_key_input');
+            let input = getRef('retrieve_key_input').value?.trim();
+            let usedSecret = false;
+            let wif = '';
+            let ethPriv = '';
+
+            if (!input) {
+                notify('Please enter an ETC address, WIF, or 64-hex private key', 'error');
+                renderElem(outEl, html``);
+                outEl.classList.add('hidden');
+                return;
+            }
+
+            try {
+                // Loading hint
+                renderElem(outEl, html`<div class="muted">Resolving…</div>`);
+                outEl.classList.remove('hidden');
+
+                // Detect ETC address (without private key)
+                const isEthAddrRegex = /^0x[0-9a-fA-F]{40}$/;
+                const isEthAddress = (typeof ethOperator !== 'undefined' && ethOperator.isValidAddress?.(input))
+                    || isEthAddrRegex.test(input);
+
+                if (isEthAddress) {
+                    // We cannot derive BTC/FLO from an address alone (no private key)
+                    const normalizedEth = input.toLowerCase();
+                    renderElem(outEl, html`
+                <div class="card grid gap-0-5">
+                  <span class="label">Resolved</span>
+                  <div><strong>ETC Address</strong>: <sm-copy value="${normalizedEth}"></sm-copy></div>
+                  <div class="muted">BTC/FLO cannot be derived from an address without the private key.</div>
+                </div>
+              `);
+                    return;
+                }
+
+                // Normalize to WIF if the input is a raw 64-hex private key
+                usedSecret = true;
+
+                let wif = input;
+                const is64Hex = /^[0-9a-fA-F]{64}$/.test(input);
+                if (is64Hex) {
+                    wif = coinjs.privkey2wif(input); // hex → WIF
+                }
+
+                // From WIF, derive ETC private key (hex)
+                const ethPriv = coinjs.wif2privkey(wif).privkey;
+
+
+                // ETC address from private key
+                const ethAddress = floEthereum.ethAddressFromPrivateKey(ethPriv);
+
+                // BTC bech32 from WIF
+                const btcBech32 = btcOperator.bech32Address(wif);
+                //const btcPriv = btcOperator.convert.wif(wif); 
+                //const floPriv = btcOperator.convert.wif(wif, 0xa3); 
+
+                // FLO from WIF
+                const floAddress = floCrypto.getFloID(wif);
+
+
+                // Render results
+                renderElem(outEl, html`
+              <div class="card grid gap-1">
+                
+
+                <div class="grid gap-0-5">
+                  <div><strong>BTC Address</strong>: <sm-copy value="${btcBech32}"></sm-copy></div>
+                  <div><strong>FLO Address</strong>: <sm-copy value="${floAddress}"></sm-copy></div>
+                  <div><strong>ETC Address</strong>: <sm-copy value="${ethAddress}"></sm-copy></div>
+                </div>
+
+
+              </div>
+            `);
+
+            } catch (e) {
+                notify('Could not retrieve from the provided value', 'error');
+                renderElem(outEl, html``);
+                outEl.classList.add('hidden');
+            }
+
+            finally {
+                if (usedSecret && inpEl) {
+                    const wipe = (s) => (typeof s === 'string' ? s.replace(/./g, '\0') : s);
+                    input = typeof input === 'string' && input.length ? (wipe(input), null) : input;
+                    wif = typeof wif === 'string' && wif.length ? (wipe(wif), null) : wif;
+                    ethPriv = typeof ethPriv === 'string' && ethPriv.length ? (wipe(ethPriv), null) : ethPriv;
+
+                    const inner = inpEl.shadowRoot?.querySelector('input[part="input"]');
+                    if (inner) {
+                        inner.value = '';
+                        inner.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+                        if (typeof handleRetrieveInput === 'function') {
+                            handleRetrieveInput({ target: inpEl });
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+        router.addRoute('create', (state) => {
+            getRef('page_container').dataset.page = 'create'
+            renderElem(getRef('page_container'), html`
+                <div class="grid gap-1">
+                    <h2>
+                        Don't have an Ethereum Classic address? Create one
+                    </h2>
+                    <button class="button button--primary interactive gap-0-5 margin-right-auto" onclick=${generateNewID}>
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24"
+                            height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                            <g>
+                                <rect fill="none" height="24" width="24" />
+                            </g>
+                            <g>
+                                <g>
+                                    <path
+                                        d="M18.32,4.26C16.84,3.05,15.01,2.25,13,2.05v2.02c1.46,0.18,2.79,0.76,3.9,1.62L18.32,4.26z M19.93,11h2.02 c-0.2-2.01-1-3.84-2.21-5.32L18.31,7.1C19.17,8.21,19.75,9.54,19.93,11z M18.31,16.9l1.43,1.43c1.21-1.48,2.01-3.32,2.21-5.32 h-2.02C19.75,14.46,19.17,15.79,18.31,16.9z M13,19.93v2.02c2.01-0.2,3.84-1,5.32-2.21l-1.43-1.43 C15.79,19.17,14.46,19.75,13,19.93z M13,12V7h-2v5H7l5,5l5-5H13z M11,19.93v2.02c-5.05-0.5-9-4.76-9-9.95s3.95-9.45,9-9.95v2.02 C7.05,4.56,4,7.92,4,12S7.05,19.44,11,19.93z" />
+                                </g>
+                            </g>
+                        </svg>
+                        Generate new address
+                    </button>
+                </div>
+                <div id="created_address_wrapper" class="grid gap-1"></div>
+            `)
+        })
+        function generateNewID() {
+            const { floID, privKey } = floCrypto.generateNewID();
+            const ethPrivateKey = coinjs.wif2privkey(privKey).privkey;
+            const ethAddress = floEthereum.ethAddressFromPrivateKey(ethPrivateKey)
+            renderElem(getRef('created_address_wrapper'), html`
+                <ul id="generated_addresses" class="grid gap-1-5">
+                    <li class="grid gap-0-5">
+                        <div>
+                            <h5>FLO Address</h5>
+                            <sm-copy value="${floID}"></sm-copy>
+                        </div>
+                        <div>
+                            <h5>Private Key</h5>
+                            <sm-copy value="${privKey}"></sm-copy>
+                        </div>
+                    </li>
+                    <li class="grid gap-0-5">
+                        <div>
+                            <h5>Equivalent Ethereum Classic Address</h5>
+                            <sm-copy value="${ethAddress}"></sm-copy>
+                        </div>
+                        <div>
+                            <h5>Private Key</h5>
+                            <sm-copy value="${ethPrivateKey}"></sm-copy>
+                        </div>
+                    </li>
+                </ul>
+            `)
+        }
+
+
+    </script>
+</body>
+
+</html>
