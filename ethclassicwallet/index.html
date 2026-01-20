@@ -567,7 +567,7 @@
 
         window.addEventListener('load', () => {
             // Initialize the database before any routing or data reads
-            idbReady = compactIDB.initDB('floEthereum', { contacts: {} })
+            idbReady = compactIDB.initDB('floEthereumClassic', { contacts: {} })
                 .then((res) => { console.log(res); })
                 .catch((err) => { console.error(err); });
 
