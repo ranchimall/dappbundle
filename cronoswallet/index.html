@@ -767,7 +767,17 @@
         const TRANSACTIONS_PER_PAGE = 10;
 
         function checkBalance(ethAddress, floAddress) {
-            if (!ethAddress) {
+            if (ethAddress) {
+                // If address is provided sync the input box
+                const searchInput = document.querySelector('#check_balance_input');
+                if (searchInput) {
+                    searchInput.value = ethAddress;
+                    const nativeInput = searchInput.querySelector('input');
+                    if (nativeInput) {
+                        nativeInput.value = ethAddress;
+                    }
+                }
+            } else {
                 let keyToConvert = document.querySelector('#check_balance_input').value.trim()
 
                 // Check if input is empty
@@ -1031,7 +1041,7 @@
                                 <div class="transaction__amount">${amountPrefix}${tx.value.toFixed(8)} ${tx.symbol}</div>
                             </div>
                             <div class="transaction__receiver">
-                                ${directionText} <a href="#" class="tx-participant wrap-around">${displayAddress}</a>
+                                ${directionText} <a href="#" class="tx-participant wrap-around" onclick=${(e) => { e.preventDefault(); checkBalance(displayAddress); }}>${displayAddress}</a>
                             </div>
                             <div class="flex gap-0-5 flex-wrap align-center">
                                 <button class="button button--small gap-0-3 align-center button--colored transaction__id" onclick=${() => viewTransactionDetails(tx.hash)}>
@@ -1061,6 +1071,16 @@
                 const url = new URL(window.location);
                 url.searchParams.set('tx', txHash);
                 url.searchParams.delete('page');
+
+                // Sync the input box with the tx hash
+                const searchInput = document.querySelector('#check_balance_input');
+                if (searchInput) {
+                    searchInput.value = txHash;
+                    const nativeInput = searchInput.querySelector('input');
+                    if (nativeInput) {
+                        nativeInput.value = txHash;
+                    }
+                }
 
                 // Remove address from URL unless viewing from transaction history
                 if (!preserveAddress) {
@@ -1117,12 +1137,16 @@
 
                         <div class="grid gap-0-5">
                             <div class="label">From</div>
-                            <sm-copy value=${txDetails.from}></sm-copy>
+                            <sm-copy value=${txDetails.from}>
+                                <a href="#" class="tx-participant wrap-around" onclick=${(e) => { e.preventDefault(); checkBalance(txDetails.from); }}>${txDetails.from}</a>
+                            </sm-copy>
                         </div>
 
                         <div class="grid gap-0-5">
                             <div class="label">To</div>
-                            <sm-copy value=${txDetails.to}></sm-copy>
+                            <sm-copy value=${txDetails.to}>
+                                <a href="#" class="tx-participant wrap-around" onclick=${(e) => { e.preventDefault(); checkBalance(txDetails.to); }}>${txDetails.to}</a>
+                            </sm-copy>
                         </div>
 
                         ${txDetails.tokenTransfer ? html`
