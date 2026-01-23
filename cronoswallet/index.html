@@ -665,7 +665,7 @@
                     </h2>
                     <sm-form oninvalid="handleInvalidSearch()">
                         <div id="input_wrapper">
-                            <sm-input id="check_balance_input" class="password-field flex-1" placeholder="Cronos address, private key, or tx hash"
+                            <sm-input id="check_balance_input" class="password-field flex-1" placeholder="CRO address, private key, or tx hash"
                                 type="password" animate>
                                 <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
                                 <label slot="right" class="interact">
@@ -784,19 +784,19 @@
 
                 // Check if input is empty
                 if (!keyToConvert) {
-                    notify('Please enter a Cronos address, private key, or transaction hash', 'error');
+                    notify('Please enter a CRO address, private key, or transaction hash', 'error');
                     return;
                 }
 
                 // Reject FLO addresses (start with F and len 34)
                 if (/^[F][a-km-zA-HJ-NP-Z1-9]{26,34}$/.test(keyToConvert)) {
-                    notify('FLO addresses are not supported. Please use a Cronos address or private key.', 'error');
+                    notify('FLO addresses are not supported. Please use a CRO address or private key.', 'error');
                     return;
                 }
 
                 // Reject BTC addresses (legacy 1/3, segwit bc1)
                 if (/^(1|3)[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(keyToConvert) || /^bc1[a-z0-9]{39,59}$/i.test(keyToConvert)) {
-                    notify('BTC addresses are not supported. Please use a Cronos address or private key.', 'error');
+                    notify('BTC addresses are not supported. Please use a CRO address or private key.', 'error');
                     return;
                 }
 
@@ -820,7 +820,7 @@
                         floAddress = floCrypto.getFloID(keyToConvert)
                         btcAddress = btcOperator.bech32Address(keyToConvert)
                     } catch (error) {
-                        notify('Invalid input. Please enter a valid Cronos address, private key, or tx hash.', 'error');
+                        notify('Invalid input. Please enter a valid CRO address, private key, or tx hash.', 'error');
                         return;
                     }
                 }
