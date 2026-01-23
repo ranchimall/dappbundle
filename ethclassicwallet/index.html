@@ -467,12 +467,12 @@
 
             const apply = () => {
                 if (window.matchMedia('(min-width: 640px)').matches) {
-                    // Desktop: offset from left navbar
+                    // Desktop: top-right to avoid overlapping "Searched addresses" (which is left-side)
                     Object.assign(panel.style, {
-                        left: 'calc(10rem + 1rem)',
-                        bottom: '1rem',
-                        top: 'auto',
-                        right: '1rem',   // optional, lets long toasts wrap before content edge
+                        left: 'auto',
+                        bottom: 'auto',
+                        top: '1rem',
+                        right: '1rem',
                         zIndex: '1000'
                     });
                 } else {
@@ -494,6 +494,8 @@
     </script>
     <script>
         const assetIcons = {
+
+            wetc: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"> <g clip-path="url(#clip0_201_2)"> <path d="M12 0L19.6368 12.4368L12.1633 16.8L4.36325 12.4368L12 0Z"/> <path d="M12 24L4.36325 13.6099L11.8367 18L19.6368 13.6099L12 24Z"/> </g> <defs> <clipPath id="clip0_201_2"> <rect width="24" height="24" fill="white"/> </clipPath> </defs> </svg>`,
             ETC: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"> <g clip-path="url(#clip0_201_2)"> <path d="M12 0L19.6368 12.4368L12.1633 16.8L4.36325 12.4368L12 0Z"/> <path d="M12 24L4.36325 13.6099L11.8367 18L19.6368 13.6099L12 24Z"/> </g> <defs> <clipPath id="clip0_201_2"> <rect width="24" height="24" fill="white"/> </clipPath> </defs> </svg>`,
             usdc: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" data-name="86977684-12db-4850-8f30-233a7c267d11" viewBox="0 0 2000 2000"> <path d="M1000 2000c554.17 0 1000-445.83 1000-1000S1554.17 0 1000 0 0 445.83 0 1000s445.83 1000 1000 1000z" fill="#2775ca"/> <path d="M1275 1158.33c0-145.83-87.5-195.83-262.5-216.66-125-16.67-150-50-150-108.34s41.67-95.83 125-95.83c75 0 116.67 25 137.5 87.5 4.17 12.5 16.67 20.83 29.17 20.83h66.66c16.67 0 29.17-12.5 29.17-29.16v-4.17c-16.67-91.67-91.67-162.5-187.5-170.83v-100c0-16.67-12.5-29.17-33.33-33.34h-62.5c-16.67 0-29.17 12.5-33.34 33.34v95.83c-125 16.67-204.16 100-204.16 204.17 0 137.5 83.33 191.66 258.33 212.5 116.67 20.83 154.17 45.83 154.17 112.5s-58.34 112.5-137.5 112.5c-108.34 0-145.84-45.84-158.34-108.34-4.16-16.66-16.66-25-29.16-25h-70.84c-16.66 0-29.16 12.5-29.16 29.17v4.17c16.66 104.16 83.33 179.16 220.83 200v100c0 16.66 12.5 29.16 33.33 33.33h62.5c16.67 0 29.17-12.5 33.34-33.33v-100c125-20.84 208.33-108.34 208.33-220.84z" fill="#fff"/> <path d="M787.5 1595.83c-325-116.66-491.67-479.16-370.83-800 62.5-175 200-308.33 370.83-370.83 16.67-8.33 25-20.83 25-41.67V325c0-16.67-8.33-29.17-25-33.33-4.17 0-12.5 0-16.67 4.16-395.83 125-612.5 545.84-487.5 941.67 75 233.33 254.17 412.5 487.5 487.5 16.67 8.33 33.34 0 37.5-16.67 4.17-4.16 4.17-8.33 4.17-16.66v-58.34c0-12.5-12.5-29.16-25-37.5zM1229.17 295.83c-16.67-8.33-33.34 0-37.5 16.67-4.17 4.17-4.17 8.33-4.17 16.67v58.33c0 16.67 12.5 33.33 25 41.67 325 116.66 491.67 479.16 370.83 800-62.5 175-200 308.33-370.83 370.83-16.67 8.33-25 20.83-25 41.67V1700c0 16.67 8.33 29.17 25 33.33 4.17 0 12.5 0 16.67-4.16 395.83-125 612.5-545.84 487.5-941.67-75-237.5-258.34-416.67-487.5-491.67z" fill="#fff"/></svg>`,
             usdt: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" id="Layer_1" data-name="Layer 1" viewBox="0 0 339.43 295.27"><title>tether-usdt-logo</title><path d="M62.15,1.45l-61.89,130a2.52,2.52,0,0,0,.54,2.94L167.95,294.56a2.55,2.55,0,0,0,3.53,0L338.63,134.4a2.52,2.52,0,0,0,.54-2.94l-61.89-130A2.5,2.5,0,0,0,275,0H64.45a2.5,2.5,0,0,0-2.3,1.45h0Z" style="fill:#50af95;fill-rule:evenodd"/><path d="M191.19,144.8v0c-1.2.09-7.4,0.46-21.23,0.46-11,0-18.81-.33-21.55-0.46v0c-42.51-1.87-74.24-9.27-74.24-18.13s31.73-16.25,74.24-18.15v28.91c2.78,0.2,10.74.67,21.74,0.67,13.2,0,19.81-.55,21-0.66v-28.9c42.42,1.89,74.08,9.29,74.08,18.13s-31.65,16.24-74.08,18.12h0Zm0-39.25V79.68h59.2V40.23H89.21V79.68H148.4v25.86c-48.11,2.21-84.29,11.74-84.29,23.16s36.18,20.94,84.29,23.16v82.9h42.78V151.83c48-2.21,84.12-11.73,84.12-23.14s-36.09-20.93-84.12-23.15h0Zm0,0h0Z" style="fill:#fff;fill-rule:evenodd"/><script xmlns=""/></svg>`,
@@ -664,7 +666,7 @@
                     </h2>
                     <sm-form oninvalid="handleInvalidSearch()">
                         <div id="input_wrapper">
-                            <sm-input id="check_balance_input" class="password-field flex-1" placeholder="Address, private key, or tx hash"
+                            <sm-input id="check_balance_input" class="password-field flex-1" placeholder="ETC Address, private key, or tx hash"
                                 type="password" animate>
                                 <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
                                 <label slot="right" class="interact">
@@ -735,13 +737,14 @@
                 }
                 const renderedContacts = []
                 for (const floAddress in contacts) {
-                    const { ethAddress } = contacts[floAddress]
+                    const { ethAddress, btcAddress } = contacts[floAddress]
                     renderedContacts.push(html`
-                        <li class="contact" .dataset=${{ floAddress, ethAddress }}>
+                        <li class="contact" .dataset=${{ floAddress, ethAddress, btcAddress }}>
                             ${floAddress === ethAddress ? html`
                             `: html`
                                 <sm-chips onchange=${e => e.target.closest('.contact').querySelector('sm-copy').value = e.target.value}>
                                     <sm-chip value=${floAddress} selected>FLO</sm-chip>
+                                    ${btcAddress ? html`<sm-chip value=${btcAddress}>BTC</sm-chip>` : ''}
                                     <sm-chip value=${ethAddress}>ETC</sm-chip>
                                 </sm-chips>
                             `}
@@ -778,6 +781,17 @@
                     return;
                 }
 
+                // Reject FLO addresses (start with F)
+                if (/^F[a-km-zA-HJ-NP-Z1-9]{26,34}$/.test(keyToConvert)) {
+                    notify('FLO addresses are not supported. Please use an ETC address or private key.', 'error');
+                    return;
+                }
+
+                // Reject BTC addresses (legacy: 1/3, segwit: bc1)
+                if (/^(1|3)[a-km-zA-HJ-NP-Z1-9]{25,34}$/.test(keyToConvert) || /^bc1[a-z0-9]{39,59}$/i.test(keyToConvert)) {
+                    notify('BTC addresses are not supported. Please use an ETC address or private key.', 'error');
+                    return;
+                }
                 // Check if it's a valid Ethereum address
                 if (ethOperator.isValidAddress(keyToConvert)) {
                     ethAddress = keyToConvert
@@ -790,12 +804,36 @@
                 // Otherwise, try to convert as private key
                 else {
                     try {
+                        let isHex = false;
+                        let btcAddress;
+
                         if (/^[0-9a-fA-F]{64}$/.test(keyToConvert)) {
                             keyToConvert = coinjs.privkey2wif(keyToConvert)
+                            isHex = true;
                         }
                         const ethPrivateKey = coinjs.wif2privkey(keyToConvert).privkey;
                         ethAddress = floEthereum.ethAddressFromPrivateKey(ethPrivateKey)
-                        floAddress = floCrypto.getFloID(keyToConvert)
+
+                        // Only derive FLO and BTC addresses if input was NOT a raw hex key
+                        if (!isHex) {
+                            floAddress = floCrypto.getFloID(keyToConvert)
+                            try {
+                                btcAddress = btcOperator.bech32Address(keyToConvert)
+                            } catch (e) { console.error(e) }
+                        }
+
+                        // Save to indexed DB
+                        compactIDB.readData('contacts', floAddress || ethAddress).then(result => {
+                            if (result) return
+                            compactIDB.addData('contacts', {
+                                ethAddress,
+                                btcAddress
+                            }, floAddress || ethAddress).then(() => {
+                                renderSearchedAddressList()
+                            }).catch((error) => {
+                                console.error(error)
+                            })
+                        })
                     } catch (error) {
                         notify('Invalid input. Please enter a valid Ethereum address or private key.', 'error');
                         return;
@@ -1936,8 +1974,24 @@
             const { floID, privKey } = floCrypto.generateNewID();
             const ethPrivateKey = coinjs.wif2privkey(privKey).privkey;
             const ethAddress = floEthereum.ethAddressFromPrivateKey(ethPrivateKey)
+
+            // Bitcoin support
+            const btcBech32 = btcOperator.bech32Address(privKey);
+            // Convert to Bitcoin WIF format
+            const btcPrivKey = btcOperator.convert.wif(privKey);
+
             renderElem(getRef('created_address_wrapper'), html`
                 <ul id="generated_addresses" class="grid gap-1-5">
+                    <li class="grid gap-0-5">
+                        <div>
+                            <h5>Bitcoin Address</h5>
+                            <sm-copy value="${btcBech32}"></sm-copy>
+                        </div>
+                        <div>
+                            <h5>Private Key</h5>
+                            <sm-copy value="${btcPrivKey}"></sm-copy>
+                        </div>
+                    </li>
                     <li class="grid gap-0-5">
                         <div>
                             <h5>FLO Address</h5>
