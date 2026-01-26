@@ -1054,7 +1054,7 @@
                         <div class="grid gap-0-5">
                             <div class="flex gap-1">
                                 <time class="transaction__time">${formattedDate}</time>
-                                <div class="transaction__amount">${amountPrefix}${tx.value.toFixed(8)} ${tx.symbol}</div>
+                                <div class="transaction__amount">${amountPrefix}${tx.value.toFixed(10)} ${tx.symbol}</div>
                             </div>
                             <div class="transaction__receiver">
                                 ${directionText} <a href="#" class="tx-participant wrap-around" onclick=${(e) => { e.preventDefault(); checkBalance(displayAddress); }}>${displayAddress}</a>
@@ -1168,12 +1168,12 @@
                         ${txDetails.tokenTransfer ? html`
                             <div class="grid gap-0-5">
                                 <div class="label">Token Transfer</div>
-                                <strong>${txDetails.tokenTransfer.value} ${txDetails.tokenTransfer.symbol}</strong>
+                                <strong>${txDetails.tokenTransfer.value.toFixed(10)} ${txDetails.tokenTransfer.symbol}</strong>
                             </div>
                         ` : html`
                             <div class="grid gap-0-5">
                                 <div class="label">Value</div>
-                                <strong>${txDetails.value} ETH</strong>
+                                <strong>${txDetails.value.toFixed(10)} ETH</strong>
                             </div>
                         `}
 
@@ -1372,7 +1372,7 @@
                             <sm-copy value=${address}><p>${address}<p></sm-copy>
                         </div>
                         <p>
-                            Balance: <b class="amount-shown">${ethBalance} ETH</b> ${selectedAsset !== 'eth' ? html`| <b class="amount-shown">${tokenBalance} ${selectedAsset.toUpperCase()}</b>` : ''}
+                            Balance: <b class="amount-shown">${ethBalance.toFixed(10)} ETH</b> ${selectedAsset !== 'eth' ? html`| <b class="amount-shown">${tokenBalance.toFixed(10)} ${selectedAsset.toUpperCase()}</b>` : ''}
                         </p>
                     </div>
                 `)
@@ -1512,7 +1512,7 @@
                                     <hr style="border: none; border-top: 1px solid rgba(var(--text-color), 0.1); margin: 0.5rem 0;">
                                     <div class="flex space-between">
                                         <strong>Total Cost (Est.):</strong>
-                                        <strong class="amount-shown">${totalCostETH.toFixed(6)} ETH</strong>
+                                        <strong class="amount-shown">${totalCostETH.toFixed(10)} ETH</strong>
                                     </div>
                                 </div>
                                 <p style="font-size: 0.875rem; color: rgba(var(--text-color), 0.7);">
