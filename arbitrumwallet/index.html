@@ -665,7 +665,7 @@
                     </h2>
                     <sm-form oninvalid="handleInvalidSearch()">
                         <div id="input_wrapper">
-                            <sm-input id="check_balance_input" class="password-field flex-1" placeholder="ETH address, private key, or tx hash"
+                            <sm-input id="check_balance_input" class="password-field flex-1" placeholder="ARB address, private key, or tx hash"
                                 type="password" animate>
                                 <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
                                 <label slot="right" class="interact">
@@ -928,7 +928,7 @@
                     <ul id="eth_address_balance" class="flex flex-direction-column gap-0-5">
                         <li class="flex align-center space-between">
                             <p>ETH</p>
-                            <b id="ether_balance">${etherBalance} ETH</b>
+                            <b id="ether_balance">${etherBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 10 })} ETH</b>
                         </li>
                         <li class="flex align-center space-between">
                             <p>USDC</p>
@@ -1054,7 +1054,7 @@
                         <div class="grid gap-0-5">
                             <div class="flex gap-1">
                                 <time class="transaction__time">${formattedDate}</time>
-                                <div class="transaction__amount">${amountPrefix}${tx.value.toFixed(8)} ${tx.symbol}</div>
+                                <div class="transaction__amount">${amountPrefix}${tx.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 10 })} ${tx.symbol}</div>
                             </div>
                             <div class="transaction__receiver">
                                 ${directionText} <a href="#" class="tx-participant wrap-around" onclick=${(e) => { e.preventDefault(); checkBalance(displayAddress); }}>${displayAddress}</a>
@@ -1179,7 +1179,7 @@
 
                         <div class="grid gap-0-5">
                             <div class="label">Gas Fee</div>
-                            <strong>${txDetails.gasFee ? txDetails.gasFee.toFixed(8) : 'N/A'} ETH</strong>
+                            <strong>${txDetails.gasFee ? txDetails.gasFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 10 }) : 'N/A'} ETH</strong>
                         </div>
 
                         <div class="grid gap-0-5">
@@ -1303,7 +1303,7 @@
                                 Check balance
                             </button>
                         </div>
-                        <sm-input id="private_key_input" placeholder="Sender's FLO/BTC/ETH private key" oninput=${handleSenderInput} data-private-key class="password-field" type="password" animate required>
+                        <sm-input id="private_key_input" placeholder="Sender's FLO/BTC/ARB private key" oninput=${handleSenderInput} data-private-key class="password-field" type="password" animate required>
                             <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
                             <label slot="right" class="interact">
                                 <input type="checkbox" class="hidden" autocomplete="off" readonly onchange="togglePrivateKeyVisibility(this)">
@@ -1319,7 +1319,7 @@
                             <div class="grid gap-0-5">
                                 <sm-input class="receiver-address" placeholder="Receiver's Arbitrum address" data-eth-address animate required ></sm-input>
                                 <div class="flex flex-direction-column gap-0-5">
-                                    <sm-input class="receiver-amount amount-shown flex-1" placeholder="Amount" type="number" step="0.000001" min="0.000001" error-text="Amount should be greater than 0.000001 ETH" animate required>
+                                    <sm-input class="receiver-amount amount-shown flex-1" placeholder="Amount" type="number" step="0.000001" min="0.000001" error-text="Amount should be greater than 0.000001 ARB" animate required>
                                         <div class="asset-symbol flex" slot="icon">
                                             <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path fill="currentColor" d="M311.9 260.8L160 353.6 8 260.8 160 0l151.9 260.8zM160 383.4L8 290.6 160 512l152-221.4-152 92.8z"/></svg>
                                         </div>
@@ -1460,11 +1460,19 @@
                         maxFee = minMaxFee;
                     }
 
-                    // Calculate estimated gas fee (using base fee + priority fee for estimation)
+                    // Calculate estimated gas fee
+                    // On Arbitrum, actual gas prices paid are typically much lower than the bid
+                    // The network uses ArbOS which charges based on actual demand, usually 0.01-0.1 Gwei
+
                     const block = await provider.getBlock("latest");
-                    const baseFee = block.baseFeePerGas || ethers.utils.parseUnits("1", "gwei");
-                    const estimatedGasPrice = baseFee.add(priorityFee);
-                    estimatedGasFee = parseFloat(ethers.utils.formatEther(gasEstimate.mul(estimatedGasPrice)));
+                    const baseFee = block.baseFeePerGas || ethers.utils.parseUnits("0.01", "gwei");
+
+                    // Arbitrum's typical gas price is ~0.01-0.1 Gwei, much lower than Ethereum
+                    const realisticGasPrice = baseFee.lt(ethers.utils.parseUnits("0.1", "gwei"))
+                        ? baseFee
+                        : ethers.utils.parseUnits("0.1", "gwei");
+
+                    estimatedGasFee = parseFloat(ethers.utils.formatEther(gasEstimate.mul(realisticGasPrice)));
 
                     // Calculate max possible gas fee
                     maxGasFee = parseFloat(ethers.utils.formatEther(gasEstimate.mul(maxFee)));
@@ -1507,11 +1515,11 @@
                                 <div class="grid gap-0-5" style="padding: 1rem; border-radius: 0.5rem; background: rgba(var(--text-color), 0.06);">
                                     <div class="flex space-between">
                                         <span class="label">Estimated Gas:</span>
-                                        <strong class="amount-shown">${estimatedGasFee.toFixed(6)} ETH</strong>
+                                        <strong class="amount-shown">${estimatedGasFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 10 })} ETH</strong>
                                     </div>
                                     <div class="flex space-between">
                                         <span class="label">Max Gas Fee:</span>
-                                        <span class="amount-shown" style="color: rgba(var(--text-color), 0.7);">${maxGasFee.toFixed(6)} ETH</span>
+                                        <span class="amount-shown" style="color: rgba(var(--text-color), 0.7);">${maxGasFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 10 })} ETH</span>
                                     </div>
                                     <div class="flex space-between">
                                         <span class="label">Gas Limit:</span>
@@ -1520,7 +1528,7 @@
                                     <hr style="border: none; border-top: 1px solid rgba(var(--text-color), 0.1); margin: 0.5rem 0;">
                                     <div class="flex space-between">
                                         <strong>Total Cost (Est.):</strong>
-                                        <strong class="amount-shown">${totalCostETH.toFixed(6)} ETH</strong>
+                                        <strong class="amount-shown">${totalCostETH.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 10 })} ETH</strong>
                                     </div>
                                 </div>
                                 <p style="font-size: 0.875rem; color: rgba(var(--text-color), 0.7);">
@@ -1692,7 +1700,7 @@
                   </div>
                 </div>
 
-                <sm-input id="retrieve_key_input" placeholder="FLO/BTC/ETH private key" data-private-key="" class="password-field" type="password" animate required aria-label="FLO/BTC/ETH private key" role="textbox" oninput=${handleRetrieveInput}>
+                <sm-input id="retrieve_key_input" placeholder="FLO/BTC/ARB private key" data-private-key="" class="password-field" type="password" animate required aria-label="FLO/BTC/ARB private key" role="textbox" oninput=${handleRetrieveInput}>
 
                                     <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"> </path> </g> </svg>
                                     <label slot="right" class="interact">
