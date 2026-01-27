@@ -3,8 +3,31 @@
   const ltcBlockchainAPI = EXPORTS;
 
   const DEFAULT = {
-    fee: 0.001, 
+    // Fee rate in satoshis per byte (10 sat/byte is safe for Litecoin)
+    feeRateSatPerByte: 10,
+    // Fallback fixed fee in LTC (only used if calculation fails)
+    fallbackFee: 0.00001,
   };
+
+  /**
+   * Calculate transaction fee based on number of inputs and outputs
+   * Formula: (10 + inputs*148 + outputs*34) * satPerByte
+   * @param {number} numInputs - Number of transaction inputs
+   * @param {number} numOutputs - Number of transaction outputs
+   * @param {number} satPerByte - Fee rate in satoshis per byte (default 10)
+   * @returns {number} Fee in LTC
+   */
+  function calculateFee(numInputs, numOutputs, satPerByte = DEFAULT.feeRateSatPerByte) {
+    // P2PKH transaction size estimation:
+    // - Overhead: ~10 bytes
+    // - Per input: ~148 bytes (for compressed pubkey signatures)
+    // - Per output: ~34 bytes
+    const estimatedSize = 10 + (numInputs * 148) + (numOutputs * 34);
+    const feeInSatoshis = estimatedSize * satPerByte;
+    const feeInLTC = feeInSatoshis / 100000000;
+    console.log(`Estimated tx size: ${estimatedSize} bytes, Fee: ${feeInLTC.toFixed(8)} LTC (${feeInSatoshis} satoshis)`);
+    return feeInLTC;
+  }
 
   //Get balance for the given Address
   ltcBlockchainAPI.getBalance = function (addr) {
@@ -282,12 +305,12 @@
   };
 
   /**
-   * Send Litecoin transaction using direct RPC calls to GetBlock.io
-   * This method implements the full RPC workflow: createrawtransaction -> signrawtransaction -> sendrawtransaction
+   * Send Litecoin transaction using client-side signing with bitjs library
+   * Transaction is constructed and signed locally, then broadcast via RPC
    * @param {string} senderAddr - Sender's Litecoin address
    * @param {string} receiverAddr - Receiver's Litecoin address
    * @param {number} sendAmt - Amount to send in LTC
-   * @param {string} privKey - Private key of the sender
+   * @param {string} privKey - Private key of the sender (WIF format)
    * @returns {Promise} Promise that resolves with the transaction ID
    */
   ltcBlockchainAPI.sendLitecoinRPC = function (
@@ -303,10 +326,14 @@
         return reject(`Invalid receiver address: ${receiverAddr}`);
       if (typeof sendAmt !== "number" || sendAmt <= 0)
         return reject(`Invalid send amount: ${sendAmt}`);
+
+      // Minimum amount to avoid dust errors (GetBlock requires ~10000 satoshis minimum)
+      const MIN_SEND_AMOUNT = 0.0001; // 10000 satoshis
+      if (sendAmt < MIN_SEND_AMOUNT)
+        return reject(`Amount too small. Minimum is ${MIN_SEND_AMOUNT} LTC to avoid dust rejection.`);
       if (privKey.length < 1 || !ltcCrypto.verifyPrivKey(privKey, senderAddr))
         return reject("Invalid Private key!");
 
-      const fee = DEFAULT.fee;
       const apiToken = "31ea37c3a0c44b368e879007af7a64c8";
       const rpcEndpoint = `https://go.getblock.io/${apiToken}/`;
 
@@ -319,9 +346,15 @@
         const text = await res.text();
         try {
           const data = JSON.parse(text);
-          if (data.error) throw new Error(JSON.stringify(data.error));
+          if (data.error) {
+            // Extract meaningful error message from RPC response
+            const errMsg = data.error.message || JSON.stringify(data.error);
+            throw new Error(`RPC Error: ${errMsg}`);
+          }
           return data.result;
         } catch (err) {
+          // Re-throw if it's already our formatted error
+          if (err.message.startsWith("RPC Error:")) throw err;
           console.error("Raw RPC response:\n", text);
           throw new Error("Failed to parse JSON-RPC response");
         }
@@ -336,61 +369,69 @@
           const utxoTotal = utxos.reduce((sum, utxo) => sum + utxo.value, 0);
           console.log("Total UTXO value:", utxoTotal);
 
+          // Calculate fee based on transaction size
+          // Inputs = number of UTXOs, Outputs = 2 (receiver + change)
+          const numInputs = utxos.length;
+          const numOutputs = 2; // receiver + change output
+          const fee = calculateFee(numInputs, numOutputs);
+          console.log(`Dynamic fee calculated: ${fee.toFixed(8)} LTC for ${numInputs} inputs, ${numOutputs} outputs`);
+
           if (utxoTotal < sendAmt + fee)
             return reject(
-              `Insufficient funds: ${utxoTotal} < ${sendAmt + fee}`
+              `Insufficient funds: ${utxoTotal.toFixed(8)} LTC < ${(sendAmt + fee).toFixed(8)} LTC (${sendAmt} + ${fee.toFixed(8)} fee)`
             );
-
-          const inputs = utxos.map((utxo) => ({
-            txid: utxo.txid,
-            vout: utxo.vout,
-          }));
-
-          console.log("inputs:", inputs);
 
           // Calculate change amount
           const change = utxoTotal - sendAmt - fee;
 
-          const outputs = {
-            [senderAddr]: Number(change.toFixed(8)),
-            [receiverAddr]: Number(sendAmt.toFixed(8)),
-          };
-          console.log("outputs:", outputs);
-
           try {
-            // Create raw transaction
-            console.log("Creating raw transaction...");
-            const rawTx = await rpc("createrawtransaction", [inputs, outputs]);
-            console.log("Raw transaction hex:", rawTx);
-            // Sign raw transaction
-            console.log("Signing transaction...");
-            const signedTx = await rpc("signrawtransaction", [
-              rawTx,
-              [
-                {
-                  txid: utxos[0].txid,
-                  vout: utxos[0].vout,
-                  scriptPubKey: utxos[0].scriptPubKey,
-                  amount: utxos[0].value.toFixed(8),
-                },
-              ],
-              [privKey],
-            ]);
+            // Save original bitjs settings and set Litecoin version bytes
+            const origPub = bitjs.pub;
+            const origPriv = bitjs.priv;
+            const origCompressed = bitjs.compressed;
 
-            if (!signedTx.complete) {
-              return reject(
-                `Failed to sign transaction: ${JSON.stringify(signedTx.errors)}`
-              );
+            // Litecoin mainnet version bytes
+            bitjs.pub = 0x30;      // Litecoin P2PKH address prefix
+            bitjs.priv = 0xb0;     // Litecoin WIF prefix
+            bitjs.compressed = true;
+
+            // Create transaction using bitjs
+            console.log("Creating transaction with bitjs...");
+            const tx = bitjs.transaction();
+
+            // Add all UTXOs as inputs
+            for (const utxo of utxos) {
+              tx.addinput(utxo.txid, utxo.vout, utxo.scriptPubKey);
+              console.log(`Added input: ${utxo.txid}:${utxo.vout}`);
             }
-            console.log("Signed transaction hex:", signedTx.hex);
 
-            // Send raw transaction
+            // Add outputs: receiver first, then change back to sender
+            tx.addoutput(receiverAddr, sendAmt);
+            console.log(`Added output to receiver: ${receiverAddr} = ${sendAmt} LTC`);
+
+            if (change > 0.00000546) {  // Only add change if above dust threshold
+              tx.addoutput(senderAddr, change);
+              console.log(`Added change output: ${senderAddr} = ${change} LTC`);
+            }
+
+            // Sign the transaction with private key
+            console.log("Signing transaction locally...");
+            const signedTxHex = tx.sign(privKey);
+            console.log("Signed transaction hex:", signedTxHex);
+
+            // Restore original bitjs settings
+            bitjs.pub = origPub;
+            bitjs.priv = origPriv;
+            bitjs.compressed = origCompressed;
+
+            // Broadcast the signed transaction
             console.log("Broadcasting transaction...");
-            const txid = await rpc("sendrawtransaction", [signedTx.hex]);
+            const txid = await rpc("sendrawtransaction", [signedTxHex]);
+            console.log("Transaction broadcast successful! TXID:", txid);
 
             resolve(txid);
           } catch (error) {
-            console.error("RPC error:", error);
+            console.error("Transaction error:", error);
             reject(error);
           }
         })
