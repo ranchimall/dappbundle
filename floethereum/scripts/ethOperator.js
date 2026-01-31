@@ -414,7 +414,11 @@
       const tokenTxResponse = await fetch(tokenTxUrl);
       const tokenTxData = await tokenTxResponse.json();
 
-      const tokenTransfers = tokenTxData.status === '1' ? tokenTxData.result : [];
+      const allowedTokenAddresses = Object.values(CONTRACT_ADDRESSES).map(addr => addr.toLowerCase());
+      const rawTokenTransfers = tokenTxData.status === '1' ? tokenTxData.result : [];
+      const tokenTransfers = rawTokenTransfers.filter(tx =>
+        allowedTokenAddresses.includes(tx.contractAddress.toLowerCase())
+      );
 
       // Combine and sort transactions
       // Filter out normal transactions that are already present in token transfers (duplicate hash) AND have 0 value

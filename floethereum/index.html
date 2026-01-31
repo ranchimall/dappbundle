@@ -1049,7 +1049,7 @@
                                 <div class="transaction__amount">${amountPrefix}${tx.value.toFixed(8)} ${tx.symbol}</div>
                             </div>
                             <div class="transaction__receiver">
-                                ${directionText} <a href="#" class="tx-participant wrap-around">${displayAddress}</a>
+                                ${directionText} <a href="#" class="tx-participant wrap-around" onclick=${(e) => { e.preventDefault(); checkBalance(displayAddress); }}>${displayAddress}</a>
                             </div>
                             <div class="flex gap-0-5 flex-wrap align-center">
                                 <button class="button button--small gap-0-3 align-center button--colored transaction__id" onclick=${() => viewTransactionDetails(tx.hash)}>
