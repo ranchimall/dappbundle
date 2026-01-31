@@ -417,7 +417,7 @@
       const allowedTokenAddresses = Object.values(CONTRACT_ADDRESSES).map(addr => addr.toLowerCase());
       const rawTokenTransfers = tokenTxData.status === '1' ? tokenTxData.result : [];
       const tokenTransfers = rawTokenTransfers.filter(tx =>
-        allowedTokenAddresses.includes(tx.contractAddress.toLowerCase())
+        allowedTokenAddresses.includes(tx.contractAddress.toLowerCase()) && tx.value !== '0'
       );
 
       // Combine and sort transactions
