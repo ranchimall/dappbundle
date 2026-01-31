@@ -823,6 +823,7 @@
         }
 
         let allTransactionsCache = [];
+        let currentFilter = 'all';
         let currentBalances = { eth: '0', usdc: '0', usdt: '0' };
 
         async function loadTransactionsPage(ethAddress, floAddress, page) {
@@ -866,11 +867,19 @@
                     ({ eth: etherBalance, usdc: usdcBalance, usdt: usdtBalance } = currentBalances);
                 }
 
+                // Filter interactions
+                let filteredTransactions = transactions;
+                if (currentFilter === 'sent') {
+                    filteredTransactions = transactions.filter(tx => tx.isSent);
+                } else if (currentFilter === 'received') {
+                    filteredTransactions = transactions.filter(tx => tx.isReceived);
+                }
+
                 // Local Pagination / Slicing
                 const startIndex = (page - 1) * TRANSACTIONS_PER_PAGE;
                 const endIndex = startIndex + TRANSACTIONS_PER_PAGE;
-                const paginatedTransactions = transactions.slice(startIndex, endIndex);
-                const hasNextPage = transactions.length > endIndex;
+                const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
+                const hasNextPage = filteredTransactions.length > endIndex;
 
                 // Sync Contacts (only on fresh load really, but safe here)
                 if (page === 1) {
@@ -941,15 +950,17 @@
                         <h4>Transactions</h4>
                         <sm-chips id="tx_filter_chips" onchange=${(e) => {
                     const selectedValue = e.detail?.value || e.target.value || 'all';
-                    filterTransactions(selectedValue, transactions, ethAddress);
+                    currentFilter = selectedValue;
+                    currentPage = 1;
+                    loadTransactionsPage(ethAddress, floAddress, currentPage);
                 }}>
-                            <sm-chip value="all" selected>All</sm-chip>
-                            <sm-chip value="sent">Sent</sm-chip>
-                            <sm-chip value="received">Received</sm-chip>
+                            <sm-chip value="all" ?selected=${currentFilter === 'all'}>All</sm-chip>
+                            <sm-chip value="sent" ?selected=${currentFilter === 'sent'}>Sent</sm-chip>
+                            <sm-chip value="received" ?selected=${currentFilter === 'received'}>Received</sm-chip>
                         </sm-chips>
                     </div>
                     <ul id="transaction_list" class="grid gap-0-5">
-                        ${renderTransactionList(transactions, ethAddress, 'all')}
+                        ${renderTransactionList(transactions, ethAddress)}
                     </ul>
                     <div class="flex align-center space-between gap-1 margin-top-1">
                         <button 
@@ -1000,23 +1011,12 @@
             }
         }
 
-        function renderTransactionList(transactions, userAddress, filter = 'all') {
+        function renderTransactionList(transactions, userAddress) {
             if (!transactions || transactions.length === 0) {
                 return html`<li class="text-center color-0-8"><p>No transactions found</p></li>`;
             }
 
-            let filteredTxs = transactions;
-            if (filter === 'sent') {
-                filteredTxs = transactions.filter(tx => tx.isSent);
-            } else if (filter === 'received') {
-                filteredTxs = transactions.filter(tx => tx.isReceived);
-            }
-
-            if (filteredTxs.length === 0) {
-                return html`<li class="text-center color-0-8"><p>No ${filter} transactions found</p></li>`;
-            }
-
-            return filteredTxs.map(tx => {
+            return transactions.map(tx => {
                 const date = new Date(tx.timestamp * 1000);
                 const formattedDate = date.toLocaleString('en-US', {
                     month: 'short',
