@@ -257,7 +257,7 @@
     try {
       if (!address || !isValidAddress(address))
         return new Error('Invalid address');
-      
+
       // Use read-only provider (public RPC) for balance checks
       const provider = getProvider(true);
       const balanceWei = await provider.getBalance(address);
@@ -274,7 +274,7 @@
         return new Error("Token not specified");
       if (!CONTRACT_ADDRESSES[token] && contractAddress)
         return new Error('Contract address of token not available')
-      
+
       // Use read-only provider (public RPC) for token balance checks
       const provider = getProvider(true);
       const tokenAddress = CONTRACT_ADDRESSES[token] || contractAddress;
@@ -307,17 +307,17 @@
       const provider = getProvider();
       const signer = new ethers.Wallet(privateKey, provider);
       const limit = await estimateGas({ privateKey, receiver, amount })
-      
+
       // Get current fee data from the network
       const feeData = await provider.getFeeData();
-      
+
       // Calculate priority fee (tip to miners) - use 1.5 gwei or the network's suggested priority fee, whichever is higher
       const priorityFee = feeData.maxPriorityFeePerGas || ethers.utils.parseUnits("1.5", "gwei");
-      
+
       // Calculate max fee per gas (base fee + priority fee)
       // Use the network's suggested maxFeePerGas or calculate it manually
       let maxFee = feeData.maxFeePerGas;
-      
+
       // If maxFeePerGas is not available or is less than priority fee, calculate it
       if (!maxFee || maxFee.lt(priorityFee)) {
         // Get the base fee from the latest block and add our priority fee
@@ -326,13 +326,13 @@
         // maxFee = (baseFee * 2) + priorityFee to account for potential base fee increases
         maxFee = baseFee.mul(2).add(priorityFee);
       }
-      
+
       // Ensure maxFee is at least 1.5x the priority fee for safety
       const minMaxFee = priorityFee.mul(15).div(10); // 1.5x priority fee
       if (maxFee.lt(minMaxFee)) {
         maxFee = minMaxFee;
       }
-      
+
       // Creating and sending the transaction object
       return signer.sendTransaction({
         to: receiver,
@@ -365,8 +365,8 @@
     return tokenContract.transfer(receiver, amountWei)
   }
 
-  
-  const ETHERSCAN_API_KEY = 'M3YBAHI21FVE7VS2FEKU6ZFGRA128WUVQK'; 
+
+  const ETHERSCAN_API_KEY = 'M3YBAHI21FVE7VS2FEKU6ZFGRA128WUVQK';
 
   /**
    * Get transaction history for an Ethereum address
@@ -390,7 +390,7 @@
 
       // Fetch normal transactions using V2 API
       const normalTxUrl = `https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=${address}&startblock=${startBlock}&endblock=${endBlock}&page=${page}&offset=${offset}&sort=${sort}&apikey=${ETHERSCAN_API_KEY}`;
-      
+
       const normalTxResponse = await fetch(normalTxUrl);
       const normalTxData = await normalTxResponse.json();
 
@@ -410,15 +410,25 @@
 
       // Fetch ERC20 token transfers using V2 API
       const tokenTxUrl = `https://api.etherscan.io/v2/api?chainid=1&module=account&action=tokentx&address=${address}&startblock=${startBlock}&endblock=${endBlock}&page=${page}&offset=${offset}&sort=${sort}&apikey=${ETHERSCAN_API_KEY}`;
-      
+
       const tokenTxResponse = await fetch(tokenTxUrl);
       const tokenTxData = await tokenTxResponse.json();
 
       const tokenTransfers = tokenTxData.status === '1' ? tokenTxData.result : [];
 
       // Combine and sort transactions
-      const allTransactions = [...normalTxData.result, ...tokenTransfers];
-      
+      // Filter out normal transactions that are already present in token transfers (duplicate hash) AND have 0 value
+      // This prevents showing "0 ETH to Contract" alongside the actual "Token Transfer"
+      const tokenTxHashes = new Set(tokenTransfers.map(tx => tx.hash));
+      const uniqueNormalTxs = normalTxData.result.filter(tx => {
+        if (tokenTxHashes.has(tx.hash) && tx.value === '0') {
+          return false;
+        }
+        return true;
+      });
+
+      const allTransactions = [...uniqueNormalTxs, ...tokenTransfers];
+
       // Sort by timestamp (descending)
       allTransactions.sort((a, b) => parseInt(b.timeStamp) - parseInt(a.timeStamp));
 
@@ -427,9 +437,9 @@
       return allTransactions.map(tx => {
         const isTokenTransfer = tx.tokenSymbol !== undefined;
         const isReceived = tx.to.toLowerCase() === address.toLowerCase();
-        
+
         let value, symbol, decimals;
-        
+
         if (isTokenTransfer) {
           decimals = parseInt(tx.tokenDecimal) || 18;
           value = parseFloat(ethers.utils.formatUnits(tx.value, decimals));
@@ -480,57 +490,75 @@
 
       // Use read-only provider for fetching transaction details
       const provider = getProvider(true);
-      
+
       // Get transaction details
       const tx = await provider.getTransaction(txHash);
-      
+
       if (!tx) {
         throw new Error('Transaction not found');
       }
 
       // Get transaction receipt for status and gas used
       const receipt = await provider.getTransactionReceipt(txHash);
-      
+
       // Get current block number for confirmations
       const currentBlock = await provider.getBlockNumber();
-      
+
       // Get block details for timestamp
       const block = await provider.getBlock(tx.blockNumber);
 
       // Calculate gas fee
       const gasUsed = receipt ? receipt.gasUsed : null;
       const effectiveGasPrice = receipt ? receipt.effectiveGasPrice : tx.gasPrice;
-      const gasFee = gasUsed && effectiveGasPrice ? 
+      const gasFee = gasUsed && effectiveGasPrice ?
         parseFloat(ethers.utils.formatEther(gasUsed.mul(effectiveGasPrice))) : null;
 
       // Check if it's a token transfer by examining logs
-      let tokenTransfer = null;
+      let tokenTransfers = [];
+      // Simple in-memory cache for token metadata to avoid rate limiting
+      const TOKEN_METADATA_CACHE = ethOperator.TOKEN_METADATA_CACHE || {};
+      ethOperator.TOKEN_METADATA_CACHE = TOKEN_METADATA_CACHE;
+
       if (receipt && receipt.logs.length > 0) {
         // Try to decode ERC20 Transfer event
         const transferEventSignature = ethers.utils.id('Transfer(address,address,uint256)');
-        const transferLog = receipt.logs.find(log => log.topics[0] === transferEventSignature);
-        
-        if (transferLog) {
+        const transferLogs = receipt.logs.filter(log => log.topics[0] === transferEventSignature);
+
+        if (transferLogs.length > 0) {
           try {
-            const tokenContract = new ethers.Contract(transferLog.address, ERC20ABI, provider);
-            const [symbol, decimals] = await Promise.all([
-              tokenContract.symbol().catch(() => 'TOKEN'),
-              tokenContract.decimals().catch(() => 18)
-            ]);
-            
-            const from = ethers.utils.getAddress('0x' + transferLog.topics[1].slice(26));
-            const to = ethers.utils.getAddress('0x' + transferLog.topics[2].slice(26));
-            const value = parseFloat(ethers.utils.formatUnits(transferLog.data, decimals));
-            
-            tokenTransfer = {
-              from,
-              to,
-              value,
-              symbol,
-              contractAddress: transferLog.address
-            };
+            // Process all transfer logs
+            tokenTransfers = await Promise.all(transferLogs.map(async (transferLog) => {
+              const contractAddress = transferLog.address;
+              let symbol, decimals;
+
+              // Check cache first
+              if (TOKEN_METADATA_CACHE[contractAddress]) {
+                ({ symbol, decimals } = TOKEN_METADATA_CACHE[contractAddress]);
+              } else {
+                // Fetch from network if not cached
+                const tokenContract = new ethers.Contract(contractAddress, ERC20ABI, provider);
+                [symbol, decimals] = await Promise.all([
+                  tokenContract.symbol().catch(() => 'TOKEN'),
+                  tokenContract.decimals().catch(() => 18)
+                ]);
+                // Store in cache
+                TOKEN_METADATA_CACHE[contractAddress] = { symbol, decimals };
+              }
+
+              const from = ethers.utils.getAddress('0x' + transferLog.topics[1].slice(26));
+              const to = ethers.utils.getAddress('0x' + transferLog.topics[2].slice(26));
+              const value = parseFloat(ethers.utils.formatUnits(transferLog.data, decimals));
+
+              return {
+                from,
+                to,
+                value,
+                symbol,
+                contractAddress
+              };
+            }));
           } catch (e) {
-            console.warn('Could not decode token transfer:', e);
+            console.warn('Could not decode token transfers:', e);
           }
         }
       }
@@ -552,7 +580,7 @@
         input: tx.data,
         status: receipt ? (receipt.status === 1 ? 'success' : 'failed') : 'pending',
         isError: receipt ? receipt.status !== 1 : false,
-        tokenTransfer: tokenTransfer,
+        tokenTransfers: tokenTransfers,
         logs: receipt ? receipt.logs : [],
         type: tx.type
       };

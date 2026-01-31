@@ -822,56 +822,71 @@
             loadTransactionsPage(ethAddress, floAddress, currentPage);
         }
 
+        let allTransactionsCache = [];
+        let currentBalances = { eth: '0', usdc: '0', usdt: '0' };
+
         async function loadTransactionsPage(ethAddress, floAddress, page) {
             buttonLoader('check_balance_button', true);
 
             try {
-                const results = await Promise.allSettled([
-                    ethOperator.getBalance(ethAddress),
-                    ethOperator.getTokenBalance(ethAddress, 'usdc'),
-                    ethOperator.getTokenBalance(ethAddress, 'usdt'),
-                    ethOperator.getTransactionHistory(ethAddress, {
-                        page: page,
-                        offset: TRANSACTIONS_PER_PAGE,
-                        sort: 'desc'
+                let transactions = [];
+                let etherBalance = '0', usdcBalance = '0', usdtBalance = '0';
+
+                // Fetch new data if it's the first page (Search or Refresh)
+                if (page === 1) {
+                    const results = await Promise.allSettled([
+                        ethOperator.getBalance(ethAddress),
+                        ethOperator.getTokenBalance(ethAddress, 'usdc'),
+                        ethOperator.getTokenBalance(ethAddress, 'usdt'),
+                        ethOperator.getTransactionHistory(ethAddress, {
+                            page: 1, // Always Page 1 of API
+                            offset: 500, // Batch size 500
+                            sort: 'desc'
+                        })
+                    ]);
+
+                    etherBalance = results[0].status === 'fulfilled' ? results[0].value : '0';
+                    usdcBalance = results[1].status === 'fulfilled' ? results[1].value : '0';
+                    usdtBalance = results[2].status === 'fulfilled' ? results[2].value : '0';
+                    transactions = results[3].status === 'fulfilled' ? results[3].value : [];
+
+                    // Update Cache
+                    allTransactionsCache = transactions;
+                    currentBalances = { eth: etherBalance, usdc: usdcBalance, usdt: usdtBalance };
+
+                    // Log warnings
+                    if (results[0].status === 'rejected') console.warn('Failed to fetch ETH balance:', results[0].reason);
+                    if (results[1].status === 'rejected') console.warn('Failed to fetch USDC balance:', results[1].reason);
+                    if (results[2].status === 'rejected') console.warn('Failed to fetch USDT balance:', results[2].reason);
+                    if (results[3].status === 'rejected') console.warn('Failed to fetch transaction history:', results[3].reason);
+
+                } else {
+                    // Use Cache for pagination
+                    transactions = allTransactionsCache;
+                    ({ eth: etherBalance, usdc: usdcBalance, usdt: usdtBalance } = currentBalances);
+                }
+
+                // Local Pagination / Slicing
+                const startIndex = (page - 1) * TRANSACTIONS_PER_PAGE;
+                const endIndex = startIndex + TRANSACTIONS_PER_PAGE;
+                const paginatedTransactions = transactions.slice(startIndex, endIndex);
+                const hasNextPage = transactions.length > endIndex;
+
+                // Sync Contacts (only on fresh load really, but safe here)
+                if (page === 1) {
+                    compactIDB.readData('contacts', floAddress || ethAddress).then(result => {
+                        if (result) return
+                        compactIDB.addData('contacts', {
+                            ethAddress,
+                        }, floAddress || ethAddress).then(() => {
+                            renderSearchedAddressList()
+                        }).catch((error) => {
+                            console.error(error)
+                        })
                     })
-                ]);
-
-                // Extract balance and transaction data, using defaults if any request failed
-                const etherBalance = results[0].status === 'fulfilled' ? results[0].value : '0';
-                const usdcBalance = results[1].status === 'fulfilled' ? results[1].value : '0';
-                const usdtBalance = results[2].status === 'fulfilled' ? results[2].value : '0';
-                const transactions = results[3].status === 'fulfilled' ? results[3].value : [];
-
-                // Store transactions for filtering
-                allTransactions = transactions;
-
-                // Log warnings if any API requests failed
-                if (results[0].status === 'rejected') {
-                    console.warn('Failed to fetch ETH balance:', results[0].reason);
-                }
-                if (results[1].status === 'rejected') {
-                    console.warn('Failed to fetch USDC balance:', results[1].reason);
-                }
-                if (results[2].status === 'rejected') {
-                    console.warn('Failed to fetch USDT balance:', results[2].reason);
-                }
-                if (results[3].status === 'rejected') {
-                    console.warn('Failed to fetch transaction history:', results[3].reason);
                 }
 
-                compactIDB.readData('contacts', floAddress || ethAddress).then(result => {
-                    if (result) return
-                    compactIDB.addData('contacts', {
-                        ethAddress,
-                    }, floAddress || ethAddress).then(() => {
-                        renderSearchedAddressList()
-                    }).catch((error) => {
-                        console.error(error)
-                    })
-                })
-
-                renderBalanceAndTransactions(ethAddress, floAddress, etherBalance, usdcBalance, usdtBalance, transactions, page);
+                renderBalanceAndTransactions(ethAddress, floAddress, etherBalance, usdcBalance, usdtBalance, paginatedTransactions, page, hasNextPage);
 
             } catch (error) {
                 notify(error.message || error, 'error');
@@ -880,7 +895,7 @@
             }
         }
 
-        function renderBalanceAndTransactions(ethAddress, floAddress, etherBalance, usdcBalance, usdtBalance, transactions, page) {
+        function renderBalanceAndTransactions(ethAddress, floAddress, etherBalance, usdcBalance, usdtBalance, transactions, page, hasNextPage) {
             // Update URL to reflect the current address being viewed
             const url = new URL(window.location);
             url.searchParams.set('address', ethAddress);
@@ -890,7 +905,7 @@
             window.history.pushState({}, '', url.pathname + url.search + url.hash);
 
             // Determine if pagination buttons should be enabled
-            const hasNextPage = transactions.length >= TRANSACTIONS_PER_PAGE;
+            // hasNextPage is now passed in
             const hasPrevPage = page > 1;
 
             renderElem(getRef('eth_balance_wrapper'), html`
@@ -1124,14 +1139,32 @@
                         </div>
 
                         <div class="grid gap-0-5">
-                            <div class="label">To</div>
+                            <div class="label">To (Contract)</div>
                             <sm-copy value=${txDetails.to}></sm-copy>
                         </div>
 
-                        ${txDetails.tokenTransfer ? html`
+                        ${txDetails.tokenTransfers && txDetails.tokenTransfers.length > 0 ? html`
                             <div class="grid gap-0-5">
-                                <div class="label">Token Transfer</div>
-                                <strong>${txDetails.tokenTransfer.value} ${txDetails.tokenTransfer.symbol}</strong>
+                                <div class="label">Token Transfers</div>
+                                <div class="grid gap-0-5" style="padding: 0.75rem; background: rgba(var(--text-color), 0.05); border-radius: 0.5rem;">
+                                    ${txDetails.tokenTransfers.map((transfer, index) => html`
+                                        <div class="grid gap-0-3" style="${index !== txDetails.tokenTransfers.length - 1 ? 'border-bottom: 1px solid rgba(var(--text-color), 0.1); padding-bottom: 0.75rem; margin-bottom: 0.25rem;' : ''}">
+                                            <div class="flex space-between align-center">
+                                                <strong>${transfer.value} ${transfer.symbol}</strong>
+                                            </div>
+                                            <div class="grid gap-0-5" style="font-size: 0.8rem;">
+                                                <div class="grid gap-0">
+                                                    <span class="color-0-7">From</span>
+                                                    <sm-copy value=${transfer.from} style="--font-size: 0.8rem;"></sm-copy>
+                                                </div>
+                                                <div class="grid gap-0">
+                                                    <span class="color-0-7">To</span>
+                                                    <sm-copy value=${transfer.to} style="--font-size: 0.8rem;"></sm-copy>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `)}
+                                </div>
                             </div>
                         ` : html`
                             <div class="grid gap-0-5">
