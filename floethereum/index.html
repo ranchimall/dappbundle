@@ -946,8 +946,8 @@
                     </ul>
                 </div>
                 <div class="grid gap-1 margin-top-1">
-                    <div class="flex align-center space-between">
-                        <h4>Transactions</h4>
+                    <div class="flex align-center space-between gap-1" style="overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+                        <h4 class="flex-shrink-0">Transactions</h4>
                         <sm-chips id="tx_filter_chips" onchange=${(e) => {
                     const selectedValue = e.detail?.value || e.target.value || 'all';
                     currentFilter = selectedValue;
@@ -1044,7 +1044,7 @@
                     <li class=${className}>
                         <div class="transaction__icon">${icon}</div>
                         <div class="grid gap-0-5">
-                            <div class="flex gap-1">
+                            <div class="flex gap-1 flex-wrap space-between">
                                 <time class="transaction__time">${formattedDate}</time>
                                 <div class="transaction__amount">${amountPrefix}${tx.value.toFixed(8)} ${tx.symbol}</div>
                             </div>

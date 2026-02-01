@@ -1054,6 +1054,11 @@ aside h4 {
   display: none; /* Chrome, Safari and Opera */
 }
 
+#tx_filter_chips sm-chip {
+  font-size: 0.75rem;
+  --padding: 0.3rem 0.6rem;
+}
+
 #error_section {
   display: grid;
   height: 100%;
