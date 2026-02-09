@@ -1,0 +1,2268 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Bitcoin Cash Wallet</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="favicon.svg" type="image/x-icon">
+    <link rel="stylesheet" href="css/main.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="hidden">
+    <sm-notifications id="notification_drawer"></sm-notifications>
+    <sm-popup id="confirmation_popup">
+        <h4 id="confirm_title"></h4>
+        <div id="confirm_message"></div>
+        <div class="flex align-center gap-0-5 margin-left-auto">
+            <button class="button cancel-button">Cancel</button>
+            <button class="button button--primary confirm-button">OK</button>
+        </div>
+    </sm-popup>
+    <article id="loading_page">
+        <sm-spinner></sm-spinner>
+        <strong>Getting Bitcoin Cash Wallet ready</strong>
+    </article>
+    <div id="main_card">
+        <header id="main_header" class="flex align-center space-between">
+            <div class="app-brand">
+                <img src="favicon.svg" alt="Bitcoin Cash Web Wallet logo" class="icon">
+                <div class="app-name">
+                    <div class="app-name__company">RanchiMall</div>
+                    <h4 class="app-name__title">
+                        Bitcoin Cash Wallet
+                    </h4>
+                </div>
+            </div>
+            <div class="flex align-center gap-0-3">
+                <sm-select id="currency_selector" class="margin-right-0-5">
+                    <sm-option value="bch">BCH</sm-option>
+                    <sm-option value="inr">INR</sm-option>
+                    <sm-option value="usd">USD</sm-option>
+                </sm-select>
+                <theme-toggle></theme-toggle>
+            </div>
+        </header>
+        <main id="pages_container" class="grid" data-scrollable></main>
+        <nav id="main_navbar">
+            <ul id="menu">
+                <li>
+                    <a href="#/check_details" class="nav-item interactive">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path d="M12 5.69l5 4.5V18h-2v-6H9v6H7v-7.81l5-4.5M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z" />
+                        </svg>
+                        <span class="nav-item__title">
+                            Address
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#/send" class="nav-item interactive">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0V0z" fill="none" />
+                            <path
+                                d="M4.01 6.03l7.51 3.22-7.52-1 .01-2.22m7.5 8.72L4 17.97v-2.22l7.51-1M2.01 3L2 10l15 2-15 2 .01 7L23 12 2.01 3z" />
+                        </svg>
+                        <span class="nav-item__title">
+                            Send
+                        </span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#/convert" class="nav-item interactive">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <path d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"></path>
+                        </svg>
+                        <span class="nav-item__title">
+                            Convert
+                        </span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    <sm-popup id="generate_bch_addr_popup">
+        <header slot="header" class="popup__header">
+            <div class="flex align-center">
+                <button class="popup__header__close" onclick="closePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+        <div class="grid gap-2">
+            <div id="flo_id_warning" class="grid justify-center gap-0-5">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                    fill="#000000">
+                    <path d="M0 0h24v24H0z" fill="none" />
+                    <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+                </svg>
+                <h3>Keep your keys safe!</h3>
+                <strong>Don't share with anyone. The private key cannot be recovered if lost.</strong>
+            </div>
+            <div id="generated_bch_addr" class="generated-id-card"></div>
+        </div>
+    </sm-popup>
+    <sm-popup id="retrieve_bch_addr_popup">
+        <header slot="header" class="popup__header">
+            <div class="flex align-center">
+                <button class="popup__header__close" onclick="closePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+        <section class="grid gap-1-5">
+            <div class="grid gap-0-5">
+                <h4>Did you forget your BCH address?</h4>
+                <p>If you have your private key, enter it here and recover your BCH address.</p>
+            </div>
+            <sm-form>
+                <div id="recovered_bch_addr_wrapper" class="hidden">
+                    <h5>Recovered BCH address</h5>
+                    <sm-copy id="recovered_bch_addr"></sm-copy>
+                </div>
+                <sm-input id="retrieve_bch_addr_field" type="password" placeholder="Private key" class="password-field"
+                    data-private-key required autofocus>
+                    <label slot="right" class="interact">
+                        <input type="checkbox" class="hidden" autocomplete="off" readonly
+                            onchange="togglePrivateKeyVisibility(this)">
+                        <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <title>Hide password</title>
+                            <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" />
+                            <path
+                                d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" />
+                        </svg>
+                        <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24"
+                            width="24px" fill="#000000">
+                            <title>Show password</title>
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path
+                                d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" />
+                        </svg>
+                    </label>
+                </sm-input>
+                <button class="button button--primary cta" type="submit" onclick="retrievebchAddr()">Recover</button>
+            </sm-form>
+        </section>
+    </sm-popup>
+    <sm-popup id="increase_fee_popup">
+        <header slot="header" class="popup__header">
+            <div class="flex align-center">
+                <button class="popup__header__close" onclick="closePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+                <h3>Increase fee</h3>
+            </div>
+        </header>
+        <div id="increase_fee_popup_content"></div>
+    </sm-popup>
+    <sm-popup id="transaction_result_popup">
+        <header slot="header" class="popup__header">
+            <div class="flex align-center">
+                <button class="popup__header__close" onclick="closePopup()">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px"
+                        fill="#000000">
+                        <path d="M0 0h24v24H0V0z" fill="none" />
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+                    </svg>
+                </button>
+            </div>
+        </header>
+        <div id="transaction_result_popup__content" class="grid gap-2"></div>
+    </sm-popup>
+    <script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
+    <script src="scripts/components.min.js"></script>
+    <script type="text/javascript" src="scripts/lib.js"></script>
+    <script src="scripts/floCrypto.js"></script>
+    <script type="text/javascript" src="scripts/bchOperator.js"></script>
+    <script src="scripts/keccak.js"></script>
+    <script src="scripts/floEthereum.js"></script>
+    <script>
+        !function (i, t) { "object" == typeof exports && "undefined" != typeof module ? t(exports) : "function" == typeof define && define.amd ? define(["exports"], t) : t((i || self).preactSignalsCore = {}) }(this, function (i) { function t() { throw new Error("Cycle detected") } var n = Symbol.for("preact-signals"); function o() { if (!(s > 1)) { var i, t = !1; while (void 0 !== h) { var n = h; h = void 0; e++; while (void 0 !== n) { var o = n.o; n.o = void 0; n.f &= -3; if (!(8 & n.f) && c(n)) try { n.c() } catch (n) { if (!t) { i = n; t = !0 } } n = o } } e = 0; s--; if (t) throw i } else s-- } var r = void 0, f = 0, h = void 0, s = 0, e = 0, v = 0; function u(i) { if (void 0 !== r) { var t = i.n; if (void 0 === t || t.t !== r) { t = { i: 0, S: i, p: r.s, n: void 0, t: r, e: void 0, x: void 0, r: t }; if (void 0 !== r.s) r.s.n = t; r.s = t; i.n = t; if (32 & r.f) i.S(t); return t } else if (-1 === t.i) { t.i = 0; if (void 0 !== t.n) { t.n.p = t.p; if (void 0 !== t.p) t.p.n = t.n; t.p = r.s; t.n = void 0; r.s.n = t; r.s = t } return t } } } function d(i) { this.v = i; this.i = 0; this.n = void 0; this.t = void 0 } d.prototype.brand = n; d.prototype.h = function () { return !0 }; d.prototype.S = function (i) { if (this.t !== i && void 0 === i.e) { i.x = this.t; if (void 0 !== this.t) this.t.e = i; this.t = i } }; d.prototype.U = function (i) { if (void 0 !== this.t) { var t = i.e, n = i.x; if (void 0 !== t) { t.x = n; i.e = void 0 } if (void 0 !== n) { n.e = t; i.x = void 0 } if (i === this.t) this.t = n } }; d.prototype.subscribe = function (i) { var t = this; return _(function () { var n = t.value, o = 32 & this.f; this.f &= -33; try { i(n) } finally { this.f |= o } }) }; d.prototype.valueOf = function () { return this.value }; d.prototype.toString = function () { return this.value + "" }; d.prototype.toJSON = function () { return this.value }; d.prototype.peek = function () { return this.v }; Object.defineProperty(d.prototype, "value", { get: function () { var i = u(this); if (void 0 !== i) i.i = this.i; return this.v }, set: function (i) { if (r instanceof y) !function () { throw new Error("Computed cannot have side-effects") }(); if (i !== this.v) { if (e > 100) t(); this.v = i; this.i++; v++; s++; try { for (var n = this.t; void 0 !== n; n = n.x)n.t.N() } finally { o() } } } }); function c(i) { for (var t = i.s; void 0 !== t; t = t.n)if (t.S.i !== t.i || !t.S.h() || t.S.i !== t.i) return !0; return !1 } function a(i) { for (var t = i.s; void 0 !== t; t = t.n) { var n = t.S.n; if (void 0 !== n) t.r = n; t.S.n = t; t.i = -1; if (void 0 === t.n) { i.s = t; break } } } function l(i) { var t = i.s, n = void 0; while (void 0 !== t) { var o = t.p; if (-1 === t.i) { t.S.U(t); if (void 0 !== o) o.n = t.n; if (void 0 !== t.n) t.n.p = o } else n = t; t.S.n = t.r; if (void 0 !== t.r) t.r = void 0; t = o } i.s = n } function y(i) { d.call(this, void 0); this.x = i; this.s = void 0; this.g = v - 1; this.f = 4 } (y.prototype = new d).h = function () { this.f &= -3; if (1 & this.f) return !1; if (32 == (36 & this.f)) return !0; this.f &= -5; if (this.g === v) return !0; this.g = v; this.f |= 1; if (this.i > 0 && !c(this)) { this.f &= -2; return !0 } var i = r; try { a(this); r = this; var t = this.x(); if (16 & this.f || this.v !== t || 0 === this.i) { this.v = t; this.f &= -17; this.i++ } } catch (i) { this.v = i; this.f |= 16; this.i++ } r = i; l(this); this.f &= -2; return !0 }; y.prototype.S = function (i) { if (void 0 === this.t) { this.f |= 36; for (var t = this.s; void 0 !== t; t = t.n)t.S.S(t) } d.prototype.S.call(this, i) }; y.prototype.U = function (i) { if (void 0 !== this.t) { d.prototype.U.call(this, i); if (void 0 === this.t) { this.f &= -33; for (var t = this.s; void 0 !== t; t = t.n)t.S.U(t) } } }; y.prototype.N = function () { if (!(2 & this.f)) { this.f |= 6; for (var i = this.t; void 0 !== i; i = i.x)i.t.N() } }; y.prototype.peek = function () { if (!this.h()) t(); if (16 & this.f) throw this.v; return this.v }; Object.defineProperty(y.prototype, "value", { get: function () { if (1 & this.f) t(); var i = u(this); this.h(); if (void 0 !== i) i.i = this.i; if (16 & this.f) throw this.v; return this.v } }); function w(i) { var t = i.u; i.u = void 0; if ("function" == typeof t) { s++; var n = r; r = void 0; try { t() } catch (t) { i.f &= -2; i.f |= 8; p(i); throw t } finally { r = n; o() } } } function p(i) { for (var t = i.s; void 0 !== t; t = t.n)t.S.U(t); i.x = void 0; i.s = void 0; w(i) } function b(i) { if (r !== this) throw new Error("Out-of-order effect"); l(this); r = i; this.f &= -2; if (8 & this.f) p(this); o() } function g(i) { this.x = i; this.u = void 0; this.s = void 0; this.o = void 0; this.f = 32 } g.prototype.c = function () { var i = this.S(); try { if (8 & this.f) return; if (void 0 === this.x) return; var t = this.x(); if ("function" == typeof t) this.u = t } finally { i() } }; g.prototype.S = function () { if (1 & this.f) t(); this.f |= 1; this.f &= -9; w(this); a(this); s++; var i = r; r = this; return b.bind(this, i) }; g.prototype.N = function () { if (!(2 & this.f)) { this.f |= 2; this.o = h; h = this } }; g.prototype.d = function () { this.f |= 8; if (!(1 & this.f)) p(this) }; function _(i) { var t = new g(i); try { t.c() } catch (i) { t.d(); throw i } return t.d.bind(t) } i.Signal = d; i.batch = function (i) { if (s > 0) return i(); s++; try { return i() } finally { o() } }; i.computed = function (i) { return new y(i) }; i.effect = _; i.signal = function (i) { return new d(i) }; i.untracked = function (i) { if (f > 0) return i(); var t = r; r = void 0; f++; try { return i() } finally { f--; r = t } } });//# sourceMappingURL=signals-core.min.js.map
+    </script>
+    <script id="ui_utils">
+        const uiGlobals = {}
+        const { html, svg, render: renderElem } = uhtml;
+        const { signal, computed, effect } = preactSignalsCore;
+        uiGlobals.connectionErrorNotification = []
+        //Checks for internet connection status
+        if (!navigator.onLine)
+            uiGlobals.connectionErrorNotification.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
+        window.addEventListener('offline', () => {
+            uiGlobals.connectionErrorNotification.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
+        })
+        window.addEventListener('online', () => {
+            uiGlobals.connectionErrorNotification.forEach(notification => {
+                getRef('notification_drawer').remove(notification)
+            })
+            notify('We are back online.', 'success')
+        })
+
+        // Use instead of document.getElementById
+        function getRef(elementId) {
+            return document.getElementById(elementId);
+        }
+        // displays a popup for asking permission. Use this instead of JS confirm
+        const getConfirmation = (title, options = {}) => {
+            return new Promise(resolve => {
+                const { message = '', cancelText = 'Cancel', confirmText = 'OK', danger = false } = options
+                openPopup('confirmation_popup', true)
+                getRef('confirm_title').innerText = title;
+                renderElem(getRef('confirm_message'), message);
+                const cancelButton = getRef('confirmation_popup').querySelector('.cancel-button');
+                const confirmButton = getRef('confirmation_popup').querySelector('.confirm-button')
+                confirmButton.textContent = confirmText
+                cancelButton.textContent = cancelText
+                if (danger)
+                    confirmButton.classList.add('button--danger')
+                else
+                    confirmButton.classList.remove('button--danger')
+                confirmButton.onclick = () => {
+                    closePopup()
+                    resolve(true);
+                }
+                cancelButton.onclick = () => {
+                    closePopup()
+                    resolve(false);
+                }
+            })
+        }
+        // Use when a function needs to be executed after user finishes changes
+        const debounce = (callback, wait) => {
+            let timeoutId = null;
+            return (...args) => {
+                window.clearTimeout(timeoutId);
+                timeoutId = window.setTimeout(() => {
+                    callback.apply(null, args);
+                }, wait);
+            };
+        }
+        // adds a class to all elements in an array
+        function addClass(elements, className) {
+            elements.forEach((element) => {
+                document.querySelector(element).classList.add(className);
+            });
+        }
+        // removes a class from all elements in an array
+        function removeClass(elements, className) {
+            elements.forEach((element) => {
+                document.querySelector(element).classList.remove(className);
+            });
+        }
+        // return querySelectorAll elements as an array
+        function getAllElements(selector) {
+            return Array.from(document.querySelectorAll(selector));
+        }
+
+        let zIndex = 50
+        // function required for popups or modals to appear
+        function openPopup(popupId, pinned) {
+            zIndex++
+            getRef(popupId).setAttribute('style', `z-index: ${zIndex}`)
+            getRef(popupId).show({ pinned })
+            return getRef(popupId);
+        }
+
+        // hides the popup or modal
+        function closePopup() {
+            if (popupStack.peek() === undefined)
+                return;
+            popupStack.peek().popup.hide()
+        }
+
+        document.addEventListener('popupopened', e => {
+            switch (e.target.id) {
+            }
+        })
+        document.addEventListener('popupclosed', e => {
+            zIndex--
+            switch (e.target.id) {
+                case 'retrieve_bch_addr_popup':
+                    getRef('recovered_bch_addr_wrapper').classList.add('hidden')
+                    break;
+                case 'increase_fee_popup':
+                    renderElem(getRef('increase_fee_popup_content'), html``)
+                    break;
+            }
+        })
+
+        //Function for displaying toast notifications. pass in error for mode param if you want to show an error.
+        function notify(message, mode, options = {}) {
+            let icon
+            switch (mode) {
+                case 'success':
+                    icon = `<svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"/></svg>`
+                    break;
+                case 'error':
+                    icon = `<svg class="icon icon--error" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z"/></svg>`
+                    options.pinned = true
+                    break;
+            }
+            if (mode === 'error') {
+                console.error(message)
+            }
+            return getRef("notification_drawer").push(message, { icon, ...options });
+        }
+
+        function getFormattedTime(timestamp, format) {
+            try {
+                if (timestamp && String(timestamp).length < 13)
+                    timestamp *= 1000
+                const date = new Date(timestamp);
+                if (format === 'date-only') return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+                if (format === 'time-only') return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+                if (format === 'relative') {
+                    if (Date.now() - date < 60 * 60 * 24 * 1000) return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+                    return relativeTime.from(timestamp);
+                }
+                return date.toLocaleString(undefined, { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+            } catch (e) {
+                console.error(e);
+                return timestamp;
+            }
+        }
+        // detect browser version
+        function detectBrowser() {
+            let ua = navigator.userAgent,
+                tem,
+                M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+            if (/trident/i.test(M[1])) {
+                tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+                return 'IE ' + (tem[1] || '');
+            }
+            if (M[1] === 'Chrome') {
+                tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
+                if (tem != null) return tem.slice(1).join(' ').replace('OPR', 'Opera');
+            }
+            M = M[2] ? [M[1], M[2]] : [navigator.appName, navigator.appVersion, '-?'];
+            if ((tem = ua.match(/version\/(\d+)/i)) != null) M.splice(1, 1, tem[1]);
+            return M.join(' ');
+        }
+        let selectedCurrency = signal('bch');
+        let historicPriceApis = {
+            active: 0,
+            list: []
+        };
+        let isHistoricApiAvailable = false;
+        window.addEventListener("load", () => {
+            const [browserName, browserVersion] = detectBrowser().split(' ');
+            const supportedVersions = {
+                Chrome: 85,
+                Firefox: 75,
+                Safari: 13,
+            }
+            if (browserName in supportedVersions) {
+                if (parseInt(browserVersion) < supportedVersions[browserName]) {
+                    notify(`${browserName} ${browserVersion} is not fully supported, some features may not work properly. Please update to ${supportedVersions[browserName]} or higher.`, 'error')
+                }
+            } else {
+                notify('Browser is not fully compatible, some features may not work. for best experience please use Chrome, Edge, Firefox or Safari', 'error')
+            }
+            document.body.classList.remove('hidden')
+            document.addEventListener('keyup', (e) => {
+                if (e.key === 'Escape') {
+                    closePopup()
+                }
+            })
+            document.addEventListener('copy', () => {
+                notify('copied', 'success')
+            })
+            document.addEventListener("pointerdown", (e) => {
+                if (e.target.closest("button:not(:disabled), .interactive:not(:disabled)")) {
+                    createRipple(e, e.target.closest("button, .interactive"));
+                }
+            });
+            bchOperator.checkIfTor()
+                .then(isTor => {
+                    if (isTor)
+                        historicPriceApis.list.push('http://omwkzk6bd6zuragdqsrhdyzgxzre7yx4vzrou4vzftintzc2dmagp6qd.onion:8257')
+                })
+            getExchangeRate()
+                .then(() => {
+                    isHistoricApiAvailable = true;
+                    setTimeout(() => {
+                        document.getElementById('currency_selector').value = selectedCurrency.value;
+                    }, 100)
+                    showCurrentValue.value = localStorage.getItem('bch-wallet-show-current-value') === 'true' || false;
+                })
+                .catch(e => {
+                    console.error(e);
+                    showCurrentValue.value = false;
+                    isHistoricApiAvailable = false;
+                }).finally(() => {
+                    selectedCurrency.value = localStorage.getItem('bch-wallet-currency') || 'bch';
+                    router.routeTo(window.location.hash)
+                    setTimeout(() => {
+                        getRef('loading_page').animate([
+                            { transform: 'translateY(0)', },
+                            { transform: 'translateY(-100%)', }
+                        ], {
+                            duration: 300,
+                            fill: 'forwards',
+                            easing: 'ease'
+                        }).onfinish = () => {
+                            getRef('loading_page').remove()
+                        }
+                    }, 500);
+                })
+        });
+        function createRipple(event, target) {
+            const circle = document.createElement("span");
+            const diameter = Math.max(target.clientWidth, target.clientHeight);
+            const radius = diameter / 2;
+            const targetDimensions = target.getBoundingClientRect();
+            circle.style.width = circle.style.height = `${diameter}px`;
+            circle.style.left = `${event.clientX - (targetDimensions.left + radius)}px`;
+            circle.style.top = `${event.clientY - (targetDimensions.top + radius)}px`;
+            circle.classList.add("ripple");
+            const rippleAnimation = circle.animate(
+                [
+                    {
+                        opacity: 1,
+                        transform: `scale(0)`
+                    },
+                    {
+                        transform: "scale(4)",
+                        opacity: 0,
+                    },
+                ],
+                {
+                    duration: 600,
+                    fill: "forwards",
+                    easing: "ease-out",
+                }
+            );
+            target.append(circle);
+            rippleAnimation.onfinish = () => {
+                circle.remove();
+            };
+        }
+
+
+        let tempData
+        const indicatorObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) {
+                    const { currentActiveElement, currentIndicator, isOnTop, animOptions, moveBy } = tempData
+                    currentActiveElement.append(currentIndicator)
+                    currentIndicator.animate([
+                        {
+                            transform: `translate${isMobileView ? 'X' : 'Y'}(${isOnTop ? `-${moveBy}px` : `${moveBy}px`})`,
+                            opacity: 0,
+                        },
+                        {
+                            transform: 'none',
+                            opacity: 1
+                        },
+                    ], { ...animOptions, easing: 'ease-out' })
+                }
+            })
+        }, {
+            threshold: 1
+        })
+        class Router {
+            /**
+             * @constructor {object} options - options for the router
+             * @param {object} options.routes - routes for the router
+             * @param {object} options.state - initial state for the router
+             * @param {function} options.routingStart - function to be called before routing
+             * @param {function} options.routingEnd - function to be called after routing
+             */
+            constructor(options = {}) {
+                const { routes = {}, state = {}, routingStart, routingEnd } = options
+                this.routes = routes
+                this.state = state
+                this.routingStart = routingStart
+                this.routingEnd = routingEnd
+                this.lastPage = null
+                window.addEventListener('hashchange', e => this.routeTo(window.location.hash))
+            }
+            /**
+             * @param {string} route - route to be added
+             * @param {function} callback - function to be called when route is matched
+             */
+            addRoute(route, callback) {
+                this.routes[route] = callback
+            }
+            /**
+             * @param {string} route
+             */
+            handleRouting = async (page) => {
+                if (this.routingStart) {
+                    this.routingStart(this.state)
+                }
+                if (this.routes[page]) {
+                    await this.routes[page](this.state)
+                    this.lastPage = page
+                } else {
+                    if (this.routes['404']) {
+                        this.routes['404'](this.state);
+                    } else {
+                        console.error(`No route found for '${page}' and no '404' route is defined.`);
+                    }
+                }
+                if (this.routingEnd) {
+                    this.routingEnd(this.state)
+                }
+            }
+            async routeTo(destination) {
+                try {
+                    let page
+                    let wildcards = []
+                    let params = {}
+                    let [path, queryString] = destination.split('?');
+                    if (path.includes('#'))
+                        path = path.split('#')[1];
+                    if (path.includes('/'))
+                        [, page, ...wildcards] = path.split('/')
+                    else
+                        page = path
+                    this.state = { page, wildcards, lastPage: this.lastPage, params }
+                    if (queryString) {
+                        params = new URLSearchParams(queryString)
+                        this.state.params = Object.fromEntries(params)
+                    }
+                    if (document.startViewTransition) {
+                        document.startViewTransition(async () => {
+                            await this.handleRouting(page)
+                        })
+                    } else {
+                        // Fallback for browsers that don't support View transition API:
+                        await this.handleRouting(page)
+                    }
+                } catch (e) {
+                    console.error(e)
+                }
+            }
+        }
+        // class based lazy loading
+        class LazyLoader {
+            constructor(container, elementsToRender, renderFn, options = {}) {
+                const { batchSize = 10, freshRender, bottomFirst = false, domUpdated } = options
+
+                this.elementsToRender = elementsToRender
+                this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
+                this.renderFn = renderFn
+                this.intersectionObserver
+
+                this.batchSize = batchSize
+                this.freshRender = freshRender
+                this.domUpdated = domUpdated
+                this.bottomFirst = bottomFirst
+
+                this.shouldLazyLoad = false
+                this.lastScrollTop = 0
+                this.lastScrollHeight = 0
+
+                this.lazyContainer = document.querySelector(container)
+
+                this.update = this.update.bind(this)
+                this.render = this.render.bind(this)
+                this.init = this.init.bind(this)
+                this.clear = this.clear.bind(this)
+            }
+            get elements() {
+                return this.arrayOfElements
+            }
+            init() {
+                this.intersectionObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            observer.disconnect()
+                            this.render({ lazyLoad: true })
+                        }
+                    })
+                })
+                this.mutationObserver = new MutationObserver(mutationList => {
+                    mutationList.forEach(mutation => {
+                        if (mutation.type === 'childList') {
+                            if (mutation.addedNodes.length) {
+                                if (this.bottomFirst) {
+                                    if (this.lazyContainer.firstElementChild)
+                                        this.intersectionObserver.observe(this.lazyContainer.firstElementChild)
+                                } else {
+                                    if (this.lazyContainer.lastElementChild)
+                                        this.intersectionObserver.observe(this.lazyContainer.lastElementChild)
+                                }
+                            }
+                        }
+                    })
+                })
+                this.mutationObserver.observe(this.lazyContainer, {
+                    childList: true,
+                })
+                this.render()
+            }
+            update(elementsToRender) {
+                this.arrayOfElements = (typeof elementsToRender === 'function') ? this.elementsToRender() : elementsToRender || []
+            }
+            render(options = {}) {
+                let { lazyLoad = false } = options
+                this.shouldLazyLoad = lazyLoad
+                const frag = document.createDocumentFragment();
+                if (lazyLoad) {
+                    if (this.bottomFirst) {
+                        this.updateEndIndex = this.updateStartIndex
+                        this.updateStartIndex = this.updateEndIndex - this.batchSize
+                    } else {
+                        this.updateStartIndex = this.updateEndIndex
+                        this.updateEndIndex = this.updateEndIndex + this.batchSize
+                    }
+                } else {
+                    this.intersectionObserver.disconnect()
+                    if (this.bottomFirst) {
+                        this.updateEndIndex = this.arrayOfElements.length
+                        this.updateStartIndex = this.updateEndIndex - this.batchSize - 1
+                    } else {
+                        this.updateStartIndex = 0
+                        this.updateEndIndex = this.batchSize
+                    }
+                    this.lazyContainer.innerHTML = ``;
+                }
+                this.lastScrollHeight = this.lazyContainer.scrollHeight
+                this.lastScrollTop = this.lazyContainer.scrollTop
+                this.arrayOfElements.slice(this.updateStartIndex, this.updateEndIndex).forEach((element, index) => {
+                    frag.append(this.renderFn(element))
+                })
+                if (this.bottomFirst) {
+                    this.lazyContainer.prepend(frag)
+                    // scroll anchoring for reverse scrolling
+                    this.lastScrollTop += this.lazyContainer.scrollHeight - this.lastScrollHeight
+                    this.lazyContainer.scrollTo({ top: this.lastScrollTop })
+                    this.lastScrollHeight = this.lazyContainer.scrollHeight
+                } else {
+                    this.lazyContainer.append(frag)
+                }
+                if (!lazyLoad && this.bottomFirst) {
+                    this.lazyContainer.scrollTop = this.lazyContainer.scrollHeight
+                }
+                // Callback to be called if elements are updated or rendered for first time
+                if (!lazyLoad && this.freshRender)
+                    this.freshRender()
+            }
+            clear() {
+                this.intersectionObserver.disconnect()
+                this.mutationObserver.disconnect()
+                this.lazyContainer.innerHTML = ``;
+            }
+            reset() {
+                this.arrayOfElements = (typeof this.elementsToRender === 'function') ? this.elementsToRender() : this.elementsToRender || []
+                this.render()
+            }
+        }
+
+        function buttonLoader(id, show) {
+            const button = typeof id === 'string' ? document.getElementById(id) : id;
+            if (!button) return
+            if (!button.dataset.hasOwnProperty('wasDisabled'))
+                button.dataset.wasDisabled = button.disabled
+            const animOptions = {
+                duration: 200,
+                fill: 'forwards',
+                easing: 'ease'
+            }
+            if (show) {
+                button.disabled = true
+                button.parentNode.append(document.createElement('sm-spinner'))
+                button.animate([
+                    {
+                        clipPath: 'circle(100%)',
+                    },
+                    {
+                        clipPath: 'circle(0)',
+                    },
+                ], animOptions)
+            } else {
+                button.disabled = button.dataset.wasDisabled === 'true';
+                button.animate([
+                    {
+                        clipPath: 'circle(0)',
+                    },
+                    {
+                        clipPath: 'circle(100%)',
+                    },
+                ], animOptions).onfinish = (e) => {
+                    button.removeAttribute('data-original-state')
+                }
+                const potentialTarget = button.parentNode.querySelector('sm-spinner')
+                if (potentialTarget) potentialTarget.remove();
+            }
+        }
+
+        let isMobileView = false
+        const mobileQuery = window.matchMedia('(max-width: 40rem)')
+        function handleMobileChange(e) {
+            isMobileView = e.matches
+        }
+        mobileQuery.addEventListener('change', handleMobileChange)
+
+        handleMobileChange(mobileQuery)
+        const slideInLeft = [
+            {
+                opacity: 0,
+                transform: 'translateX(1.5rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            }
+        ]
+        const slideOutLeft = [
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateX(-1.5rem)'
+            },
+        ]
+        const slideInRight = [
+            {
+                opacity: 0,
+                transform: 'translateX(-1.5rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            }
+        ]
+        const slideOutRight = [
+            {
+                opacity: 1,
+                transform: 'translateX(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateX(1.5rem)'
+            },
+        ]
+        const slideInDown = [
+            {
+                opacity: 0,
+                transform: 'translateY(-1.5rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateY(0)'
+            },
+        ]
+        const slideOutUp = [
+            {
+                opacity: 1,
+                transform: 'translateY(0)'
+            },
+            {
+                opacity: 0,
+                transform: 'translateY(-1.5rem)'
+            },
+        ]
+        function showChildElement(id, index, options = {}) {
+            return new Promise((resolve) => {
+                const { mobileView = false, entry, exit } = options
+                const animOptions = {
+                    duration: 150,
+                    easing: 'ease',
+                    fill: 'forwards'
+                }
+                const parent = typeof id === 'string' ? document.getElementById(id) : id;
+                const visibleElement = [...parent.children].find(elem => !elem.classList.contains(mobileView ? 'hide-on-mobile' : 'hidden'));
+                if (visibleElement === parent.children[index]) return;
+                visibleElement.getAnimations().forEach(anim => anim.cancel())
+                parent.children[index].getAnimations().forEach(anim => anim.cancel())
+                if (visibleElement) {
+                    if (exit) {
+                        visibleElement.animate(exit, animOptions).onfinish = () => {
+                            visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+                            parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                            if (entry)
+                                parent.children[index].animate(entry, animOptions).onfinish = () => resolve()
+                        }
+                    } else {
+                        visibleElement.classList.add(mobileView ? 'hide-on-mobile' : 'hidden')
+                        parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                        resolve()
+                    }
+                } else {
+                    parent.children[index].classList.remove(mobileView ? 'hide-on-mobile' : 'hidden')
+                    parent.children[index].animate(entry, animOptions).onfinish = () => resolve()
+                }
+            })
+        }
+    </script>
+    <script>
+        window.smCompConfig = {
+            'sm-input': [
+                {
+                    selector: '[data-flo-address]',
+                    customValidation: (value) => {
+                        if (!value) return { isValid: false, errorText: 'Please enter a FLO address' }
+                        return {
+                            isValid: floCrypto.validateFloID(value),
+                            errorText: `Invalid FLO address.<br> It usually starts with "F"`
+                        }
+                    }
+                },
+                {
+                    selector: '[data-bch-address]',
+                    customValidation: (value) => {
+                        if (!value) return { isValid: false, errorText: 'Please enter a BCH address' }
+                        return {
+                            isValid: bchOperator.validateAddress(value),
+                            errorText: `Invalid address.<br> It usually starts with "1", "3" or "q"`
+                        }
+                    }
+                },
+                {
+                    selector: '.sender-input',
+                    customValidation: (value) => {
+                        if (!value) return { isValid: false, errorText: 'Please enter a BCH address' }
+                        const validate = bchOperator.validateAddress(value)
+                        const isValid = validate !== false
+                        return { isValid, errorText: 'Please enter valid BCH address' }
+                    }
+                },
+                {
+                    selector: '[data-private-key]',
+                    customValidation: (value, inputElem) => {
+                        if (!value) return { isValid: false, errorText: 'Please enter a private key' }
+                        if (floCrypto.getPubKeyHex(value)) {
+                            const forAddress = inputElem.dataset.forAddress
+                            if (!forAddress) return { isValid: true }
+                            return {
+                                isValid: bchOperator.verifyKey(forAddress, value),
+                                errorText: `This private key does not match the address ${forAddress}`
+                            }
+                        } else
+                            return {
+                                isValid: false,
+                                errorText: `Invalid private key. Please check and try again.`
+                            }
+                    }
+                },
+                {
+                    selector: '.amount-input',
+                    customValidation: (value) => {
+                        if (!value) return { isValid: false, errorText: 'Please enter an amount' }
+                        const minValidAmount = {
+                            bch: 0.000006,
+                            inr: roundUp(0.000006 * globalExchangeRate.inr, 2),
+                            usd: roundUp(0.000006 * globalExchangeRate.usd, 2),
+                        }
+                        return {
+                            isValid: parseFloat(value) >= minValidAmount[selectedCurrency.value],
+                            errorText: `Amount must be greater than ${getConvertedAmount(minValidAmount.bch, { shouldFormatAmount: true })} ${selectedCurrency.value.toUpperCase()}`
+                        }
+                    }
+                }
+            ]
+        }
+
+        // routing logic
+        const router = new Router({
+            routingStart(state) {
+                if ("scrollRestoration" in history) {
+                    history.scrollRestoration = "manual";
+                }
+                window.scrollTo(0, 0);
+            },
+            routingEnd(state) {
+                const { page, lastPage } = state
+                const animOptions = {
+                    duration: 100,
+                    fill: 'forwards',
+                }
+                let previousActiveElement = getRef('main_navbar').querySelector('.nav-item--active')
+                let currentActiveElement = document.querySelector(`.nav-item[href="#/${page}"]`)
+                if (page === '' || page === 'check_details') {
+                    currentActiveElement = document.querySelector(`.nav-item[href="#/check_details"]`)
+                }
+                if (currentActiveElement) {
+                    if (getRef('main_navbar').classList.contains('hidden')) {
+                        getRef('main_navbar').classList.remove('hide-away')
+                        getRef('main_navbar').classList.remove('hidden')
+                        getRef('main_navbar').animate([
+                            {
+                                transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
+                                opacity: 0,
+                            },
+                            {
+                                transform: `none`,
+                                opacity: 1,
+                            },
+                        ], {
+                            duration: 100,
+                            fill: 'forwards',
+                            easing: 'ease'
+                        })
+                    }
+                    getRef('main_header').classList.remove('hidden')
+                    const previousActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(previousActiveElement) || -1
+                    const currentActiveElementIndex = [...getRef('main_navbar').querySelectorAll('.nav-item')].indexOf(currentActiveElement) || 0
+                    const isOnTop = previousActiveElementIndex < currentActiveElementIndex
+                    const currentIndicator = html.node`<div class="nav-item__indicator"></div>`;
+                    let previousIndicator = getRef('main_navbar').querySelector('.nav-item__indicator')
+                    if (!previousIndicator) {
+                        previousIndicator = currentIndicator.cloneNode(true)
+                        previousActiveElement = currentActiveElement
+                        previousActiveElement.append(previousIndicator)
+                    } else if (currentActiveElementIndex !== previousActiveElementIndex) {
+                        const indicatorDimensions = previousIndicator.getBoundingClientRect()
+                        const currentActiveElementDimensions = currentActiveElement.getBoundingClientRect()
+                        let moveBy
+                        if (isMobileView) {
+                            moveBy = ((currentActiveElementDimensions.width - indicatorDimensions.width) / 2) + indicatorDimensions.width
+                        } else {
+                            moveBy = ((currentActiveElementDimensions.height - indicatorDimensions.height) / 2) + indicatorDimensions.height
+                        }
+                        indicatorObserver.observe(previousIndicator)
+                        previousIndicator.animate([
+                            {
+                                transform: 'none',
+                                opacity: 1,
+                            },
+                            {
+                                transform: `translate${isMobileView ? 'X' : 'Y'}(${isOnTop ? `${moveBy}px` : `-${moveBy}px`})`,
+                                opacity: 0,
+                            },
+                        ], { ...animOptions, easing: 'ease-in' }).onfinish = () => {
+                            previousIndicator.remove()
+                        }
+                        tempData = {
+                            currentActiveElement,
+                            currentIndicator,
+                            isOnTop,
+                            animOptions,
+                            moveBy
+                        }
+                    }
+                    previousActiveElement.classList.remove('nav-item--active');
+                    currentActiveElement.classList.add('nav-item--active')
+                } else {
+                    if (!getRef('main_navbar').classList.contains('hidden')) {
+                        getRef('main_navbar').classList.add('hide-away')
+                        getRef('main_navbar').animate([
+                            {
+                                transform: `none`,
+                                opacity: 1,
+                            },
+                            {
+                                transform: isMobileView ? `translateY(100%)` : `translateX(-100%)`,
+                                opacity: 0,
+                            },
+                        ], {
+                            duration: 200,
+                            fill: 'forwards',
+                            easing: 'ease'
+                        }).onfinish = () => {
+                            getRef('main_navbar').classList.add('hidden')
+                        }
+                        getRef('main_header').classList.add('hidden')
+                    }
+                }
+                if (lastPage !== page) {
+                    closePopup()
+                }
+                document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency.value])
+            }
+        })
+        function renderHome(state) {
+            const { params: { query, currency } } = state
+            renderElem(getRef('pages_container'), html`
+                <div id="check_details" class="page" data-sm-containment>
+                    <section class="flex gap-0-5 margin-bottom-1-5">
+                        <button id="gen_new_addr_btn" class="button primary-action interact" onclick=${generateNewAddress}>
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24" /> </g> <g> <g> <path d="M18.32,4.26C16.84,3.05,15.01,2.25,13,2.05v2.02c1.46,0.18,2.79,0.76,3.9,1.62L18.32,4.26z M19.93,11h2.02 c-0.2-2.01-1-3.84-2.21-5.32L18.31,7.1C19.17,8.21,19.75,9.54,19.93,11z M18.31,16.9l1.43,1.43c1.21-1.48,2.01-3.32,2.21-5.32 h-2.02C19.75,14.46,19.17,15.79,18.31,16.9z M13,19.93v2.02c2.01-0.2,3.84-1,5.32-2.21l-1.43-1.43 C15.79,19.17,14.46,19.75,13,19.93z M13,12V7h-2v5H7l5,5l5-5H13z M11,19.93v2.02c-5.05-0.5-9-4.76-9-9.95s3.95-9.45,9-9.95v2.02 C7.05,4.56,4,7.92,4,12S7.05,19.44,11,19.93z" /> </g> </g> </svg>
+                            Generate BCH address
+                        </button>
+                        <button id="retrieve_addr_btn" class="button primary-action interact"
+                            onclick="openPopup('retrieve_bch_addr_popup')">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M14 12c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2 2-.9 2-2zm-2-9c-4.97 0-9 4.03-9 9H0l4 4 4-4H5c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.51 0-2.91-.49-4.06-1.3l-1.42 1.44C8.04 20.3 9.94 21 12 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z" /> </svg>
+                            Retrieve BCH address
+                        </button>
+                    </section>
+                    <section>
+                        <sm-form class="flex margin-bottom-2" style="--gap: 0.5rem;">
+                            <sm-input type="search" id="search_query_input" value=${query || ''}
+                                placeholder="Search BCH address or transaction ID" required>
+                                <svg slot="icon" class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" /> </svg>
+                            </sm-input>
+                            <button id="check_address_button" class="button button--primary cta" style="height: 3.2rem;" onclick=${handleAddressCheck}
+                                type="submit" disabled>Search</button>
+                        </sm-form>
+                        <div id="address_details" class="hidden">
+                            <div id="address_balance_card" class="grid gap-1 hidden">
+                                <div class="flex">
+                                    <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z" /> <circle cx="16" cy="12" r="1.5" /> </svg>
+                                    Balance
+                                </div>
+                                <output id="address_balance" class="amount-shown"></output>
+                            </div>
+                            <div class="flex flex-direction-column margin-bottom-1 sticky top-0 gap-0-5"
+                                style="background-color: rgba(var(--foreground-color), 1); z-index: 2">
+                                <div class="flex align-center gap-0-5 space-between">
+                                    <h4>Transactions</h4>
+                                    <sm-chips id="filter_selector" onchange=${(e) => render.transactions(getRef('search_query_input').value)}>
+                                        <sm-chip value="all" selected>All</sm-chip>
+                                        <sm-chip value="sent">Sent</sm-chip>
+                                        <sm-chip value="received">Received</sm-chip>
+                                    </sm-chips>
+                                </div>
+                                ${isHistoricApiAvailable && selectedCurrency.value !== 'bch' ? html`
+                                    <sm-switch class="margin-left-auto"
+                                        onchange="handleValuationTypeChange(event)">
+                                        <p slot="left" class="margin-right-0-5">
+                                            Show current value
+                                        </p>
+                                    </sm-switch>
+                                `: ''}
+                            </div>
+                            <ul id="transactions_list" class="observe-empty-state"></ul>
+                            <div class="empty-state align-self-center text-center">Balance and transactions will appear here
+                            </div>
+                        </div>
+                        <div id="tx_details" class="grid gap-2"></div>
+                    </section>
+                </div>
+            `)
+            if (query) {
+                render.queryResult(query)
+                if (!currency && selectedCurrency.value !== 'bch' && !location.hash.includes(selectedCurrency.value)) {
+                    history.replaceState(null, null, `${location.hash}&currency=${selectedCurrency.value}`)
+                }
+                if (currency && currency !== selectedCurrency.value) {
+                    selectedCurrency.value = currency
+                    document.getElementById('currency_selector').value = selectedCurrency.value;
+                    document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency.value])
+                }
+            }
+        }
+        router.addRoute('', renderHome)
+        router.addRoute('check_details', renderHome)
+        router.addRoute('send', (state) => {
+            renderElem(getRef('pages_container'), html.node/*html*/`
+                <div id="send" class="page">
+                    <sm-form id="send_tx" onvalid=${handleValidForm} oninvalid=${handleInvalidForm} skip-submit>
+                        <div class="margin-bottom-0-5">
+                            <div class="flex align-center space-between margin-bottom-0-5">
+                                <h3>Senders</h3>
+                                <button class="button button--small" id="check_balance" onclick=${checkBalance}>Check
+                                    Balance</button>
+                            </div>
+                            <div id="sender_container"></div>
+                            <div class="flex align-center balance-wrapper">
+                                <span>Total balance:</span>
+                                <output id="total_balance" class="amount-shown" style="margin-left: 0.3rem;"></output>
+                            </div>
+                            <button id="add_sender" class=" button--small" onclick=${addSenderInput}>
+                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /> </svg>
+                                Add sender
+                            </button>
+                        </div>
+                        <div>
+                            <h3 class="margin-bottom-0-5">Receivers</h3>
+                            <div id="receiver_container"></div>
+                            <button id="add_receiver" class=" button--small" onclick=${addReceiverInput}>
+                                <svg class="icon margin-right-0-5" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /> </svg>
+                                Add receiver</button>
+                        </div>
+                        <div id="fees_section" class="grid gap-0-5">
+                            <div class="flex align-center space-between">
+                                <h4>Fees</h4>
+                                <sm-chips id="fees_selector" onchange=${renderFeesUI}>
+                                    <sm-chip value="suggested" selected>Suggested</sm-chip>
+                                    <sm-chip value="custom">Custom</sm-chip>
+                                </sm-chips>
+                            </div>
+                            <div id="fees_wrapper" class="grid gap-0-5 align-center"></div>
+                        </div>
+                        <div id="error_section"></div>
+                        <div class="multi-state-button margin-bottom-1-5">
+                            <button id="send_transaction" type="submit" class="button button--primary cta w-100" onclick=${handleSendTransaction}
+                                disabled>Send</button>
+                        </div>
+                    </sm-form>
+                </div>
+            `);
+            addSenderInput();
+            addReceiverInput();
+        })
+        router.addRoute('convert', (state) => {
+            const { params: { from: convertingFrom = 'flo' } } = state;
+            let privateKeyConversionDescription = '';
+            let addressConversionDescription = null;
+            let addressForConversion = ''
+            switch (convertingFrom) {
+                case 'flo':
+                    privateKeyConversionDescription = 'Convert FLO private key to corresponding bch | ETH address & private key';
+                    addressConversionDescription = 'Convert FLO address to BCH address';
+                    addressForConversion = html`<sm-input id="address_for_conversion" placeholder="FLO Address" data-flo-address animate required></sm-input>`
+                    break;
+                case 'bch':
+                    privateKeyConversionDescription = 'Convert BCH private key to corresponding FLO | ETH address & private key';
+                    addressConversionDescription = 'Convert BCH address to FLO address';
+                    addressForConversion = html`<sm-input id="address_for_conversion" placeholder="BCH address" data-bch-address animate required></sm-input>`
+                    break;
+                case 'eth':
+                    privateKeyConversionDescription = 'Convert ETH private key to corresponding FLO | BCH address & private key';
+                    break;
+            }
+            renderElem(getRef('pages_container'), html.node/*html*/`
+                <div id="convert" class="page flex flex-direction-column gap-1-5" data-sm-containment>
+                    <sm-chips id="conversion_view_selector" onchange=${(e) => location.hash = `#/convert?from=${e.target.value}`}>
+                        <sm-chip value="flo" ?selected=${convertingFrom === 'flo'}>FLO</sm-chip>
+                        <sm-chip value="bch" ?selected=${convertingFrom === 'bch'}>BCH</sm-chip>
+                        <sm-chip value="eth" ?selected=${convertingFrom === 'eth'}>ETH</sm-chip>
+                    </sm-chips>
+                    <div id="key_conversion_content" class="grid gap-1-5">                
+                        <div class="grid gap-1-5">
+                            <div class="grid gap-0-3">
+                                <h3>Private key converter</h3>
+                                <p>${privateKeyConversionDescription}</p>
+                            </div>
+                            <sm-form oninvalid=${() => renderElem(getRef('private_key_conversion_result'), html``)}>
+                                <div class="input-action-wrapper">
+                                    <sm-input type="password" id="private_key_for_conversion" class="password-field" placeholder=${`${convertingFrom.toUpperCase()} private key`} data-private-key required animate>
+                                        <label slot="right" class="interact">
+                                            <input type="checkbox" class="hidden" autocomplete="off" readonly onchange="togglePrivateKeyVisibility(this)">
+                                            <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" /> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" /> </svg>
+                                            <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" /> </svg>
+                                        </label>
+                                    </sm-input>
+                                    <button type="submit" onclick=${() => convertPrivateKey(convertingFrom)} class="button button--primary cta" disabled>Convert</button>
+                                </div>
+                            </sm-form>
+                            <ul id="private_key_conversion_result" class="grid gap-0-5"></ul>
+                        </div>
+                        ${addressConversionDescription ? html`
+                            <div class="grid gap-1-5">
+                                <div class="grid gap-0-3">
+                                    <h3>Address converter</h3>
+                                    <p class="panel-footer">${addressConversionDescription}</p>
+                                </div>  
+                                <sm-form class="flex" oninvalid=${() => renderElem(getRef('address_conversion_result'), html``)}>
+                                    <div class="input-action-wrapper">
+                                        ${addressForConversion}
+                                        <button class="button--primary justify-self-center cta" onclick=${() => convertAddress(convertingFrom)} type="submit" disabled>
+                                            Convert
+                                        </button>
+                                    </div>
+                                </sm-form>
+                                <div id="address_conversion_result" class="converted-card"></div>
+                            </div>
+                        `: ''}
+                    </div>
+                </div>
+            `)
+        })
+
+        function toYDM(timestamp) {
+            if (String(timestamp).length < 13) timestamp *= 1000
+            const date = new Date(timestamp)
+            return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`
+        }
+        let showCurrentValue = signal(false)
+        function handleValuationTypeChange(e) {
+            showCurrentValue.value = e.target.checked;
+            document.querySelectorAll('transaction-card').forEach(transactionCard => transactionCard.render())
+            localStorage.setItem('bch-wallet-show-current-value', showCurrentValue.value)
+        }
+        class TransactionCard extends HTMLElement {
+            render = (transactionDetails) => {
+                if (transactionDetails)
+                    this.transactionDetails = transactionDetails
+                let { address, amount, time, txid, sender, receiver, type, block, historicPrice } = this.transactionDetails;
+                let transactionReceiver
+                let icon
+                const transactingAddresses = (receiver || sender || [])
+                const transactingAddressesLinks = transactingAddresses
+                    .slice(0, 2).map(address => {
+                        const cash = bchOperator.toCashAddr(address).replace('bitcoincash:', '');
+                        return html`<a href="${`#/check_details?query=${cash}`}" class="tx-participant wrap-around">${cash}</a>`
+                    })
+                const isUnconfirmed = block < 0 || block === null || block === undefined
+                if (type === 'out') {
+                    transactionReceiver = html`Sent to ${transactingAddressesLinks}`;
+                    icon = svg`<svg class="icon sent" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>`;
+                } else if (type === 'in') {
+                    transactionReceiver = html`Received from ${transactingAddressesLinks}`;
+                    icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>`;
+                } else if (type === 'self') {
+                    transactionReceiver = `Sent to self`;
+                    icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="m19 8-4 4h3c0 3.31-2.69 6-6 6-1.01 0-1.97-.25-2.8-.7l-1.46 1.46C8.97 19.54 10.43 20 12 20c4.42 0 8-3.58 8-8h3l-4-4zM6 12c0-3.31 2.69-6 6-6 1.01 0 1.97.25 2.8.7l1.46-1.46C15.03 4.46 13.57 4 12 4c-4.42 0-8 3.58-8 8H1l4 4 4-4H6z"/></svg>`;
+                }
+                if (isUnconfirmed) {
+                    icon = svg`<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><path d="M6,2l0.01,6L10,12l-3.99,4.01L6,22h12v-6l-4-4l4-3.99V2H6z M16,16.5V20H8v-3.5l4-4L16,16.5z"/></g></svg>`;
+                }
+                const queriedAddress = router.state.params?.query || getRef('search_query_input').value.trim()
+                const isSender = type === 'out' || type === 'self'
+                const className = `transaction grid ${type} ${isUnconfirmed ? 'unconfirmed-tx' : ''}`;
+                const valuationDelta = historicPrice && historicPrice[selectedCurrency.value] ? getConvertedAmount(amount) - getConvertedAmount(amount, { onDate: time }) : 0;
+                const amountOptions = { shouldFormatAmount: true }
+                if (selectedCurrency.value !== 'bch' && !showCurrentValue.value && historicPrice && historicPrice[selectedCurrency.value]) {
+                    amountOptions.onDate = time;
+                }
+                renderElem(this, html`
+                    <li class="${className}" .dataset=${{ txid, transactingAddresses: transactingAddresses.slice(2), currency: selectedCurrency.value }}>
+                        <div class="transaction__icon">${icon}</div>
+                        <div class="grid gap-0-5">
+                            <div class="flex gap-1 space-between">
+                                ${time ? html`
+                                    <time class="transaction__time">${getFormattedTime(time)}</time>
+                                ` : ''}
+                                <div class="transaction__amount">${getConvertedAmount(amount, amountOptions)}</div>
+                            </div>
+                            <div class="transaction__receiver">
+                                ${transactionReceiver}
+                                ${transactingAddresses.length > 2 ? html`<button onclick=${showAllAddresses} class="button button--small show-more" title="See all addresses">... +${transactingAddresses.length - 2} more</button>` : ''}
+                            </div>
+                            <div class="flex gap-0-5 flex-wrap align-center">
+                                <a class="button button--small gap-0-3 align-center button--colored transaction__id" href="${`#/check_details?query=${txid}`}">
+                                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                                    View details
+                                </a>
+                                ${isSender && !block ? html`
+                                    <div class="multi-state-button">
+                                        <button class="button button--small gap-0-3" onclick=${(e) => initFeeChange(e, txid)} title="Resend transaction with greater fees to reduce confirmation time">
+                                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
+                                            Increase fee
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            ${isUnconfirmed ? html`
+                                <p class="pending-badge">
+                                    ${type === 'out' ? `
+                                        Confirmation pending: Amount will be deducted after transaction is confirmed.
+                                    `: `
+                                        Confirmation pending: Balance will be updated after transaction is confirmed.
+                                    `}
+                                    ${isSender && !block ? ' Try increasing fee to speed up confirmation' : ''}
+                                </p>
+                            ` : ''}
+                        </div>
+                    </li>
+                `);
+            }
+        }
+        window.customElements.define('transaction-card', TransactionCard);
+        async function getHistoricPrice(dates = []) {
+            try {
+                if (!dates.length || historicPriceApis.list.length === 0) return [];
+                if (!Array.isArray(dates)) dates = [dates];
+                let timeout
+                const datesToFetch = dates.filter(date => !mappedHistoricPrices.has(date));
+                const abortController = new AbortController();
+                const { signal } = abortController;
+                if (datesToFetch.length) {
+                    timeout = setTimeout(() => {
+                        abortController.abort()
+                        throw new Error(`Historic price data is taking longer than usual to load. Historic prices won't be shown`)
+                    }, 20000)
+                    const historicPrices = await fetch(`${historicPriceApis.list[historicPriceApis.active]}/price-history?dates=${dates.join()}`, {
+                        signal
+                    }).then(res => res.json())
+                    clearTimeout(timeout)
+                    historicPrices.forEach(price => {
+                        // map historic price to txs
+                        // historic price is per day, so we need to find the price for the day of the tx
+                        mappedHistoricPrices.set(toYDM(price.date), {
+                            usd: price.usd,
+                            inr: price.inr
+                        })
+                    })
+                }
+                return dates.map(date => mappedHistoricPrices.get(date))
+            } catch (err) {
+                if (historicPriceApis.active < historicPriceApis.list.length - 1) {
+                    historicPriceApis.active++
+                    return getHistoricPrice(dates)
+                } else {
+                    showCurrentValue.value = true;
+                    localStorage.setItem('bch-wallet-show-current-value', showCurrentValue.value);
+                    notify('Could not fetch historic price data. Showing current value instead', 'error')
+                    return []
+                }
+            }
+        }
+
+        let transactionsLazyLoader
+        let txDetailsAbortController
+        const mappedHistoricPrices = new Map()
+        const render = {
+            transactionCard(transactionDetails) {
+                const transactionCard = document.createElement('transaction-card')
+                transactionCard.render(transactionDetails)
+                return transactionCard
+            },
+            async transactions(address) {
+                try {
+                    if (!address || address === '' || !bchOperator.validateAddress(address)) return;
+                    getRef('address_details').classList.remove('hidden')
+                    getRef('transactions_list').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
+                    getRef('address_balance').innerHTML = '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
+                    const { txs, balance } = await bchOperator.getAddressData(address)
+                    getRef('address_balance').value = getConvertedAmount(balance, { shouldFormatAmount: true });
+                    getRef('address_balance').dataset.bchAmount = balance;
+                    getRef('address_balance').parentElement.classList.remove('hidden')
+                    getRef('filter_selector').classList.remove('hidden')
+                    // render transactions
+                    if (txs.length) {
+                        const dates = txs.map(tx => toYDM(tx.time))
+                        await getHistoricPrice(dates);
+                        txs.forEach(tx => {
+                            const historicPrice = mappedHistoricPrices.get(toYDM(tx.time))
+                            if (historicPrice) {
+                                tx.historicPrice = historicPrice
+                            }
+                        })
+                        let allTransactions = txs;
+                        const filter = getRef('filter_selector').value;
+                        if (filter !== 'all') {
+                            allTransactions = allTransactions.filter(t => filter === 'sent' ? t.type === 'out' : t.type === 'in')
+                        }
+                        if (transactionsLazyLoader) {
+                            transactionsLazyLoader.update(allTransactions)
+                        } else {
+                            transactionsLazyLoader = new LazyLoader('#transactions_list', allTransactions, render.transactionCard)
+                        }
+                        transactionsLazyLoader.init()
+                        getRef('transactions_list').previousElementSibling.classList.remove('hidden');
+                    } else {
+                        getRef('transactions_list').textContent = 'No transactions found';
+                    }
+                } catch (err) {
+                    notify(err, 'error');
+                    getRef('filter_selector').classList.add('hidden')
+                    getRef('transactions_list').textContent = `The data service is temporarily unavailable due to over-usage. Please try again in an hour.`;
+                } finally {
+                    getRef('check_address_button').disabled = false
+                }
+            },
+            addressDetails(address) {
+                getRef('check_address_button').disabled = true;
+                render.transactions(address)
+            },
+            async txDetails(txid) {
+                getRef('tx_details').classList.remove('hidden')
+                renderElem(getRef('tx_details'), html`<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>`);
+                if (txDetailsAbortController) {
+                    txDetailsAbortController.abort()
+                }
+                txDetailsAbortController = new AbortController();
+                bchOperator.getTx(txid).then(async result => {
+                    const { block, time, size, fee, inputs, outputs, confirmations = 0, total_input_value, total_output_value } = result;
+                    const isUnconfirmed = block < 0 || block === null || block === undefined;
+                    let transactionAmount = 0;
+                    if (outputs.length > 1) {
+                        let isSelfTransaction = outputs.length === 2 && outputs[0].address === outputs[1].address;
+                        transactionAmount = outputs.reduce((acc, { address, value }) => {
+                            if (!isSelfTransaction && inputs.find(input => input.address === address)) return acc;
+                            return acc + value;
+                        }, 0);
+                    } else {
+                        transactionAmount = outputs[0].value;
+                    }
+                    let amountOptions = { shouldFormatAmount: true }
+                    let dataset = {}
+                    if (selectedCurrency.value !== 'bch' && !mappedHistoricPrices.get(toYDM(time)))
+                        await getHistoricPrice(toYDM(time))
+                    effect(() => {
+                        if (selectedCurrency.value !== 'bch' && !showCurrentValue.value && mappedHistoricPrices.has(toYDM(time))) {
+                            amountOptions.onDate = time;
+                            dataset.onDate = time
+                        } else {
+                            dataset.onDate = null
+                            amountOptions.onDate = null
+                        }
+                        renderElem(getRef('tx_details'), html`
+                            <div id="tx_details__header" class="flex align-center gap-1 flex-wrap">
+                                <h3>Transaction Details</h3>
+                                <div class="flex align-center gap-1 space-between flex-1">
+                                    ${time ? html`
+                                        <time>${getFormattedTime(time)}</time>
+                                    `: ''}
+                                    ${isUnconfirmed ? html` <h4 id="tx_status">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+                                        Unconfirmed
+                                    </h4> ` : ''}
+                                </div>
+                            </div>
+                            <div class="flex flex-direction-column">
+                                <p>Amount</p>
+                                <div id="tx_amount" .dataset=${{ bchAmount: transactionAmount, ...dataset }}>${getConvertedAmount(transactionAmount, amountOptions)}</div>
+                                ${selectedCurrency.value !== 'bch' && isHistoricApiAvailable ? html`
+                                    <sm-switch ?checked=${showCurrentValue.value} class="align-self-start"
+                                        onchange=${handleValuationTypeChange}>
+                                        <p slot="left" class="margin-right-0-5">
+                                            Show current value
+                                        </p>
+                                    </sm-switch>
+                                ` : ''}
+                            </div>
+                            ${isUnconfirmed ? html`
+                                <div class="flex flex-direction-column gap-0-5" style="padding: 1rem;border-radius:0.5rem; border: solid thin rgba(var(--text-color),0.3); background-color: rgba(var(--text-color),0.02)">
+                                    <h3>
+                                        Taking too long to confirm?
+                                    </h3>
+                                    <p>
+                                        You can increase the fee to speed up confirmation.
+                                    </p>
+                                    <div class="multi-state-button margin-right-auto">
+                                        <button class="button gap-0-3 button--primary" onclick=${e => initFeeChange(e, txid)} title="Resend transaction with greater fees to reduce confirmation time">
+                                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
+                                            Increase fee
+                                        </button>
+                                    </div>
+                                </div>
+                            ` : ''}
+                            <div id="tx_technicals" class="justify-self-center details-wrapper">
+                                <div class="tx-detail">
+                                    <div class="flex align-center gap-0-3">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                                        <div>Confirmations</div>
+                                    </div>
+                                    <div style="font-size: 1.5rem">${confirmations}</div>
+                                </div>
+                                ${!isUnconfirmed ? html`
+                                    <div class="tx-detail">
+                                        <div class="flex align-center gap-0-3">
+                                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><g><path d="M3,3v8h8V3H3z M9,9H5V5h4V9z M3,13v8h8v-8H3z M9,19H5v-4h4V19z M13,3v8h8V3H13z M19,9h-4V5h4V9z M13,13v8h8v-8H13z M19,19h-4v-4h4V19z"/></g></g></g></svg>
+                                            <div>Block</div>
+                                        </div>
+                                        <div>${block}</div>
+                                    </div>
+                                ` : ''}
+                                <div class="tx-detail">
+                                    <div class="flex align-center gap-0-3">
+                                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15 4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zM3 12c0-2.61 1.67-4.83 4-5.65V4.26C3.55 5.15 1 8.27 1 12s2.55 6.85 6 7.74v-2.09c-2.33-.82-4-3.04-4-5.65z"/></svg>
+                                        <div>Fee</div>
+                                    </div>
+                                    <div .dataset=${{ bchAmount: fee, ...dataset }}>${getConvertedAmount(fee, amountOptions)}</div>
+                                </div>
+                            </div>
+                            <details class="margin-bottom-1-5 justify-self-center w-100">
+                                <summary>
+                                    More details
+                                    <svg class="icon down-arrow" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M24 24H0V0h24v24z" fill="none" opacity=".87"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6-1.41-1.41z"/></svg>    
+                                </summary>
+                                <div class="details-wrapper">
+                                    <div class="tx-detail">
+                                        <div class="flex align-center gap-0-3">
+                                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/></svg>
+                                            <div>Total Inputs</div>
+                                        </div>
+                                        <div .dataset=${{ bchAmount: total_input_value, ...dataset }}>${getConvertedAmount(total_input_value, amountOptions)}</div>
+                                    </div>
+                                    <div class="tx-detail">
+                                        <div class="flex align-center gap-0-3">
+                                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
+                                            <div>Total Outputs</div>
+                                        </div>
+                                        <div .dataset=${{ bchAmount: total_output_value, ...dataset }}>${getConvertedAmount(total_output_value, amountOptions)}</div>
+                                    </div>
+                                    <div class="tx-detail">
+                                        <div class="flex align-center gap-0-3">
+                                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M2 20h20v-4H2v4zm2-3h2v2H4v-2zM2 4v4h20V4H2zm4 3H4V5h2v2zm-4 7h20v-4H2v4zm2-3h2v2H4v-2z"/></svg>
+                                            <div>Size</div>
+                                        </div>
+                                        <div>${size} bytes</div>
+                                    </div>
+                                </div>
+                            </details>
+                            <div id="in_out_wrapper" class="flex flex-wrap">
+                                <div>
+                                    <div class="flex align-center space-between margin-bottom-1" style="padding: 0.5rem 1rem;">
+                                        <b>Sender addresses</b>
+                                        <b>Amount</b>
+                                    </div>
+                                    <ul>
+                                        ${inputs.map(input => {
+                            const cash = bchOperator.toCashAddr(input.address).replace('bitcoincash:', '');
+                            return html`
+                                                <li class="in-out-card">
+                                                    <a href="${`#/check_details?query=${cash}`}" class="input-address wrap-around">${cash}</a>
+                                                    <div class="input-value" .dataset=${{ bchAmount: input.value, ...dataset }}>${getConvertedAmount(input.value, amountOptions)}</div>
+                                                </li>
+                                            `
+                        })}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <div class="flex align-center space-between margin-bottom-1" style="padding: 0.5rem 1rem;">
+                                        <b>Receiver addresses</b>
+                                        <b>Amount</b>
+                                    </div>
+                                    <ul>
+                                        ${outputs.map(output => {
+                            const cash = bchOperator.toCashAddr(output.address).replace('bitcoincash:', '');
+                            return html`
+                                                <li class="in-out-card">
+                                                    <a href="${`#/check_details?query=${cash}`}" class="output-address wrap-around">${cash}</a>
+                                                    <div class="output-value" .dataset=${{ bchAmount: output.value, ...dataset }}>${getConvertedAmount(output.value, amountOptions)}</div>
+                                                </li>
+                                            `
+                        })}
+                                    </ul>
+                                </div>
+                            </div>
+                        `)
+                    })
+                }).catch(err => {
+                    if (err.name === 'AbortError') return;
+                    notify(err, 'error')
+                    renderElem(getRef('tx_details'), html``)
+                })
+            },
+            queryResult(query) {
+                const type = checkQueryStringType(query);
+                console.log(type)
+                if (type === 'address') {
+                    getRef('tx_details').classList.add('hidden')
+                    render.addressDetails(query)
+                } else if (type === 'txid') {
+                    getRef('address_details').classList.add('hidden')
+                    render.txDetails(query)
+                    if (transactionsLazyLoader) {
+                        transactionsLazyLoader.clear()
+                        transactionsLazyLoader = null
+                    }
+                } else {
+                    if (transactionsLazyLoader) {
+                        transactionsLazyLoader.clear()
+                        transactionsLazyLoader = null
+                    }
+                    getRef('address_details').classList.add('hidden')
+                    getRef('tx_details').classList.add('hidden')
+                    notify('Invalid address or transaction id', 'error');
+                }
+            }
+        }
+        const currencyIcons = {
+            bch: ` <svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M17.06,11.57C17.65,10.88,18,9.98,18,9c0-1.86-1.27-3.43-3-3.87L15,3h-2v2h-2V3H9v2H6v2h2v10H6v2h3v2h2v-2h2v2h2v-2 c2.21,0,4-1.79,4-4C19,13.55,18.22,12.27,17.06,11.57z M10,7h4c1.1,0,2,0.9,2,2s-0.9,2-2,2h-4V7z M15,17h-5v-4h5c1.1,0,2,0.9,2,2 S16.1,17,15,17z"> </path> </g> </svg> `,
+            usd: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>`,
+            inr: `<svg class="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><g><rect fill="none" height="24" width="24"/></g><g><g><path d="M13.66,7C13.1,5.82,11.9,5,10.5,5L6,5V3h12v2l-3.26,0c0.48,0.58,0.84,1.26,1.05,2L18,7v2l-2.02,0c-0.25,2.8-2.61,5-5.48,5 H9.77l6.73,7h-2.77L7,14v-2h3.5c1.76,0,3.22-1.3,3.46-3L6,9V7L13.66,7z"/></g></g></svg>`
+        }
+        function formatAmount(amount = 0, currency = selectedCurrency.value) {
+            // check if amount is a string and convert it to a number
+            if (typeof amount === 'string') {
+                amount = parseFloat(amount)
+            }
+            if (!amount)
+                return '0';
+            return amount.toLocaleString(undefined, { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: selectedCurrency.value === 'bch' ? 8 : 2 })
+        }
+        let globalExchangeRate = {}
+        async function getExchangeRate() {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const responses = await Promise.all(['usd', 'inr'].map(cur => fetch(`https://bitpay.com/api/rates/bch/${cur}`)))
+                    const rates = await Promise.all(responses.map(res => res.json()))
+                    rates.forEach(rate => {
+                        globalExchangeRate[rate.code.toLowerCase()] = rate.rate
+                    })
+                    globalExchangeRate.bch = 1;
+                    resolve(globalExchangeRate)
+                } catch (err) {
+                    reject(err)
+                }
+            })
+        }
+        function getConvertedAmount(amount, { shouldFormatAmount = false, onDate } = {}) {
+            // check if amount is a string and convert it to a number
+            if (typeof amount === 'string') {
+                amount = parseFloat(amount)
+            }
+            let convertedAmount = amount;
+            if (onDate && selectedCurrency.value !== 'bch') {
+                const historicPrice = mappedHistoricPrices.get(toYDM(onDate));
+                if (historicPrice) {
+                    convertedAmount = parseFloat((amount * historicPrice[selectedCurrency.value]).toFixed(8))
+                } else {
+                    convertedAmount = parseFloat((amount * globalExchangeRate[selectedCurrency.value]).toFixed(8))
+                }
+            } else if (globalExchangeRate[selectedCurrency.value])
+                convertedAmount = parseFloat((amount * globalExchangeRate[selectedCurrency.value]).toFixed(8))
+            if (shouldFormatAmount)
+                convertedAmount = formatAmount(convertedAmount)
+            return convertedAmount
+        }
+        function roundUp(amount, precision = 2) {
+            return parseFloat((Math.ceil(amount * Math.pow(10, precision)) / Math.pow(10, precision)).toFixed(precision))
+        }
+        let previouslySelectedCurrency = localStorage.getItem('bch-wallet-currency') || 'bch';
+        getRef('currency_selector').addEventListener('change', e => {
+            selectedCurrency.value = e.target.value;
+            if (router.state.lastPage === 'check_details') {
+                if (location.hash.includes('currency')) {
+                    history.replaceState(null, null, `${location.hash.split('&')[0]}&currency=${selectedCurrency.value}`)
+                } else {
+                    history.replaceState(null, null, `${location.hash}&currency=${selectedCurrency.value}`)
+                }
+            }
+            localStorage.setItem('bch-wallet-currency', selectedCurrency.value);
+            document.querySelectorAll('.currency-symbol').forEach(el => el.innerHTML = currencyIcons[selectedCurrency.value])
+            document.querySelectorAll('transaction-card').forEach(el => el.render())
+            document.querySelectorAll('.amount-shown').forEach(el => {
+                if (el.tagName.includes('SM-')) {
+                    const originalAmount = parseFloat(el.value.trim());
+                    let convertedAmount
+                    const rupeeRate = (globalExchangeRate.inr / globalExchangeRate.usd);
+                    switch (previouslySelectedCurrency) {
+                        case 'usd':
+                            if (selectedCurrency.value === 'inr')
+                                convertedAmount = roundUp(originalAmount * rupeeRate)
+                            else
+                                convertedAmount = roundUp((originalAmount / globalExchangeRate.usd), 8)
+                            break;
+                        case 'inr':
+                            if (selectedCurrency.value === 'usd')
+                                convertedAmount = roundUp((originalAmount / rupeeRate))
+                            else
+                                convertedAmount = roundUp((originalAmount / globalExchangeRate.inr), 8)
+                            break;
+                        case 'bch':
+                            convertedAmount = roundUp(originalAmount * globalExchangeRate[selectedCurrency.value])
+                            break;
+                    }
+                    el.value = convertedAmount
+                    el.isValid // trigger validation
+                } else {
+                    if (el.dataset.bchAmount === undefined) return;
+                    el.textContent = getConvertedAmount(el.dataset.bchAmount, { shouldFormatAmount: true, onDate: parseInt(el.dataset.onDate) })
+                }
+            })
+            previouslySelectedCurrency = selectedCurrency.value
+        })
+        function generateNewAddress() {
+            const { wif, address, cashaddr } = bchOperator.newKeys;
+            renderElem(getRef('generated_bch_addr'), html`
+                <div>
+                    <h5>BCH address</h5>
+                    <sm-copy value="${cashaddr.replace('bitcoincash:', '')}">${cashaddr.replace('bitcoincash:', '')}</sm-copy>
+                </div>
+                <div>
+                    <h5>Private Key</h5>
+                    <sm-copy value="${wif}"></sm-copy>
+                </div>
+            `);
+            openPopup('generate_bch_addr_popup');
+        }
+        function retrievebchAddr() {
+            function retrieve() {
+                let wif = getRef('retrieve_bch_addr_field').value.trim();
+                let legacy = bchOperator.address(wif);
+                let cashaddr = bchOperator.toCashAddr(legacy);
+                getRef('recovered_bch_addr_wrapper').classList.remove('hidden')
+                renderElem(getRef('recovered_bch_addr_wrapper'), html`
+                    <div class="grid gap-1">
+                        <div>
+                            <h5>Recovered BCH address</h5>
+                            <sm-copy value="${cashaddr.replace('bitcoincash:', '')}">${cashaddr.replace('bitcoincash:', '')}</sm-copy>
+                        </div>
+                    </div>
+                `)
+            }
+            if (document.startViewTransition) {
+                document.startViewTransition(() => {
+                    retrieve()
+                })
+            } else
+                retrieve()
+        }
+
+        function togglePrivateKeyVisibility(input) {
+            const target = input.closest('sm-input')
+            target.type = target.type === 'password' ? 'text' : 'password';
+            target.focusIn()
+        }
+        function convertPrivateKey(convertFrom) {
+            let keyToConvert = getRef('private_key_for_conversion').value.trim();
+            if (/^[0-9a-fA-F]{64}$/.test(keyToConvert)) {
+                keyToConvert = coinjs.privkey2wif(keyToConvert)
+            }
+            let convertedToFloPrivateKey
+            let convertedToFloAddress
+            let convertedTobchPrivateKey
+            let convertedTobchAddress
+            let convertedToEthPrivateKey
+            let convertedToEthAddress
+            try {
+                switch (convertFrom) {
+                    case 'flo':
+                        convertedTobchPrivateKey = bchOperator.convert.wif(keyToConvert)
+                        convertedTobchAddress = bchOperator.toCashAddr(bchOperator.address(convertedTobchPrivateKey));
+                        convertedToEthPrivateKey = coinjs.wif2privkey(keyToConvert).privkey;
+                        convertedToEthAddress = floEthereum.ethAddressFromPrivateKey(convertedToEthPrivateKey)
+                        break;
+                    case 'bch':
+                        convertedToFloPrivateKey = bchOperator.convert.wif(keyToConvert, bitjs.priv);
+                        convertedToFloAddress = floCrypto.getFloID(convertedToFloPrivateKey);
+                        convertedToEthPrivateKey = coinjs.wif2privkey(keyToConvert).privkey;
+                        convertedToEthAddress = floEthereum.ethAddressFromPrivateKey(convertedToEthPrivateKey);
+                        break;
+                    case 'eth':
+                        convertedTobchPrivateKey = bchOperator.convert.wif(keyToConvert);
+                        convertedTobchAddress = bchOperator.toCashAddr(bchOperator.address(convertedTobchPrivateKey));
+                        convertedToFloPrivateKey = bchOperator.convert.wif(keyToConvert, bitjs.priv);
+                        convertedToFloAddress = floCrypto.getFloID(convertedToFloPrivateKey);
+                        break;
+                }
+                renderElem(getRef('private_key_conversion_result'), html`
+                    ${convertedToFloPrivateKey ? html`
+                        <li class="grid gap-1 converted-card">
+                            <div class="grid">
+                                <span class="label">FLO Address</span>
+                                <sm-copy value="${convertedToFloAddress}"></sm-copy>
+                            </div>
+                            <div class="grid">
+                                <span class="label">FLO Private Key</span>
+                                <sm-copy value="${convertedToFloPrivateKey}"></sm-copy>
+                            </div>
+                        </li>
+                    `: ''}
+                    ${convertedTobchPrivateKey ? html`
+                        <li class="grid gap-1 converted-card">
+                            <div class="grid">
+                                <span class="label">BCH address</span>
+                                <sm-copy value="${convertedTobchAddress.replace('bitcoincash:', '')}">${convertedTobchAddress.replace('bitcoincash:', '')}</sm-copy>
+                            </div>
+                            <div class="grid">
+                                <span class="label">BCH private key</span>
+                                <sm-copy value="${convertedTobchPrivateKey}"></sm-copy>
+                            </div>
+                        </li>
+                    `: ''}
+                    ${convertedToEthPrivateKey ? html`
+                        <li class="grid gap-1 converted-card">
+                            <div class="grid">
+                                <span class="label">ETH Address</span>
+                                <sm-copy value="${convertedToEthAddress}"></sm-copy>
+                            </div>
+                            <div class="grid">
+                                <span class="label">ETH Private Key</span>
+                                <sm-copy value="${convertedToEthPrivateKey}"></sm-copy>
+                            </div>
+                        </li>
+                    `: ''}
+                `)
+            } catch (err) {
+                notify('Invalid private key', 'error')
+                renderElem(getRef('private_key_conversion_result'), html``)
+            }
+        }
+        function convertAddress(convertFrom) {
+            const addressToConvert = getRef('address_for_conversion').value.trim();
+            let convertedAddress
+            let convertedTo
+            try {
+                switch (convertFrom) {
+                    case 'flo':
+                        convertedAddress = bchOperator.toCashAddr(addressToConvert);
+                        convertedTo = 'BCH'
+                        break;
+                    case 'bch':
+                        convertedAddress = floCrypto.toFloID(bchOperator.fromCashAddr(addressToConvert) || addressToConvert);
+                        convertedTo = 'FLO'
+                        break;
+                }
+                if (convertedAddress === addressToConvert) {
+                    notify('Address is already converted', 'error')
+                    return;
+                }
+                renderElem(getRef('address_conversion_result'), html`
+                    <span class="label">${convertedTo} Address</span>
+                    <sm-copy value="${convertedAddress.replace('bitcoincash:', '')}">${convertedAddress.replace('bitcoincash:', '')}</sm-copy>
+                `)
+            } catch (err) {
+                notify('Invalid address', 'error')
+                renderElem(getRef('address_conversion_result'), html``)
+            }
+        }
+        function addSenderInput() {
+            let senderCard = html.node/*html*/`
+                <fieldset class="sender-card card">
+                    <sm-input class="sender-input" placeholder="Sender address" animate required></sm-input>
+                    <sm-input class="priv-key-input password-field" type="password" placeholder="Private Key" animate required>
+                        <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24" /> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z" /> </g> </svg>
+                        <label slot="right" class="interact">
+                            <input type="checkbox" class="hidden" autocomplete="off" readonly
+                                onchange="togglePrivateKeyVisibility(this)">
+                            <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none" /> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" /> </svg>
+                            <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none" /> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" /> </svg>
+                        </label>
+                    </sm-input>
+                    <div class="flex align-center space-between full-bleed remove-card-wrapper">
+                        <div class="flex align-center">
+                            <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.35 1-.98 1-1.72V9c0-.74-.41-1.37-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z" /> <circle cx="16" cy="12" r="1.5" /> </svg>
+                            <output class="sender-balance amount-shown flex align-center">Balance</output>
+                        </div>
+                        ${getRef('sender_container').children.length ? html`
+                            <button class="remove-card button--small" onclick=${(e) => e.target.closest('.card').remove()}>
+                                <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /> </svg>
+                                Remove
+                            </button>
+                        `: ''}
+                    </div>
+                </fieldset>
+            `
+            getRef('sender_container').appendChild(senderCard);
+        }
+        async function checkBalance() {
+            const addresses = [...getRef('sender_container').querySelectorAll('.sender-input')].filter(input => input.value.trim() !== '').map(input => input.value.trim())
+            if (addresses.length === 0) {
+                notify('Please add at least one sender address', 'error')
+                return;
+            }
+            getRef("total_balance").innerHTML = '<sm-spinner></sm-spinner>';
+            let totalBalance = 0;
+            let senderBalances = [...getRef('sender_container').querySelectorAll('.sender-balance')];
+            senderBalances.forEach(el => el.innerHTML = '<sm-spinner></sm-spinner>');
+            Promise.all(addresses.map((addr, index) => bchOperator.getBalance(addr))).then(balances => {
+                balances.forEach((balance, index) => {
+                    senderBalances[index].textContent = getConvertedAmount(balance, { shouldFormatAmount: true });
+                    senderBalances[index].dataset.bchAmount = balance;
+                    totalBalance += balance;
+                })
+                getRef("total_balance").textContent = `${getConvertedAmount(totalBalance, { shouldFormatAmount: true })}`;
+                getRef("total_balance").dataset.bchAmount = totalBalance;
+            }).catch(err => {
+                console.error(err);
+                notify('Error while fetching balance', 'error');
+                senderBalances.forEach(el => el.innerHTML = '');
+                getRef("total_balance").innerHTML = '';
+            })
+        }
+
+        function addReceiverInput() {
+            let receiverCard = html.node/*html*/`
+                <fieldset class="card receiver-card">
+                    <sm-input class="receiver-input" placeholder="Receiver address" data-bch-address animate
+                        required></sm-input>
+                    <div class="flex align-content-start gap-0-5 remove-card-wrapper">
+                        <sm-input type="number" class="amount-input amount-shown" placeholder="Amount" min="0.000006"
+                            step="0.00000001" animate required>
+                            <div class="currency-symbol flex" slot="icon"></div>
+                        </sm-input>
+                        ${getRef('receiver_container').children.length ? html`
+                            <button class="remove-card button--small" onclick=${(e) => e.target.closest('.card').remove()}>
+                                <svg class="icon margin-right-0-3" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M7 11v2h10v-2H7zm5-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" /> </svg>
+                                Remove
+                            </button>
+                        `: ''}
+                    </div>
+                </fieldset>
+            `
+            receiverCard.querySelector('.currency-symbol') ? receiverCard.querySelector('.currency-symbol').innerHTML = currencyIcons[selectedCurrency.value] : null;
+            getRef('receiver_container').appendChild(receiverCard);
+        }
+        function renderFeesUI() {
+            switch (getRef('fees_selector').value) {
+                case 'custom':
+                    renderElem(getRef('fees_wrapper'), html`
+                        <p id="selected_fee_tip">Set custom fee</p>
+                        <sm-input type="number" id="send_fee" class="amount-shown" placeholder="Fee" min="0.000001" step="0.00000001"
+                            error-text="Please enter valid fees" animate required>
+                            <div class="currency-symbol flex" slot="icon"></div>
+                        </sm-input>
+                    `)
+                    document.getElementById('send_fee').focusIn();
+                    getRef('fees_wrapper').querySelector('.currency-symbol').innerHTML = currencyIcons[selectedCurrency.value];
+                    getRef('fees_section').classList.remove('hidden')
+                    renderElem(getRef('error_section'), html``)
+                    break;
+                case 'suggested':
+                    renderElem(getRef('fees_wrapper'), html`<sm-spinner></sm-spinner>`)
+                    if (getRef('send_tx').isFormValid) {
+                        calculateExactFee()
+                    } else {
+                        calculateApproxFee().then(fees => {
+                            renderElem(getRef('fees_wrapper'), html`
+                            <div class="grid gap-0-3">
+                                <div>
+                                    Approximate fee: <b id="recommended_fee" class="amount-shown" data-bch-amount=${fees}>${getConvertedAmount(fees, { shouldFormatAmount: true })}</b>
+                                </div>
+                                <p style="opacity: 0.8;">*Exact fee will be calculated after you fill all the required fields</p>
+                            </div>
+                            `)
+                        }).catch(e => {
+                            if (getRef('fees_selector')) {
+                                getRef('fees_selector').children[1].click();
+                                getRef('fees_selector').classList.add('hidden')
+                            }
+                        })
+                    }
+                    getRef('fees_section').classList.remove('hidden')
+                    renderElem(getRef('error_section'), html``)
+                    break;
+            }
+        }
+
+        function getTransactionInputs() {
+            const senders = [...new Set([...getRef('sender_container').querySelectorAll('.sender-input')].map(input => input.value.trim()))];
+            const privKeys = [...getRef('sender_container').querySelectorAll('.priv-key-input')].map(input => input.value.trim());
+            const receivers = [...getRef('receiver_container').querySelectorAll('.receiver-input')].map(input => input.value.trim());
+            const amounts = [...getRef('receiver_container').querySelectorAll('.amount-input')].map(input => {
+                return parseFloat(input.value.trim()) / (globalExchangeRate[selectedCurrency.value] || 1)
+            });
+            return [senders, privKeys, receivers, amounts]
+        }
+        function calculateApproxFee() {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const feeRate = await bchOperator.get_fee_rate();
+                    const estimatedSize = 250; // Average transaction size in bytes
+                    resolve(feeRate * estimatedSize);
+                } catch (e) {
+                    resolve(0.00001); // Default low fee for BCH
+                }
+            })
+        }
+        let isCalculatingFee = false;
+        function calculateExactFee() {
+            if (isCalculatingFee) return;
+            isCalculatingFee = true;
+            return new Promise((resolve, reject) => {
+                renderElem(getRef('fees_wrapper'), html`<sm-spinner></sm-spinner>`)
+                const [senders, privKeys, receivers, amounts] = getTransactionInputs();
+                bchOperator.createTx(senders, receivers, amounts).then(({ fee }) => {
+                    renderElem(getRef('fees_wrapper'), html` <b id="recommended_fee" class="amount-shown" data-bch-amount=${fee}>${getConvertedAmount(fee, { shouldFormatAmount: true })}</b> `)
+                    getRef('send_transaction').disabled = false;
+                    getRef('fees_section').classList.remove('hidden')
+                    getRef('error_section').classList.add('hidden')
+                    isCalculatingFee = false;
+                    resolve(fee)
+                }).catch(e => {
+                    isCalculatingFee = false;
+                    getRef('send_transaction').disabled = true;
+                    getRef('fees_section').classList.add('hidden')
+                    getRef('error_section').classList.remove('hidden')
+                    console.error(e)
+                    if (typeof e === 'string' && e.includes('Invalid private key')) {
+                        const invalidKeys = e.split(':')[1].split(',').map(key => key.trim());
+                        invalidKeys.forEach(key => {
+                            const input = [...getRef('sender_container').querySelectorAll('.sender-input')].find(input => input.value.trim() === key);
+                            if (input)
+                                input.nextElementSibling.showError()
+                        })
+                    } else {
+                        renderElem(getRef('error_section'), html`
+                            <p id="selected_fee_tip" class="error flex align-center gap-0-5">
+                                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>
+                                ${e}
+                            </p>
+                         `)
+                        reject(e)
+                    }
+                })
+            })
+        }
+
+        const handleValidForm = debounce(e => {
+            if (getRef('fees_selector').value === 'suggested') {
+                calculateExactFee()
+            } else {
+                getRef('fees_section').classList.remove('hidden')
+                getRef('error_section').classList.add('hidden')
+                if (getRef('send_tx').isFormValid)
+                    getRef('send_transaction').disabled = false;
+            }
+        }, 300)
+
+        const handleInvalidForm = debounce(e => {
+            renderFeesUI()
+            getRef('send_transaction').disabled = true;
+        }, 300)
+
+        function showTransactionResult(status, txid) {
+            switch (status) {
+                case 'success':
+                    renderElem(getRef('transaction_result_popup__content'), html`
+                        <svg class="icon user-action-result__icon success" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <path d="M0 0h24v24H0V0z" fill="none" /> <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" /> </svg>
+                        <div class="grid gap-0-5 justify-center text-center">
+                            <h4>Transaction sent</h4>
+                            <p>Confirmation of transaction might take few hours. </p>
+                        </div>
+                        <div class="grid">
+                            <span class="label">Transaction ID</span>
+                            <sm-copy value=${txid}></sm-copy>
+                        </div>
+                        <a class="button button--primary" href=${`#/check_details?query=${txid}`}>Check transaction status</a>
+                    `)
+                    break;
+            }
+            openPopup('transaction_result_popup')
+        }
+
+        async function handleSendTransaction(evt) {
+            buttonLoader('send_transaction', true)
+            const [senders, privKeys, receivers, amounts] = getTransactionInputs();
+            let fee = parseFloat(getRef('recommended_fee')?.dataset.bchAmount);
+            if (getRef('fees_selector').value === 'custom') {
+                const feeInput = getRef('send_fee').value.trim();
+                if (!feeInput || isNaN(feeInput) || feeInput <= 0) {
+                    notify('Please enter a valid fee', 'error');
+                    buttonLoader('send_transaction', false)
+                    return;
+                }
+                fee = parseFloat((parseFloat(feeInput) / (globalExchangeRate[selectedCurrency.value] || 1)).toFixed(8));
+            }
+            const confirmation = await getConfirmation('Confirm Transaction', {
+                message: html`
+                    <div class="grid gap-1-5">
+                        <div class="grid gap-0-5">
+                            <h5>Senders</h5>
+                            <ul class="flex flex-direction-column gap-0-5">
+                                ${senders.map(sender => html`<li class="wrap-around">${sender}</li>`)}
+                            </ul>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>Receivers</h5>
+                            <ul class="flex flex-direction-column gap-0-5">
+                                ${receivers.map((receiver, index) => html`<li class="wrap-around flex flex-direction-column gap-0-5" style="padding:0.5rem;border:solid thin rgba(var(--text-color),0.3);border-radius: 0.3rem;">
+                                    ${receiver} <span class="amount-shown">${getConvertedAmount(amounts[index], { shouldFormatAmount: true })}</span>
+                                </li>`)}
+                            </ul>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>Fee</h5>
+                            <div class="flex wrap-around gap-0-5">
+                                <span class="amount-shown">${getConvertedAmount(fee, { shouldFormatAmount: true })}</span>
+                            </div>
+                        </div>
+                    </div>`,
+                confirmText: 'Confirm',
+                cancelText: 'Cancel'
+            })
+            if (!confirmation) {
+                buttonLoader('send_transaction', false)
+                return;
+            }
+            bchOperator.sendTx(senders, privKeys, receivers, amounts, fee).then(txid => {
+                console.log(txid);
+                showTransactionResult('success', txid);
+                getRef('send_tx').reset();
+            }).catch(error => {
+                console.error(error)
+                if (error.hasOwnProperty('hasInsufficientBalance')) {
+                    notify('Insufficient balance', 'error')
+                } else {
+                    notify(`
+                        <div style="display: grid; gap: 0.3rem;">
+                            <h4>Error sending transaction</h4>
+                            <p style="font-size: 0.9rem; opacity: 0.8">Please check transaction history before retrying.</p>
+                        </div>
+                        `, 'error', {
+                        action: {
+                            label: 'Check History',
+                            callback: () => {
+                                location.hash = `/check_details?query=${senders[0]}`;
+                                document.getElementById('notification_drawer').clearAll()
+                            }
+                        }
+                    });
+                    console.error(error)
+                }
+            }).finally(_ => {
+                buttonLoader('send_transaction', false)
+            })
+        }
+
+        // detect if given string is a bitcoin cash transaction id
+        function isTxId(str) {
+            return str.length === 64 && str.match(/^[0-9a-f]+$/i);
+        }
+        //  detect if given string is a bitcoin cash address or transaction id
+        function checkQueryStringType(str) {
+            if (!str) return 'invalid';
+            const normalized = str.trim();
+            if (bchOperator.validateAddress(normalized)) {
+                return 'address';
+            } else if (isTxId(normalized)) {
+                return 'txid';
+            } else {
+                return 'invalid';
+            }
+        }
+        function handleAddressCheck() {
+            const query = getRef('search_query_input').value.trim();
+            if (router.state.params.hasOwnProperty('query') && query === router.state.params.query) {
+                // if the query is same as the previous one, just refresh the page
+                render.queryResult(query);
+            } else {
+                location.hash = `#/check_details?query=${query}`;
+            }
+        }
+
+        function showAllAddresses(e) {
+            const addresses = e.target.closest('li').dataset.transactingAddresses
+            const addressesList = addresses.split(',').map(address => {
+                const cash = bchOperator.toCashAddr(address).replace('bitcoincash:', '');
+                return html.node`<a href="${`#/check_details?query=${cash}`}" class="tx-participant wrap-around">${cash}</a>`
+            })
+            e.target.closest('button').before(...addressesList)
+            e.target.closest('button').remove()
+        }
+
+        let changingFeeOf = null
+        async function initFeeChange(e, txid) {
+            const button = e.target.closest('button')
+            buttonLoader(button, true)
+            changingFeeOf = txid
+            try {
+                const { inputs, outputs, fee: previousFee } = await bchOperator.getTx(txid)
+                const isMultisig = inputs.some(input => ["multisig"].includes(bchOperator.validateAddress(input.address)))
+                let senders = []
+                let requiredSignatures = 0
+                if (isMultisig) {
+                    const details = bchOperator.deserializeTx(await bchOperator.getTx.hex(txid))
+                    senders = bchOperator.extractLastHexStrings(details.witness).flatMap((hex) => {
+                        const { address, required: requiredSignatures, pubKeys } = bchOperator.decodeRedeemScript(hex) || {}
+                        return pubKeys.map(pubKey => bchOperator.address(pubKey))
+                    })
+                } else {
+                    senders = inputs.map(input => input.address)
+                }
+                const receivers = outputs.map(output => output.address)
+                const uniqueReceivers = outputs.reduce((acc, { address, value }) => {
+                    if (acc[address]) {
+                        acc[address] += value
+                    } else {
+                        acc[address] = value
+                    }
+                    return acc
+                }, {})
+                const amounts = outputs.map(output => 0.00000005)
+                let recommendedFee = null
+                if (!isMultisig) {
+                    const { fee } = await bchOperator.createTx(senders, receivers, amounts, null, { allowUnconfirmedUtxos: true })
+                    if (fee > previousFee)
+                        recommendedFee = fee
+                }
+                renderElem(getRef('increase_fee_popup_content'), html`
+                    <sm-form style="--gap: 2rem">
+                        <div class="grid gap-0-5">
+                            <h4>Senders</h4>
+                            <ul class="grid gap-0-5">
+                                ${[...new Set(senders)].map((address) => {
+                    const cash = bchOperator.toCashAddr(address).replace('bitcoincash:', '');
+                    return html.node/*html*/`<li class="increase-fee-sender grid gap-1">
+                                    <div class="sender-details flex flex-direction-column gap-0-5">
+                                        <div class="label">Address</div>
+                                        <b class="sender__address wrap-around">${cash}</b>
+                                    </div>
+                                    <sm-input class="sender__private-key password-field" type="password" placeholder="Private Key" data-for-address=${address} data-private-key animate required>
+                                        <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <g> <rect fill="none" height="24" width="24"></rect> </g> <g> <path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"></path> </g> </svg>
+                                        <label slot="right" class="interact">
+                                            <input type="checkbox" class="hidden" autocomplete="off" readonly="" onchange="togglePrivateKeyVisibility(this)">
+                                            <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Hide password</title> <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path> <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"></path> </svg>
+                                            <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"> <title>Show password</title> <path d="M0 0h24v24H0z" fill="none"></path> <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path> </svg>
+                                        </label>
+                                    </sm-input>
+                                </li>`})}
+                            </ul>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h4>Receivers</h4>
+                            <ul class="grid gap-0-5">
+                                ${Object.entries(uniqueReceivers).map(([address, value]) => {
+                        const cash = bchOperator.toCashAddr(address).replace('bitcoincash:', '');
+                        return html.node/*html*/`<li class="increase-fee-receiver grid gap-1">
+                                    <div class="receiver-details flex flex-direction-column gap-0-5">
+                                        <div class="label">Address</div>
+                                        <b class="wrap-around">${cash}</b>
+                                    </div>
+                                    <div>
+                                        <div class="label">Amount</div>
+                                        <b>${getConvertedAmount(value, { shouldFormatAmount: true })}</b>
+                                    </div>
+                                </li>`})}
+                            </ul>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <p>
+                                Previous fee: <b>${getConvertedAmount(previousFee, { shouldFormatAmount: true })}</b> ${recommendedFee ? html`| Recommended fee: <b>${getConvertedAmount(recommendedFee, { shouldFormatAmount: true })}</b>` : ''}
+                            </p>
+                            <sm-input id="new_fee" placeholder="New fee" type="number" min=${getConvertedAmount(previousFee)} step="0.00000001" error-text=${`New fee should be greater than ${getConvertedAmount(previousFee, { shouldFormatAmount: true })}`} animate required>
+                                <div class="currency-symbol flex" slot="icon"> </div>
+                            </sm-input>
+                        </div>
+                        <div class="multi-state-button">
+                            <button id="increase_fee" class="button button--primary" onclick=${() => increaseFee(isMultisig)} type="submit">Increase fee</button>
+                        </div>
+                    </sm-form>
+                `)
+                document.getElementById('new_fee').querySelector('.currency-symbol').innerHTML = currencyIcons[selectedCurrency.value]
+                openPopup('increase_fee_popup')
+            } catch (e) {
+                notify(e.message || e, 'error')
+            } finally {
+                buttonLoader(button, false)
+            }
+        }
+        async function increaseFee(isMultisig = false) {
+            buttonLoader(document.getElementById('increase_fee'), true)
+            const newFee = parseFloat((parseFloat(document.getElementById('new_fee').value.trim()) / (globalExchangeRate[selectedCurrency.value] || 1)).toFixed(8))
+            const privateKeys = []
+            document.querySelectorAll('.increase-fee-sender').forEach(sender => {
+                const address = sender.querySelector('.sender__address').textContent.trim()
+                const privateKey = sender.querySelector('.sender__private-key').value.trim()
+                if (!bchOperator.verifyKey(address, privateKey))
+                    return notify(`Invalid private key for address ${address}`, 'error')
+                if (privateKey) {
+                    privateKeys.push(privateKey)
+                }
+            })
+            try {
+                let signedTxHex
+                if (isMultisig) {
+                    signedTxHex = await bchOperator.editFee_corewallet(changingFeeOf, newFee, privateKeys)
+                } else {
+                    signedTxHex = await bchOperator.editFee(changingFeeOf, newFee, privateKeys)
+                }
+                bchOperator.broadcastTx(signedTxHex).then(txId => {
+                    console.log(txId)
+                    closePopup()
+                    showTransactionResult('success', txId)
+                }).catch(e => {
+                    notify(e, 'error')
+                }).finally(_ => {
+                    buttonLoader(document.getElementById('increase_fee'), false)
+                    changingFeeOf = null
+                })
+            } catch (err) {
+                notify(err, 'error')
+                buttonLoader(document.getElementById('increase_fee'), false)
+            }
+        }
+        // current exchange rate is not available then switch to historic price        
+    </script>
+</body>
+
+</html>
