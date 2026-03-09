@@ -242,7 +242,7 @@
     usdt: "0x55d398326f99059ff775485246999027b3197955",
   };
   function getProvider() {
-    // switches provider based on whether the user is using MetaMask or not
+    // Use public JSON-RPC provider 
     const bscMainnet = {
       chainId: 56,
       name: "binance",
@@ -250,28 +250,8 @@
       explorer: "https://bscscan.com",
     };
 
-    if (window.ethereum) {
-      return new ethers.providers.Web3Provider(window.ethereum);
-    } else {
-      return new ethers.providers.JsonRpcProvider(bscMainnet.rpc, bscMainnet);
-    }
-  }
-  function connectToMetaMask() {
-    return new Promise((resolve, reject) => {
-      // if (typeof window.ethereum === "undefined")
-      //   return reject("MetaMask not installed");
-      return resolve(true);
-      ethereum
-        .request({ method: "eth_requestAccounts" })
-        .then((accounts) => {
-          console.log("Connected to MetaMask");
-          return resolve(accounts);
-        })
-        .catch((err) => {
-          console.log(err);
-          return reject(err);
-        });
-    });
+    // Always use JSON-RPC provider 
+    return new ethers.providers.JsonRpcProvider(bscMainnet.rpc, bscMainnet);
   }
   const getTransactionHistory = (bscOperator.getTransactionHistory = async (
     address,
@@ -280,10 +260,10 @@
     try {
       if (!address || !isValidAddress(address))
         return new Error("Invalid address");
-      
+
       // Moralis API endpoint for BSC transactions
       const MORALIS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjQyZWNiMjk0LTBiMGItNDg4Yy1hNjUwLTE4NmJhMjFjNjNhYyIsIm9yZ0lkIjoiNDg4NzAzIiwidXNlcklkIjoiNTAyODExIiwidHlwZUlkIjoiZjE5ZmZjYTYtNDllMS00NTdlLTllNjgtMGI1MDIyODU2N2Q4IiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3Njc1NDkxNDQsImV4cCI6NDkyMzMwOTE0NH0.yr_jtBCrrid4Y5d48iTwJ4PwgMOZn8mwWyiQ7dAmNvw";
-      
+
       // Fetch 10 transactions per page
       const url = `https://deep-index.moralis.io/api/v2/${address}?chain=bsc&limit=10${cursor ? `&cursor=${cursor}` : ''}`;
 
@@ -299,7 +279,7 @@
         // Get current block number to calculate confirmations
         const provider = getProvider();
         const currentBlockNumber = await provider.getBlockNumber();
-        
+
         const transactions = data.result.map((tx) => ({
           hash: tx.hash,
           from: tx.from_address,
@@ -311,7 +291,7 @@
           gasPrice: tx.gas_price,
           gasUsed: tx.receipt_gas_used,
         }));
-        
+
         // Return transactions along with cursor for next page
         return {
           transactions: transactions,
@@ -375,7 +355,7 @@
       if (!address || !isValidAddress(address)) {
         return new Error("Invalid address");
       }
-  
+
       const provider = getProvider();
       const balanceWei = await provider.getBalance(address);
       const balanceEth = parseFloat(ethers.utils.formatEther(balanceWei));
