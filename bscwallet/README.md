@@ -1,3 +1,3 @@
 # bscwallet
-Binance Chain Wallet linked with FLO blockchain address
+Binance Chain Wallet linked with FLO blockchain  address
 
