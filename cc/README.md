@@ -4,7 +4,7 @@ This peer-to-peer FLO Blockchain-based content collaboration software runs on a 
 
 ### Live URL for CC  
 *https://ranchimall.github.io/cc/*  
-It supports sign in with FLO and BTC private keys.
+It supports sign in with FLO and BTC blockchain private keys.
 
 
 ## How to run this software
