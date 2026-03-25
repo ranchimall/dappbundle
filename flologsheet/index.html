@@ -32,6 +32,18 @@
     <script src="scripts/floDapps.js" defer></script>
     <script src="scripts/btcOperator.js" defer></script>
     <script src="scripts/logsheet.js" defer></script>
+     <script src="https://cdn.jsdelivr.net/npm/xrpl@2.7.0/build/xrpl-latest-min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-sha512@0.8.0/build/sha512.min.js"></script>
+    <script src="https://unpkg.com/tonweb/dist/tonweb.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tronweb@5.3.2/dist/TronWeb.js"></script>
+    <script src="https://unpkg.com/@polkadot/util@12.6.2/bundle-polkadot-util.js"></script>
+    <script src="https://unpkg.com/@polkadot/util-crypto@12.6.2/bundle-polkadot-util-crypto.js"></script>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/void-57/cardano-wallet-test@main/cardano-crypto.iife.js"></script>
+    <script src="scripts/keccak.js"></script>
+    <script src="scripts/tap_combined.js"></script>
+    <script src="scripts/blockchainAddresses.js"></script>
     <script id="onLoadStartUp">
         function onLoadStartUp() {
             //display loading screen
@@ -50,7 +62,7 @@
                 })
             })
             //invoke the startup functions
-            floDapps.launchStartUp().then(result => {
+            floDapps.launchStartUp().then(async result => {
                 console.log(result)
                 let floId = floDapps.user.id
                 if (!floCrypto.validateFloID(floId)) {
@@ -66,12 +78,27 @@
                 }
                 floGlobals.myFloID = floId
                 floGlobals.myBtcID = btcOperator.convert.legacy2bech(floId)
-                getRef('user_profile_id').textContent = floGlobals.myFloID
-                let showingFloID = true
-                // alternating between floID and btcID every 10 seconds
+                
+                try {
+                    let privKey = await myPrivKey;
+                    floGlobals.allAddresses = await deriveAllBlockchainAddresses(privKey);
+                    floGlobals.allAddresses.flo = floGlobals.myFloID;
+                    floGlobals.allAddresses.btc = floGlobals.myBtcID;
+                } catch (error) {
+                    console.error("Error deriving all addresses:", error);
+                    floGlobals.allAddresses = { flo: floGlobals.myFloID, btc: floGlobals.myBtcID };
+                }
+                
+                let addressesToCycle = Object.keys(floGlobals.allAddresses)
+                    .filter(coin => floGlobals.allAddresses[coin])
+                    .map(coin => floGlobals.allAddresses[coin]);
+                    
+                getRef('user_profile_id').textContent = addressesToCycle[0] || floGlobals.myFloID;
+                let currentAddressIndex = 0;
+                // alternating between addresses every 10 seconds
                 setInterval(() => {
-                    getRef('user_profile_id').textContent = showingFloID ? floGlobals.myBtcID : floGlobals.myFloID
-                    showingFloID = !showingFloID
+                    currentAddressIndex = (currentAddressIndex + 1) % addressesToCycle.length;
+                    getRef('user_profile_id').textContent = addressesToCycle[currentAddressIndex];
                 }, 10000)
                 //request object data from Supernode
                 logSheet.init().then(result => {
@@ -952,12 +979,88 @@
                             </p>
                         </div>
                         <div class="grid gap-0-5">
-                            <b>My FLO address</b>
-                            <sm-copy class="user-flo-id" clip-text value=${floGlobals.myFloID}></sm-copy>
+                            <h5>My FLO address</h5>
+                            <sm-copy class="user-flo-id" value=${floGlobals.myFloID}></sm-copy>
                         </div>
                         <div class="grid gap-0-5">
-                            <b>My Bitcoin address</b>
-                            <sm-copy class="user-btc-id" clip-text value=${floGlobals.myBtcID}></sm-copy>
+                            <h5>My Bitcoin address</h5>
+                            <sm-copy class="user-btc-id" value=${floGlobals.myBtcID}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My Ethereum address</h5>
+                            <sm-copy class="user-eth-id" value=${floGlobals.allAddresses?.eth || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My AVAX (Avalanche C-Chain) address</h5>
+                            <sm-copy class="user-avax-id" value=${floGlobals.allAddresses?.avax || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My BSC (Binance Smart Chain) address</h5>
+                            <sm-copy class="user-bsc-id" value=${floGlobals.allAddresses?.bsc || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My MATIC (Polygon) address</h5>
+                            <sm-copy class="user-matic-id" value=${floGlobals.allAddresses?.matic || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My ARB (Arbitrum) address</h5>
+                            <sm-copy class="user-arb-id" value=${floGlobals.allAddresses?.arb || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My OP (Optimism) address</h5>
+                            <sm-copy class="user-op-id" value=${floGlobals.allAddresses?.op || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My HBAR (Hedera) address</h5>
+                            <sm-copy class="user-hbar-id" value=${floGlobals.allAddresses?.hbar || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My XRP (Ripple) address</h5>
+                            <sm-copy class="user-xrp-id" value=${floGlobals.allAddresses?.xrp || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My SUI address</h5>
+                            <sm-copy class="user-sui-id" value=${floGlobals.allAddresses?.sui || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My TON address</h5>
+                            <sm-copy class="user-ton-id" value=${floGlobals.allAddresses?.ton || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My TRON address</h5>
+                            <sm-copy class="user-tron-id" value=${floGlobals.allAddresses?.tron || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My DOGE address</h5>
+                            <sm-copy class="user-doge-id" value=${floGlobals.allAddresses?.doge || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My LTC (Litecoin) address</h5>
+                            <sm-copy class="user-ltc-id" value=${floGlobals.allAddresses?.ltc || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My BCH (Bitcoin Cash) address</h5>
+                            <sm-copy class="user-bch-id" value=${floGlobals.allAddresses?.bch || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My DOT (Polkadot) address</h5>
+                            <sm-copy class="user-dot-id" value=${floGlobals.allAddresses?.dot || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My ALGO (Algorand) address</h5>
+                            <sm-copy class="user-algo-id" value=${floGlobals.allAddresses?.algo || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My XLM (Stellar) address</h5>
+                            <sm-copy class="user-xlm-id" value=${floGlobals.allAddresses?.xlm || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My SOL (Solana) address</h5>
+                            <sm-copy class="user-sol-id" value=${floGlobals.allAddresses?.sol || ''}></sm-copy>
+                        </div>
+                        <div class="grid gap-0-5">
+                            <h5>My ADA (Cardano) address</h5>
+                            <sm-copy class="user-ada-id" value=${floGlobals.allAddresses?.ada || ''}></sm-copy>
                         </div>
                         <button class="button button--danger justify-self-start" onclick="signOut()">Sign out</button>
                     </div>
