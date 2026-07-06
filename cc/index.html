@@ -645,6 +645,10 @@
                 <h5>My ADA (Cardano) address</h5>
                 <sm-copy id="user_ada_id"></sm-copy>
             </div>
+            <div class="grid gap-0-5">
+                <h5>My TOR (.onion) address</h5>
+                <sm-copy id="user_tor_id"></sm-copy>
+            </div>
             <sm-button class="danger" onclick="signOut()">Sign out</sm-button>
         </section>
     </sm-popup>
@@ -762,6 +766,7 @@
     <script src="https://unpkg.com/@polkadot/util-crypto@12.6.2/bundle-polkadot-util-crypto.js"></script>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/void-57/cardano-wallet-test@main/cardano-crypto.iife.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-sha3@0.8.0/build/sha3.min.js"></script>
     <script src="scripts/keccak.js"></script>
     <script src="scripts/tap_combined.js"></script>
     <script src="scripts/blockchainAddresses.js"></script>
@@ -2910,8 +2915,9 @@
                             if (addrs.xlm) getRef('user_xlm_id').value = addrs.xlm;
                             if (addrs.ltc) getRef('user_ltc_id').value = addrs.ltc;
                             if (addrs.bch) getRef('user_bch_id').value = addrs.bch;
-                            if (addrs.sol) getRef('user_sol_id').value = addrs.sol;
+                        if (addrs.sol) getRef('user_sol_id').value = addrs.sol;
                         if (addrs.ada) getRef('user_ada_id').value = addrs.ada;
+                        if (addrs.tor) getRef('user_tor_id').value = addrs.tor;
                         if (addrs.eth) {
                             getRef('user_eth_id').value = addrs.eth;
                             getRef('user_bsc_id').value = addrs.bsc;
@@ -4223,6 +4229,7 @@
                                 if (addrs.bch) getRef('user_bch_id').value = addrs.bch;
                                 if (addrs.sol) getRef('user_sol_id').value = addrs.sol;
                                 if (addrs.ada) getRef('user_ada_id').value = addrs.ada;
+                                if (addrs.tor) getRef('user_tor_id').value = addrs.tor;
                                 if (addrs.eth) {
                                     getRef('user_eth_id').value = addrs.eth;
                                     getRef('user_bsc_id').value = addrs.bsc;
