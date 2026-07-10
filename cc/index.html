@@ -598,6 +598,10 @@
                 <sm-copy id="user_hbar_id"></sm-copy>
             </div>
             <div class="grid gap-0-5">
+                <h5>My FET (Fetch.ai) address</h5>
+                <sm-copy id="user_fet_id"></sm-copy>
+            </div>
+            <div class="grid gap-0-5">
                 <h5>My XRP (Ripple) address</h5>
                 <sm-copy id="user_xrp_id"></sm-copy>
             </div>
@@ -2918,6 +2922,7 @@
                         if (addrs.sol) getRef('user_sol_id').value = addrs.sol;
                         if (addrs.ada) getRef('user_ada_id').value = addrs.ada;
                         if (addrs.tor) getRef('user_tor_id').value = addrs.tor;
+                        if (addrs.fet) getRef('user_fet_id').value = addrs.fet;
                         if (addrs.eth) {
                             getRef('user_eth_id').value = addrs.eth;
                             getRef('user_bsc_id').value = addrs.bsc;
@@ -4230,6 +4235,7 @@
                                 if (addrs.sol) getRef('user_sol_id').value = addrs.sol;
                                 if (addrs.ada) getRef('user_ada_id').value = addrs.ada;
                                 if (addrs.tor) getRef('user_tor_id').value = addrs.tor;
+                                if (addrs.fet) getRef('user_fet_id').value = addrs.fet;
                                 if (addrs.eth) {
                                     getRef('user_eth_id').value = addrs.eth;
                                     getRef('user_bsc_id').value = addrs.bsc;
