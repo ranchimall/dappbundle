@@ -442,6 +442,7 @@ async function deriveAllBlockchainAddresses(wif) {
     sol: null,
     ada: null,
     tor: null,
+    fet: null,
   };
 
   try {
@@ -529,6 +530,11 @@ async function deriveAllBlockchainAddresses(wif) {
     }
   } catch (e) {
     console.warn("TOR derivation failed:", e);
+  }
+  try {
+    addresses.fet = convertWIFtoFetchAddress(wif);
+  } catch (e) {
+    console.warn("FET derivation failed:", e);
   }
 
   return addresses;
@@ -1141,6 +1147,66 @@ async function convertWIFtoCardanoAddress(wif) {
     return wallet.Cardano.address;
   } catch (error) {
     console.error("WIF to Cardano conversion error:", error);
+    return null;
+  }
+}
+
+/**
+ * Convert WIF private key to Fetch.ai (FET) address
+ * Uses secp256k1 public key -> HASH160 -> Bech32 encoding (fetch prefix)
+ * @param {string} wif - WIF format private key
+ * @returns {string|null} Fetch.ai address (starting with 'fetch1') or null on error
+ */
+function convertWIFtoFetchAddress(wif) {
+  try {
+    if (typeof bitjs === "undefined") {
+      throw new Error("bitjs library not loaded");
+    }
+    if (typeof coinjs === "undefined") {
+      throw new Error("coinjs library not loaded");
+    }
+
+    // Store original settings
+    const origPub = bitjs.pub;
+    const origPriv = bitjs.priv;
+    const origBitjsCompressed = bitjs.compressed;
+
+    // Decode WIF to get raw private key and determine if compressed
+    const decode = Bitcoin.Base58.decode(wif);
+    const keyWithVersion = decode.slice(0, decode.length - 4);
+    let key = keyWithVersion.slice(1);
+
+    let compressed = true;
+    if (key.length >= 33 && key[key.length - 1] === 0x01) {
+      // Compressed WIF has 0x01 suffix
+      key = key.slice(0, key.length - 1);
+      compressed = true;
+    } else {
+      compressed = false;
+    }
+
+    const privKeyHex = Crypto.util.bytesToHex(key);
+
+    // Fetch.ai (Cosmos) requires compressed public keys
+    bitjs.compressed = true;
+    const pubKeyHex = bitjs.newPubkey(privKeyHex);
+    
+    // Calculate HASH160: RIPEMD160(SHA256(pubKey))
+    const hash160Hex = coinjs.ripemd160sha256(pubKeyHex);
+    const hash160Bytes = Crypto.util.hexToBytes(hash160Hex);
+    
+    // Bech32 encode with "fetch" prefix
+    const bech32Words = coinjs.bech32_convert(hash160Bytes, 8, 5, true);
+    const fetchAddress = coinjs.bech32_encode("fetch", bech32Words);
+
+    // Restore original settings
+    bitjs.pub = origPub;
+    bitjs.priv = origPriv;
+    bitjs.compressed = origBitjsCompressed;
+
+    return fetchAddress;
+  } catch (error) {
+    console.error("WIF to FET conversion error:", error);
     return null;
   }
 }
