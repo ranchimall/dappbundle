@@ -760,7 +760,7 @@
     <script id="compactIDB" src="scripts/compactIDB.js"></script>
     <script id="floCloudAPI" src="scripts/floCloudAPI.js"></script>
     <script id="floDapps" src="scripts/floDapps.js"></script>
-    <script src="scripts/btcOperator.js"></script>
+    <script id="btcOperator" src="scripts/btcOperator.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xrpl@2.7.0/build/xrpl-latest-min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/js-sha512@0.8.0/build/sha512.min.js"></script>
@@ -1608,6 +1608,19 @@
         }
 
 
+        async function getExportScript(scriptID) {
+            const script = getRef(scriptID)
+            const source = script.src 
+                ? await fetch(script.src).then(res => res.text())
+                : script.textContent
+
+            return `<script>${source.replace(/<\/script/gi, '<\\/script')}<\/script>`
+        }
+
+        async function getExportScripts(scriptIDs) {
+            return (await Promise.all(scriptIDs.map(getExportScript))).join('\n')
+        }
+
         function downloadHTML(string, options = {}) {
             const { title } = options
             const element = html.node`<a href="${`${`data:text/html;charset=utf-8, ${encodeURIComponent(string)}`}`}" download="${`${title ? title : 'article'}.html`}" class="hidden"></a>`
@@ -1625,7 +1638,7 @@
             return DOMPurify.sanitize(exportContent.innerHTML, { FORBID_ATTR: ['style'], ADD_ATTR: ['target'] })
         }
 
-        function exportSelection() {
+        async function exportSelection() {
             const bodyTemplate = getRef('body_template').content.cloneNode(true)
             const articleTitle = floGlobals.appObjects.cc.articleList[floGlobals.currentArticle.id].title
             bodyTemplate.querySelector('#exported_title').textContent = articleTitle
@@ -1643,7 +1656,23 @@
             const readingTime = getReadingTime(bodyTemplate.querySelector('#export_body').textContent)
             bodyTemplate.querySelector('#reading_time').textContent = `${readingTime} min read`
             let bodyAttributes = ''
-            if (!floGlobals.isSubAdmin) {
+            let extraScripts = ''
+
+            if (floGlobals.isSubAdmin) {
+                bodyAttributes = `data-article-id="${floGlobals.currentArticle.id}" onload="onLoadStartUp()"`
+                extraScripts = `
+                    ${getRef('voting_enabled').innerHTML}
+                    ${await getExportScripts([
+                        'lib',
+                        'floCrypto',
+                        'floBlockchainAPI',
+                        'compactIDB',
+                        'floCloudAPI',
+                        'floDapps',
+                        'btcOperator'
+                    ])}
+                `
+            } else {
                 bodyTemplate.querySelector('header button').remove()
             }
             const bodyHTML = createElement('div')
@@ -1658,6 +1687,7 @@
                     <head>${headHTML.innerHTML}<\/head>
                     <body data-theme="light" ${bodyAttributes}>
                         ${bodyHTML.innerHTML}
+                        ${extraScripts}
                         <\/body>
                 <\/html>
             `
@@ -3855,7 +3885,7 @@
 
                 //Required for blockchain API operators
                 apiURL: {
-                    FLO: ['https://livenet.flocha.in/', 'https://flosight.duckdns.org/'],
+                    FLO: ['https://blockbook.ranchimall.net/', 'https://livenet.flocha.in/', 'https://flosight.duckdns.org/'],
                     FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
                 },
                 adminID: "FF5pewfsJxyrCvg8a2C8VXefeyVvKvQxmF",
@@ -3867,7 +3897,7 @@
                 supernodes: {}, //each supnernode must be stored as floID : {uri:<uri>,pubKey:<publicKey>}
 
                 //for cloud apps
-                subAdmins: [],
+                subAdmins: ["FQ2JEsxzEgQwvY9gBRKNLbJcuqZY9qo87n"],
                 application: "RM_Times",
                 appObjects: {},
                 generalData: {},
@@ -4025,6 +4055,16 @@
                 })
             }
             let currentArticleID
+
+            function getArticleVoteState(articleID) {
+                floGlobals.appObjects ??= {}
+                floGlobals.appObjects.rmTimes ??= { articles: {} }
+                floGlobals.appObjects.rmTimes.articles ??= {}
+                floGlobals.appObjects.rmTimes.articles[articleID] ??= { votes: 0, lastCountedVC: 0 }
+                floGlobals.appObjects.rmTimes.articles[articleID].votes ??= 0
+                floGlobals.appObjects.rmTimes.articles[articleID].lastCountedVC ??= 0
+                return floGlobals.appObjects.rmTimes.articles[articleID]
+            }
             window.addEventListener("load", () => {
                 currentArticleID = document.body.dataset.articleId
                 document.body.classList.remove('hidden')
@@ -4089,18 +4129,18 @@
                     duration: 150,
                     ease: 'easing',
                 }
-                floGlobals.appObjects.rmTimes.articles[articleID].votes += voteCount
+                getArticleVoteState(articleID).votes += voteCount
                 getRef('like_count').animate(slideOutUp, animOptions)
                     .onfinish = (e) => {
                         e.target.cancel()
                     }
                 const tempCount = document.createElement('div')
                 tempCount.classList.add('temp-count')
-                tempCount.textContent = floGlobals.appObjects.rmTimes.articles[articleID].votes
+                tempCount.textContent = getArticleVoteState(articleID).votes
                 getRef('like_count').after(tempCount)
                 tempCount.animate(slideInUp, animOptions)
                     .onfinish = () => {
-                        getRef('like_count').textContent = floGlobals.appObjects.rmTimes.articles[articleID].votes
+                        getRef('like_count').textContent = getArticleVoteState(articleID).votes
                         tempCount.remove()
                     }
             }
@@ -4163,25 +4203,32 @@
             function onLoadStartUp() {
                 //floDapps.addStartUpFunction('Sample', Promised Function)
                 //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
+                currentArticleID = document.body.dataset.articleId
+                getRef('like_count').textContent = getArticleVoteState(currentArticleID).votes
                 let firstLoad = true
                 floDapps.setMidStartup(() => new Promise(async (resolve, reject) => {
-                    await floCloudAPI.requestObjectData('rmTimes')
-                    await floCloudAPI.requestGeneralData(`article_${currentArticleID}_votes`, {
-                        lowerVectorClock: floGlobals.appObjects.rmTimes.articles[currentArticleID].lastCountedVC + 1,
-                        callback: (allVotes, e) => {
-                            if (firstLoad) {
-                                for (const vote in allVotes) {
-                                    floGlobals.appObjects.rmTimes.articles[currentArticleID].votes += allVotes[vote].message.voteCount || 1
+                    try {
+                        await floCloudAPI.requestObjectData('rmTimes')
+                        await floCloudAPI.requestGeneralData(`article_${currentArticleID}_votes`, {
+                            lowerVectorClock: getArticleVoteState(currentArticleID).lastCountedVC + 1,
+                            callback: (allVotes, e) => {
+                                if (firstLoad) {
+                                    for (const vote in allVotes) {
+                                        getArticleVoteState(currentArticleID).votes += allVotes[vote].message.voteCount || 1
+                                    }
+                                    getRef('like_count').textContent = getArticleVoteState(currentArticleID).votes
+                                } else {
+                                    for (const msg in allVotes) {
+                                        animateLikeCount(allVotes[msg].message.voteCount, currentArticleID)
+                                    }
                                 }
-                                getRef('like_count').textContent = floGlobals.appObjects.rmTimes.articles[currentArticleID].votes
-                            } else {
-                                for (const msg in allVotes) {
-                                    animateLikeCount(allVotes[msg].message.voteCount, currentArticleID)
-                                }
+                                firstLoad = false
                             }
-                            firstLoad = false
-                        }
-                    })
+                        })
+                    } catch (e) {
+                        console.warn('Could not fetch vote data (cloud offline?):', e)
+                        getRef('like_count').textContent = getArticleVoteState(currentArticleID).votes
+                    }
                     resolve(true)
                 }))
                 floDapps.setCustomPrivKeyInput(() => new Promise((resolve, reject) => {
@@ -4216,39 +4263,7 @@
                         floGlobals.myBtcID = btcOperator.convert.legacy2bech(floDapps.user.id)
                     }
                     floGlobals.isSubAdmin = floGlobals.subAdmins.includes(floGlobals.myFloID)
-
-                    getRef('user_flo_id').value = floGlobals.myFloID
-                    getRef('user_btc_id').value = floGlobals.myBtcID
-                    if (myPrivKey) {
-                        Promise.resolve(myPrivKey).then(privKey => {
-                            deriveAllBlockchainAddresses(privKey).then(addrs => {
-                                if (addrs.xrp) getRef('user_xrp_id').value = addrs.xrp;
-                                if (addrs.sui) getRef('user_sui_id').value = addrs.sui;
-                                if (addrs.ton) getRef('user_ton_id').value = addrs.ton;
-                                if (addrs.tron) getRef('user_tron_id').value = addrs.tron;
-                                if (addrs.doge) getRef('user_doge_id').value = addrs.doge;
-                                if (addrs.dot) getRef('user_dot_id').value = addrs.dot;
-                                if (addrs.algo) getRef('user_algo_id').value = addrs.algo;
-                                if (addrs.xlm) getRef('user_xlm_id').value = addrs.xlm;
-                                if (addrs.ltc) getRef('user_ltc_id').value = addrs.ltc;
-                                if (addrs.bch) getRef('user_bch_id').value = addrs.bch;
-                                if (addrs.sol) getRef('user_sol_id').value = addrs.sol;
-                                if (addrs.ada) getRef('user_ada_id').value = addrs.ada;
-                                if (addrs.tor) getRef('user_tor_id').value = addrs.tor;
-                                if (addrs.fet) getRef('user_fet_id').value = addrs.fet;
-                                if (addrs.eth) {
-                                    getRef('user_eth_id').value = addrs.eth;
-                                    getRef('user_bsc_id').value = addrs.bsc;
-                                    getRef('user_matic_id').value = addrs.matic;
-                                    getRef('user_hbar_id').value = addrs.hbar;
-                                    getRef('user_arb_id').value = addrs.arb;
-                                    getRef('user_op_id').value = addrs.op;
-                                    getRef('user_avax_id').value = addrs.avax;
-                                }
-                            }).catch(console.error);
-                        }).catch(console.error);
-                    }
-                    getRef('user_button').classList.remove('hidden')
+                    getRef('upvote_button').title = `Signed in as ${floGlobals.myFloID}`
                     console.log(result)
                 }).catch(error => console.error(error))
             }
