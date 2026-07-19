@@ -3584,6 +3584,37 @@
             .hidden {
                 display: none
             }
+            .user-status-pill {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.4rem 1rem;
+                border-radius: 2rem;
+                background-color: transparent;
+                border: 1px solid rgba(var(--text-color), 0.3);
+                cursor: pointer;
+                color: inherit;
+                font-family: inherit;
+                font-size: 0.9rem;
+                font-weight: 500;
+                transition: background-color 0.2s;
+            }
+            .user-status-pill:hover {
+                background-color: rgba(var(--text-color), 0.08);
+            }
+            .user-status-text-truncate {
+                max-width: 140px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: inline-block;
+                vertical-align: middle;
+            }
+            @media screen and (min-width: 40rem) {
+                .user-status-text-truncate {
+                    max-width: none;
+                }
+            }
         </style>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -3602,13 +3633,12 @@
                 <h4>RanchiMall Times</h4>
             </a>
             <theme-toggle></theme-toggle>
-            <button id="user_button" class="hidden" onclick="openPopup('user_popup')">
-                <svg xmlns="http://www.w3.org/2000/svg" class="icon" height="24px" viewBox="0 0 24 24" width="24px"
-                    fill="#000000">
-                    <path d="M0 0h24v24H0V0z" fill="none" />
-                    <path
-                        d="M12 5.9c1.16 0 2.1.94 2.1 2.1s-.94 2.1-2.1 2.1S9.9 9.16 9.9 8s.94-2.1 2.1-2.1m0 9c2.97 0 6.1 1.46 6.1 2.1v1.1H5.9V17c0-.64 3.13-2.1 6.1-2.1M12 4C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 9c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z" />
+            <button id="user_button" class="user-status-pill" onclick="isLoggedIn ? openPopup('user_popup') : openPopup('sign_in_popup')">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor">
+                    <path d="M0 0h24v24H0V0z" fill="none"/>
+                    <path d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 10c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-12C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                 </svg>
+                <span id="user_status_text" class="user-status-text-truncate">Not logged in</span>
             </button>
         </header>
         <article class="page-layout">
@@ -4009,7 +4039,7 @@
 
                 //Required for blockchain API operators
                 apiURL: {
-                    FLO: ['https://blockbook.ranchimall.net/', 'https://livenet.flocha.in/', 'https://flosight.duckdns.org/'],
+                    FLO: ['https://blockbook.ranchimall.net/'],
                     FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
                 },
                 adminID: "FF5pewfsJxyrCvg8a2C8VXefeyVvKvQxmF",
@@ -4073,6 +4103,16 @@
                 {
                     opacity: 0,
                     transform: 'translateY(-1rem)'
+                },
+                {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                },
+            ]
+            const slideInUp = [
+                {
+                    opacity: 0,
+                    transform: 'translateY(1rem)'
                 },
                 {
                     opacity: 1,
@@ -4181,29 +4221,50 @@
             let currentArticleID
 
             function getArticleVoteState(articleID) {
-                floGlobals.appObjects ??= {}
-                floGlobals.appObjects.rmTimes ??= { articles: {} }
-                floGlobals.appObjects.rmTimes.articles ??= {}
+                floGlobals.appObjects ??= {};
+                floGlobals.appObjects.rmTimes ??= { articles: {} };
+                floGlobals.appObjects.rmTimes.articles ??= {};
                 if (!floGlobals.appObjects.rmTimes.articles[articleID]) {
-                    const storageKey = `article_${articleID}_votes`;
-                    let state = { votes: 0, lastCountedVC: 0, pendingVotes: 0 };
-                    try {
-                        const stored = localStorage.getItem(storageKey);
-                        if (stored) state = Object.assign(state, JSON.parse(stored));
-                    } catch (e) {}
+                    let state = { votes: 0, lastCountedVC: 0, pendingVotes: 0, isCached: false };
+                    
+                    let saved = localStorage.getItem(`article_${articleID}_vote_state`);
+                    if (saved) {
+                        try {
+                            let parsed = JSON.parse(saved);
+                            state.votes = parsed.votes || 0;
+                            state.lastCountedVC = parsed.lastCountedVC || 0;
+                            state.isCached = true;
+                        } catch (e) {}
+                    }
                     floGlobals.appObjects.rmTimes.articles[articleID] = state;
                 }
-                floGlobals.appObjects.rmTimes.articles[articleID].votes ??= 0
-                floGlobals.appObjects.rmTimes.articles[articleID].lastCountedVC ??= 0
-                floGlobals.appObjects.rmTimes.articles[articleID].pendingVotes ??= 0
-                return floGlobals.appObjects.rmTimes.articles[articleID]
+                floGlobals.appObjects.rmTimes.articles[articleID].votes ??= 0;
+                floGlobals.appObjects.rmTimes.articles[articleID].lastCountedVC ??= 0;
+                floGlobals.appObjects.rmTimes.articles[articleID].pendingVotes ??= 0;
+                return floGlobals.appObjects.rmTimes.articles[articleID];
             }
 
             function saveArticleVoteState(articleID) {
                 const state = getArticleVoteState(articleID);
-                localStorage.setItem(`article_${articleID}_votes`, JSON.stringify(state));
+                localStorage.setItem(`article_${articleID}_vote_state`, JSON.stringify({
+                    votes: state.votes,
+                    lastCountedVC: state.lastCountedVC
+                }));
             }
             window.addEventListener("load", () => {
+                let currentAddressIndex = 0;
+                setInterval(() => {
+                    if (isLoggedIn && getRef('user_status_text')) {
+                        const copies = Array.from(document.querySelectorAll('#user_popup sm-copy'));
+                        const validAddresses = copies.map(c => c.value).filter(v => v && v.trim().length > 0);
+                        if (validAddresses.length > 0) {
+                            currentAddressIndex = (currentAddressIndex + 1) % validAddresses.length;
+                            getRef('user_status_text').textContent = validAddresses[currentAddressIndex];
+                        }
+                    }
+                }, 5000);
+
+
                 currentArticleID = document.body.dataset.articleId
                 document.body.classList.remove('hidden')
                 document.querySelectorAll('sm-input[data-private-key]').forEach(input => input.customValidation = floCrypto.getPubKeyHex)
@@ -4277,30 +4338,40 @@
                 saveArticleVoteState(articleID);
                 const displayVotes = state.votes + state.pendingVotes;
                 
-                getRef('like_count').animate(slideOutUp, animOptions)
-                    .onfinish = (e) => {
-                        e.target.cancel()
-                    }
+                // Remove any leftover temp counts from rapid consecutive updates
+                document.querySelectorAll('.temp-count').forEach(el => el.remove());
+                
+                getRef('like_count').animate(slideOutUp, animOptions);
+                    
                 const tempCount = document.createElement('div')
                 tempCount.classList.add('temp-count')
                 tempCount.textContent = displayVotes
                 getRef('like_count').after(tempCount)
                 tempCount.animate(slideInUp, animOptions)
                     .onfinish = () => {
-                        getRef('like_count').textContent = displayVotes
-                        tempCount.remove()
+                        const lc = getRef('like_count');
+                        lc.textContent = displayVotes;
+                        // Instead of canceling the animation which causes flashing,
+                        // we just clear all animations on it so it resets cleanly.
+                        lc.getAnimations().forEach(anim => anim.cancel());
+                        tempCount.remove();
                     }
             }
             getRef('upvote_button').addEventListener('click', debounce(() => {
                 if (isLoggedIn) {
+                    if (tempVoteCount === 0) return;
+                    let currentCount = tempVoteCount;
+                    tempVoteCount = 0;
                     floCloudAPI.sendGeneralData({
-                        voteCount: tempVoteCount,
+                        voteCount: currentCount,
                     }, `article_${currentArticleID}_votes`)
                         .then(res => {
-                            tempVoteCount = 0
                             console.log('up voted')
                         })
-                        .catch(err => console.log(err))
+                        .catch(err => {
+                            console.log(err)
+                            tempVoteCount += currentCount;
+                        })
                 } else {
                     openPopup('sign_in_popup')
                 }
@@ -4352,16 +4423,51 @@
                 //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
                 currentArticleID = document.body.dataset.articleId
                 const state = getArticleVoteState(currentArticleID);
-                getRef('like_count').textContent = state.votes + state.pendingVotes;
-                let firstLoad = true
-                floDapps.setMidStartup(() => new Promise(async (resolve, reject) => {
+                if (state.isCached) {
+                    getRef('like_count').textContent = state.votes + state.pendingVotes;
+                }
+                let firstLoad = true;
+                
+                async function fetchLiveVotes() {
                     try {
-                        await floCloudAPI.requestObjectData('rmTimes')
-                        await floCloudAPI.requestGeneralData(`article_${currentArticleID}_votes`, {
-                            lowerVectorClock: getArticleVoteState(currentArticleID).lastCountedVC + 1,
+                        await floCloudAPI.requestObjectData('rmTimes');
+                        
+                        // 1. Fetch historical data via REST
+                        await floCloudAPI.requestGeneralData(`article_${currentArticleID}_votes`);
+                        
+                        const fk = `article_${currentArticleID}_votes|${floGlobals.adminID}|${floGlobals.application}`;
+                        const allVotes = floGlobals.generalData[fk] || {};
+                        
+                        let initialVotesSum = 0;
+                        let maxVC = getArticleVoteState(currentArticleID).lastCountedVC;
+                        
+                        for (const voteId in allVotes) {
+                            const vote = allVotes[voteId];
+                            if (vote && vote.vectorClock > getArticleVoteState(currentArticleID).lastCountedVC) {
+                                let count = 1;
+                                if (vote.message && vote.message.voteCount !== undefined) {
+                                    count = vote.message.voteCount;
+                                }
+                                initialVotesSum += count;
+                                if (vote.vectorClock > maxVC) maxVC = vote.vectorClock;
+                            }
+                        }
+                        
+                        if (initialVotesSum > 0) {
+                            getArticleVoteState(currentArticleID).lastCountedVC = maxVC;
+                            const state = getArticleVoteState(currentArticleID);
+                            state.votes += initialVotesSum;
+                            saveArticleVoteState(currentArticleID);
+                        }
+                        
+                        // Always update the UI after fetching historical data (so it replaces 'Loading...')
+                        getRef('like_count').textContent = getArticleVoteState(currentArticleID).votes + getArticleVoteState(currentArticleID).pendingVotes;
+                        
+                        // 2. Start WebSocket for live updates
+                        floCloudAPI.requestGeneralData(`article_${currentArticleID}_votes`, {
                             callback: (allVotes, e) => {
                                 let newVotesSum = 0;
-                                let maxVC = getArticleVoteState(currentArticleID).lastCountedVC;
+                                let liveMaxVC = getArticleVoteState(currentArticleID).lastCountedVC;
                                 
                                 for (const voteId in allVotes) {
                                     const vote = allVotes[voteId];
@@ -4372,37 +4478,34 @@
                                         }
                                         newVotesSum += count;
                                         
-                                        if (vote.senderID === floDapps.user.id) {
+                                        if (floDapps.user && vote.senderID === floDapps.user.id) {
                                             getArticleVoteState(currentArticleID).pendingVotes = Math.max(0, getArticleVoteState(currentArticleID).pendingVotes - count);
                                         }
 
-                                        if (vote.vectorClock > maxVC) {
-                                            maxVC = vote.vectorClock;
+                                        if (vote.vectorClock > liveMaxVC) {
+                                            liveMaxVC = vote.vectorClock;
                                         }
                                     }
                                 }
                                 
                                 if (newVotesSum > 0) {
-                                    getArticleVoteState(currentArticleID).lastCountedVC = maxVC;
-                                    if (firstLoad) {
-                                        const state = getArticleVoteState(currentArticleID);
-                                        state.votes += newVotesSum;
-                                        saveArticleVoteState(currentArticleID);
-                                        getRef('like_count').textContent = state.votes + state.pendingVotes;
-                                    } else {
-                                        // animateLikeCount saves the state
-                                        animateLikeCount(newVotesSum, currentArticleID);
-                                    }
+                                    getArticleVoteState(currentArticleID).lastCountedVC = liveMaxVC;
+                                    animateLikeCount(newVotesSum, currentArticleID);
                                 }
-                                firstLoad = false;
                             }
-                        })
+                        });
                     } catch (e) {
-                        console.warn('Could not fetch vote data (cloud offline?):', e)
+                        console.warn('Could not fetch vote data (cloud offline?):', e);
                         const state = getArticleVoteState(currentArticleID);
                         getRef('like_count').textContent = state.votes + state.pendingVotes;
                     }
-                    resolve(true)
+                }
+                
+                floDapps.setMidStartup(() => new Promise(async (resolve, reject) => {
+                    // Fetch votes immediately once the cloud network is initialized
+                    // but before the user finishes logging in.
+                    await fetchLiveVotes();
+                    resolve(true);
                 }))
                 floDapps.setCustomPrivKeyInput(() => new Promise((resolve, reject) => {
                     getRef('sign_in_button').onclick = () => {
@@ -4424,6 +4527,12 @@
 
                 floDapps.launchStartUp().then(async result => {
                     isLoggedIn = true;
+                    
+                    // Prevent auto-login on other articles/tabs by clearing the saved credentials,
+                    // but keep the current session active in memory.
+                    localStorage.removeItem(`${floGlobals.application}#privKey`);
+                    compactIDB.clearData('credentials', floGlobals.application).catch(e => console.warn(e));
+
                     closePopup();
                     if (getRef('sign_in_button')) {
                         getRef('sign_in_button').textContent = 'Sign in';
@@ -4452,6 +4561,9 @@
                     floGlobals.isSubAdmin = floGlobals.subAdmins.includes(floGlobals.myFloID);
                     
                     if (getRef('user_button')) getRef('user_button').classList.remove('hidden');
+                    if (getRef('user_status_text')) {
+                        getRef('user_status_text').textContent = floDapps.user.id;
+                    }
                     if (getRef('user_flo_id')) getRef('user_flo_id').value = floGlobals.myFloID;
                     if (getRef('user_btc_id')) getRef('user_btc_id').value = floGlobals.myBtcID;
 

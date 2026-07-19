@@ -1674,10 +1674,10 @@ input{
 
             //Required for blockchain API operators
             apiURL: {
-                FLO: ['https://livenet.flocha.in/', 'https://flosight.duckdns.org/'],
+                FLO: ['https://blockbook.ranchimall.net/'],
                 FLO_TEST: ['https://testnet-flosight.duckdns.org/', 'https://testnet.flocha.in/']
             },
-            adminID: "FKAEdnPfjXLHSYwrXQu377ugN4tXU7VGdf",
+            adminID: "FC18nZVcHifauCsRMMeH4gkGxexuhSMFgs",
             sendAmt: 0.001,
             fee: 0.0005,
 
@@ -1687,7 +1687,7 @@ input{
 
             //for cloud apps
             subAdmins: [],
-            application: "Test_RM_Times",
+            application: "CC",
             appObjects: {},
             generalData: {},
             lastVC: {}
@@ -1906,6 +1906,16 @@ input{
                 transform: 'translateY(0)'
             },
         ]
+        const slideInUp = [
+            {
+                opacity: 0,
+                transform: 'translateY(1rem)'
+            },
+            {
+                opacity: 1,
+                transform: 'translateY(0)'
+            },
+        ]
         const slideOutUp = [
             {
                 opacity: 1,
@@ -1953,13 +1963,16 @@ input{
             //floDapps.addStartUpFunction('Sample', Promised Function)
             //floDapps.setAppObjectStores({sampleObs1:{}, sampleObs2:{options{autoIncrement:true, keyPath:'SampleKey'}, Indexes:{sampleIndex:{}}}})
             floDapps.setMidStartup(() => new Promise(async (resolve, reject) => {
-                await floCloudAPI.requestObjectData('RMT')
                 await floCloudAPI.requestGeneralData(`article_${currentArticleID}_votes`)
                 const allVotes = floGlobals.generalData[`article_${currentArticleID}_votes|${floGlobals.adminID}|${floGlobals.application}`]
-                for (const vote in allVotes) {
-                    const { message: { articleID } } = allVotes[vote]
-                    if (allVotes[vote].message.articleID === currentArticleID) {
-                        totalVotes++
+                if (allVotes) {
+                    for (const vote in allVotes) {
+                        const msg = allVotes[vote].message
+                        if (msg && msg.voteCount !== undefined) {
+                            totalVotes += msg.voteCount
+                        } else {
+                            totalVotes++
+                        }
                     }
                 }
                 getRef('like_count').textContent = totalVotes
