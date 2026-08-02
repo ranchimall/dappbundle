@@ -1333,7 +1333,7 @@
             requestCard(details) {
                 const { senderID, message: { articleID, title }, time, vectorClock } = details
                 const { publishedVc, rejectedVc, approvedID } = floGlobals.appObjects.adminData
-                const shouldRender = (approvedID.hasOwnProperty(senderID) || floGlobals.subAdmins.includes(senderID)) && !publishedVc.hasOwnProperty(vectorClock) && !rejectedVc.hasOwnProperty(vectorClock)
+                const shouldRender = floCrypto.validateAddr(senderID) && !publishedVc.hasOwnProperty(vectorClock) && !rejectedVc.hasOwnProperty(vectorClock)
                 if (shouldRender) {
                     const clone = getRef('request_template').content.cloneNode(true).firstElementChild
                     clone.dataset.vc = vectorClock
