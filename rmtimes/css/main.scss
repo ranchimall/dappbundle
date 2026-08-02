@@ -1546,3 +1546,51 @@ theme-toggle {
     overflow: overlay;
   }
 }
+
+/* Global Table Dark/Light Mode Fix */
+#article_body table,
+#preview_popup table,
+.rmtimes-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+#article_body table th,
+#article_body table td,
+#preview_popup table th,
+#preview_popup table td,
+.rmtimes-table-wrap table th,
+.rmtimes-table-wrap table td {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  padding: 10px;
+}
+
+#article_body table th,
+#preview_popup table th,
+.rmtimes-table-wrap table th {
+  background-color: rgba(var(--text-color), 0.12) !important;
+  color: rgba(var(--text-color), 1) !important;
+  text-align: left;
+}
+
+#article_body table td,
+#preview_popup table td,
+.rmtimes-table-wrap table td {
+  border-bottom: 1px solid rgba(var(--text-color), 0.15) !important;
+  color: rgba(var(--text-color), 0.9) !important;
+}
+
+#article_body table tr:nth-child(even),
+#preview_popup table tr:nth-child(even),
+.rmtimes-table-wrap table tr:nth-child(even) {
+  background-color: rgba(var(--text-color), 0.04) !important;
+}
+
+#article_body table tr:nth-child(odd),
+#preview_popup table tr:nth-child(odd),
+.rmtimes-table-wrap table tr:nth-child(odd) {
+  background-color: transparent !important;
+}
