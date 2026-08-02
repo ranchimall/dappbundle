@@ -1413,7 +1413,7 @@
                 getRef('published_time').textContent = `${getFormattedTime(published, 'date-only')}${updated ? `, Updated ${relativeTime.from(updated)}` : ''}`
                 getRef('reading_time').textContent = `${readTime} Min read`
                 getRef('article_image').src = heroImage ? `./images/${heroImage.full}` : ''
-                getRef('article_body').innerHTML = DOMPurify.sanitize(allArticles[articleID], { FORBID_ATTR: ['style'], ADD_ATTR: ['target'] })
+                getRef('article_body').innerHTML = DOMPurify.sanitize(allArticles[articleID], { FORBID_ATTR: ['style'], ADD_ATTR: ['target', 'data-backup', 'onerror'] })
                 const allHeadings = getRef('article_body').querySelectorAll('h3')
                 allHeadings.forEach(heading => {
                     const headingText = heading.textContent
@@ -2163,7 +2163,7 @@
                 const vc = button.closest('.request-card').dataset.vc;
                 const { message: { content, title } } = floGlobals.generalData[`publishing_requests|${floGlobals.adminID}|${floGlobals.application}`][vc];
 
-                getRef('preview_container').innerHTML = DOMPurify.sanitize(content, { FORBID_ATTR: ['style'], ADD_ATTR: ['target'] })
+                getRef('preview_container').innerHTML = DOMPurify.sanitize(content, { FORBID_ATTR: ['style'], ADD_ATTR: ['target', 'data-backup', 'onerror'] })
                 getRef('preview_container').prepend(createElement('h1', {
                     textContent: title
                 }))
@@ -2549,6 +2549,15 @@
                 console.log(result)
             }).catch(error => console.error(error))
         }
+
+        // Global fallback listener for broken images with data-backup attribute
+        document.addEventListener('error', function (e) {
+            if (e.target && e.target.tagName === 'IMG' && e.target.dataset && e.target.dataset.backup) {
+                const backup = e.target.dataset.backup;
+                delete e.target.dataset.backup;
+                e.target.src = backup;
+            }
+        }, true);
     </script>
 </body>
 
