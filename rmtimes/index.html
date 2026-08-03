@@ -1331,7 +1331,7 @@
                 return clone
             },
             requestCard(details) {
-                const { senderID, message: { articleID, title }, time, vectorClock } = details
+                const { senderID, message: { articleID, title, heroImage }, time, vectorClock } = details
                 const { publishedVc, rejectedVc, approvedID } = floGlobals.appObjects.adminData
                 const shouldRender = floCrypto.validateAddr(senderID) && !publishedVc.hasOwnProperty(vectorClock) && !rejectedVc.hasOwnProperty(vectorClock)
                 if (shouldRender) {
@@ -1339,6 +1339,31 @@
                     clone.dataset.vc = vectorClock
                     clone.querySelector('.request-card__title').textContent = title
                     clone.querySelector('.request-card__time').textContent = getFormattedTime(time)
+
+                    if (heroImage) {
+                        const mainUrl = typeof heroImage === 'string' ? heroImage : (heroImage.cloudinaryUrl || heroImage.gdriveUrl);
+                        const mainFilename = (typeof heroImage === 'object' && heroImage.filename) ? heroImage.filename : 'hero_800x450.jpg';
+                        const thumbUrl = (typeof heroImage === 'object' && (heroImage.thumbnailCloudinaryUrl || heroImage.thumbnailGdriveUrl)) ? (heroImage.thumbnailCloudinaryUrl || heroImage.thumbnailGdriveUrl) : mainUrl;
+                        const thumbFilename = (typeof heroImage === 'object' && heroImage.thumbnailFilename) ? heroImage.thumbnailFilename : 'hero_thumb.jpg';
+                        const thumbKbText = (typeof heroImage === 'object' && heroImage.thumbSizeKb) ? ` (${heroImage.thumbSizeKb} KB)` : '';
+
+                        if (mainUrl) {
+                            const badge = createElement('div', {
+                                className: 'hero-image-badge-wrap',
+                                style: 'margin-top: 6px; font-size: 0.82rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;',
+                                innerHTML: `
+                                    <span style="color: #27ae60; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                        ✓ Contributor Hero Image (800x450 & Thumb <100KB)
+                                    </span>
+                                    <button type="button" class="hero-preview-btn" data-hero-url="${mainUrl}" style="background: #f0ecf9; color: #4d2588; border: 1px solid #d4c5ed; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: 600;">Preview 800x450</button>
+                                    <button type="button" class="hero-download-btn" data-hero-url="${mainUrl}" data-hero-name="${mainFilename}" style="background: #ffffff; color: #333; border: 1px solid #ccc; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: 600;">Download Main (800x450)</button>
+                                    <button type="button" class="hero-download-btn" data-hero-url="${thumbUrl}" data-hero-name="${thumbFilename}" style="background: #eef9f2; color: #1e7e34; border: 1px solid #b7e4c7; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: 600;">Download Thumb${thumbKbText}</button>
+                                `
+                            });
+                            clone.querySelector('.grid').append(badge);
+                        }
+                    }
+
                     clone.querySelector('.publish-button').textContent = floGlobals.appObjects.rmTimes.articles.hasOwnProperty(articleID) ? 'Update' : 'Publish'
                     return clone
                 }
@@ -2168,6 +2193,31 @@
                     textContent: title
                 }))
                 openPopup('preview_popup')
+            } else if (e.target.closest('.hero-preview-btn')) {
+                const btn = e.target.closest('.hero-preview-btn');
+                const heroUrl = btn.dataset.heroUrl;
+                getRef('preview_container').innerHTML = `<div style="text-align:center; padding: 20px;"><img src="${heroUrl}" style="max-width:100%; height:auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);" alt="Contributor Hero Image"></div>`;
+                getRef('preview_container').prepend(createElement('h1', {
+                    textContent: "Contributor Hero Image Preview"
+                }));
+                openPopup('preview_popup');
+            } else if (e.target.closest('.hero-download-btn')) {
+                const btn = e.target.closest('.hero-download-btn');
+                const heroUrl = btn.dataset.heroUrl;
+                const heroName = btn.dataset.heroName || 'contributor_hero_image.png';
+                fetch(heroUrl)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        const a = document.createElement('a');
+                        a.href = URL.createObjectURL(blob);
+                        a.download = heroName;
+                        document.body.appendChild(a);
+                        a.click();
+                        a.remove();
+                    })
+                    .catch(err => {
+                        window.open(heroUrl, '_blank');
+                    });
             } else if (e.target.closest('.delete-request')) {
                 getConfirmation(`Delete this request?`).then(res => {
                     if (res) {
