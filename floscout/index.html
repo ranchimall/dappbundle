@@ -2526,20 +2526,6 @@ function renderTransactions(transactions = []) {
 				return [];
 			}
 		}
-		function dedupeAndSumBalances(transactions, token) {
-			const balances = {};
-			const seen = new Set();
-			for (const tx of transactions || []) {
-				const id = tx.txid || tx.hash || tx.txID || tx.transactionTrigger;
-				if (!id || seen.has(id)) continue; seen.add(id);
-				const amt = Number(tx.tokenAmount || 0); if (!amt) continue;
-				if (tx.tokenIdentification?.toLowerCase() !== token.toLowerCase()) continue;
-				balances[tx.receiverAddress] = (balances[tx.receiverAddress] || 0) + amt;
-				balances[tx.senderAddress] = (balances[tx.senderAddress] || 0) - amt;
-			}
-			for (const k in balances) if (balances[k] <= 0) delete balances[k];
-			return balances;
-		}
 
 		async function getTokenTransactions(tokenName) {
 			try {
@@ -2549,12 +2535,32 @@ function renderTransactions(transactions = []) {
 				console.log("📦 Token transactions fetched:", transactions);
 				const raw = transactions.transactions || [];
 				const seen = new Set(); const out = [];
-				for (const tx of raw) { const id = tx.txid || tx.hash || tx.txID || tx.transactionTrigger; if (!id || seen.has(id)) continue; seen.add(id); out.push(tx); }
+				for (const tx of raw) {
+					const id = tx.transactionDetails?.txid || tx.transactionDetails?.hash || tx.txid || tx.hash || tx.txID || tx.transactionTrigger || tx.parsedFloData?.txid;
+					if (!id || seen.has(id)) continue; seen.add(id); out.push(tx);
+				}
 				return out;
 			} catch (error) {
 				console.error("❌ Error fetching token transactions:", error);
 				return [];
 			}
+		}
+		function dedupeAndSumBalances(transactions, token) {
+			const balances = {};
+			const seen = new Set();
+			for (const tx of transactions || []) {
+				const id = tx.transactionDetails?.txid || tx.txid || tx.hash || tx.txID || tx.transactionTrigger;
+				if (!id || seen.has(id)) continue; seen.add(id);
+				const amt = Number(tx.parsedFloData?.tokenAmount ?? tx.tokenAmount ?? 0); if (!amt) continue;
+				const tk = (tx.parsedFloData?.tokenIdentification || tx.tokenIdentification || '').toLowerCase();
+				if (tk !== token.toLowerCase()) continue;
+				const rcv = tx.transactionDetails?.receiverAddress || tx.receiverAddress;
+				const snd = tx.transactionDetails?.senderAddress || tx.senderAddress;
+				if (rcv) balances[rcv] = (balances[rcv] || 0) + amt;
+				if (snd) balances[snd] = (balances[snd] || 0) - amt;
+			}
+			for (const k in balances) if (balances[k] <= 1e-8) delete balances[k];
+			return balances;
 		}
 
 
