@@ -69,8 +69,36 @@
     const getBalance = tokenAPI.getBalance = function (floID, token = DEFAULT.currency) {
         return new Promise((resolve, reject) => {
             fetch_api(`api/v2/floAddressInfo/${floID}`)
-                .then(result => resolve(result.floAddressBalances[token]?.balance || 0))
-                .catch(error => reject(error))
+                .then(result => {
+                    const direct = result.floAddressBalances?.[token]?.balance ?? result.floAddressBalances?.[token?.toLowerCase()]?.balance;
+                    if (direct != null && Number(direct) > 0) return resolve(direct);
+                    fetch_api(`api/v2/floAddressTransactions/${floID}?token=${encodeURIComponent(token)}`)
+                        .then(j => {
+                            const txs = j.transactions || j || [];
+                            const seen = new Set(); let bal = 0;
+                            for (const tx of txs) {
+                                const id = tx.txid || tx.hash || tx.txID || tx.transactionTrigger;
+                                if (!id || seen.has(id)) continue; seen.add(id);
+                                const amt = Number(tx.tokenAmount || 0); if (!amt) continue;
+                                if (tx.receiverAddress === floID) bal += amt; else if (tx.senderAddress === floID) bal -= amt;
+                            }
+                            resolve(bal);
+                        }).catch(() => resolve(direct || 0));
+                })
+                .catch(() => {
+                    fetch_api(`api/v2/floAddressTransactions/${floID}?token=${encodeURIComponent(token)}`)
+                        .then(j => {
+                            const txs = j.transactions || j || [];
+                            const seen = new Set(); let bal = 0;
+                            for (const tx of txs) {
+                                const id = tx.txid || tx.hash || tx.txID || tx.transactionTrigger;
+                                if (!id || seen.has(id)) continue; seen.add(id);
+                                const amt = Number(tx.tokenAmount || 0); if (!amt) continue;
+                                if (tx.receiverAddress === floID) bal += amt; else if (tx.senderAddress === floID) bal -= amt;
+                            }
+                            resolve(bal);
+                        }).catch(error => reject(error));
+                })
         })
     }
 

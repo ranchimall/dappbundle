@@ -1636,9 +1636,15 @@ router.addRoute('address', async state => {
 		}
 
 
-        const ownedTokens = addressInfo?.floAddressBalances || {};
+        let ownedTokens = addressInfo?.floAddressBalances || {};
         console.log("✅ ownedTokens fetched from addressInfo:", ownedTokens);
-
+        const hasUsdaiKey = ownedTokens['usdai'] || ownedTokens['USDAI'] || ownedTokens['USDai'];
+        if (!hasUsdaiKey) {
+            try {
+                const usdaiBal = await floTokenAPI.getBalance(floAddress, 'usdai');
+                if (Number(usdaiBal) > 0) ownedTokens['usdai'] = { balance: usdaiBal, token: 'usdai' };
+            } catch {}
+        }
         const ownedTokensCards = [];
         for (const token in ownedTokens) {
             ownedTokensCards.push(
@@ -1700,10 +1706,14 @@ router.addRoute('token', async state => {
 
 		let { supply, incAddress } = tokenInfo;
 
+		const recomputedBalances = dedupeAndSumBalances(tokenTransactions, token);
+		const effectiveBalances = Object.keys(recomputedBalances).length ? recomputedBalances : tokenBalances;
+		if (Object.keys(recomputedBalances).length) console.log(" recomputedBalances (deduped):", recomputedBalances);
+
 		// Render token holders
 		const tokenHolders = [];
-		for (const address in tokenBalances) {
-			tokenHolders.push(render.addrBalanceCard(address, tokenBalances[address], tokenInfo.token));
+		for (const address in effectiveBalances) {
+			tokenHolders.push(render.addrBalanceCard(address, effectiveBalances[address], tokenInfo.token));
 		}
 		console.log("✅ Number of token holders:", tokenHolders.length);
 
@@ -2516,6 +2526,20 @@ function renderTransactions(transactions = []) {
 				return [];
 			}
 		}
+		function dedupeAndSumBalances(transactions, token) {
+			const balances = {};
+			const seen = new Set();
+			for (const tx of transactions || []) {
+				const id = tx.txid || tx.hash || tx.txID || tx.transactionTrigger;
+				if (!id || seen.has(id)) continue; seen.add(id);
+				const amt = Number(tx.tokenAmount || 0); if (!amt) continue;
+				if (tx.tokenIdentification?.toLowerCase() !== token.toLowerCase()) continue;
+				balances[tx.receiverAddress] = (balances[tx.receiverAddress] || 0) + amt;
+				balances[tx.senderAddress] = (balances[tx.senderAddress] || 0) - amt;
+			}
+			for (const k in balances) if (balances[k] <= 0) delete balances[k];
+			return balances;
+		}
 
 		async function getTokenTransactions(tokenName) {
 			try {
@@ -2523,7 +2547,10 @@ function renderTransactions(transactions = []) {
 				console.log(`📡 Fetching token transactions from: ${url}`);
 				const transactions = await fetchJson(url);
 				console.log("📦 Token transactions fetched:", transactions);
-				return transactions.transactions;
+				const raw = transactions.transactions || [];
+				const seen = new Set(); const out = [];
+				for (const tx of raw) { const id = tx.txid || tx.hash || tx.txID || tx.transactionTrigger; if (!id || seen.has(id)) continue; seen.add(id); out.push(tx); }
+				return out;
 			} catch (error) {
 				console.error("❌ Error fetching token transactions:", error);
 				return [];
@@ -2994,11 +3021,24 @@ function parseTransactions(txList) {
 
 		async function getAddressTxs(floAddress) {
 			try {
-				const url = `${floGlobals.tokenApiUrl}/api/v2/floAddressTransactions/${floAddress}`;
-				console.log(`📡 Fetching address transactions from: ${url}`);
-				const transactions = await fetchJson(url);
-				console.log("📦 Address transactions:", transactions);
-				return transactions.transactions || [];
+				// fetch both token types separately and merge — single call without ?token= now only returns rupee
+				const urls = [
+					`${floGlobals.tokenApiUrl}/api/v2/floAddressTransactions/${floAddress}?token=rupee`,
+					`${floGlobals.tokenApiUrl}/api/v2/floAddressTransactions/${floAddress}?token=usdai`,
+					`${floGlobals.tokenApiUrl}/api/v2/floAddressTransactions/${floAddress}`
+				];
+				
+				const results = await Promise.allSettled(urls.map(u => fetchJson(u)));
+				const all = [];
+				for (const r of results) if (r.status === 'fulfilled' && r.value?.transactions) all.push(...r.value.transactions);
+				// if all empty, fallback to single fetch already done above
+				const raw = all.length ? all : (await fetchJson(urls[2])).transactions || [];
+				
+				const seen = new Set(); const out = [];
+				for (const tx of raw) { const id = tx.txid || tx.hash || tx.txID || tx.transactionTrigger; if (!id || seen.has(id)) continue; seen.add(id); out.push(tx); }
+				// newest first for display
+				out.sort((a,b) => (b.time||0)-(a.time||0));
+				return out;
 			} catch (error) {
 				console.error("❌ Error fetching address transactions:", error);
 				return [];
