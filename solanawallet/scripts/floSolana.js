@@ -92,7 +92,7 @@
   // isFLO = true for FLO wif, omit this for Bitcoin wif
   const solanaSeed2wif = (floSolana.solanaSeed2wif = function (
     solanaSeed,
-    isFLO
+    isFLO,
   ) {
     var p1, p2, k1, k2, k3, k4, k5, temp;
     p1 = Crypto.util.hexToBytes(solanaSeed);
@@ -120,6 +120,31 @@
       k2 = k1.secretKey;
       k3 = bs58.encode(k2);
       return k3;
+    });
+
+  const solanaPrivateKey2SolanaSecret =
+    (floSolana.solanaPrivateKey2SolanaSecret = function (privateKey) {
+      const value = String(privateKey).trim();
+
+      if (/^[0-9a-fA-F]{64}$/.test(value)) {
+        return floSolana.solanaSeed2SolanaSecret(value);
+      }
+
+      if (value.length < 64) {
+        return floSolana.wif2SolanaSecret(value);
+      }
+
+      const decoded = bs58.decode(value);
+      if (decoded.length === 64) {
+        return value;
+      }
+
+      throw new Error("Invalid Solana private key");
+    });
+
+  const solanaPrivateKey2UsableInCode =
+    (floSolana.solanaPrivateKey2UsableInCode = function (privateKey) {
+      return bs58.decode(floSolana.solanaPrivateKey2SolanaSecret(privateKey));
     });
 
   /*floSolana.wif2SolanaSeedUint8 = function(wif){
@@ -163,7 +188,7 @@
 
   const solanaSecret2SolanaSeed = (floSolana.solanaSecret2SolanaSeed =
     function (solanaSecret) {
-      var p1, p2, k1;
+      var p1, p2, k1, k2;
       p1 = bs58.decode(solanaSecret);
       p2 = p1.slice(0, 32);
       k1 = Array.from(p2);
@@ -187,7 +212,7 @@
   // isFLO = true for FLO wif, omit this for Bitcoin wif
   const solanaSecret2wif = (floSolana.solanaSecret2wif = function (
     solanaSecret,
-    isFLO
+    isFLO,
   ) {
     var p1, p2, k1, k2, k3, k4, k5, temp;
     p1 = floSolana.solanaSecret2SolanaSeed(solanaSecret);
@@ -201,7 +226,7 @@
     });
 
   const solanaAddressDecode = (floSolana.solanaAddressDecode = function (
-    solanaAddress
+    solanaAddress,
   ) {
     return bs58.decode(solanaAddress);
   });
@@ -242,6 +267,7 @@
     const keyPair = solanaWeb3.Keypair.generate();
     const publicKey = keyPair.publicKey.toBase58();
     const secretKey = Array.from(keyPair.secretKey);
+    const secretKeyBase58 = bs58.encode(keyPair.secretKey);
     const hexSecretKey = secretKey
       .map((byte) => byte.toString(16).padStart(2, "0"))
       .join("");
@@ -250,6 +276,14 @@
     const floWif = floSolana.solanaSeed2wif(seed, true);
     const floAddress = floCrypto.getAddress(floWif);
     const bitcoinAddress = floCrypto.getAddress(bitcoinWif, true);
-    return { publicKey, seed, bitcoinWif, floWif, floAddress, bitcoinAddress };
+    return {
+      publicKey,
+      seed,
+      secretKey: secretKeyBase58,
+      bitcoinWif,
+      floWif,
+      floAddress,
+      bitcoinAddress,
+    };
   });
 })("object" === typeof module ? module.exports : (window.floSolana = {}));

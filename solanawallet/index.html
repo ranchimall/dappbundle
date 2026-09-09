@@ -171,8 +171,8 @@
       <div class="grid gap-0-5">
         <h4>Did you forget your Solana Address?</h4>
         <p>
-          If you have your Solana Seed, enter it here and recover your Solana
-          Address.
+          If you have your Solana Seed or Solana Private Key, enter it here and
+          recover your Solana Address.
         </p>
       </div>
       <sm-form>
@@ -180,7 +180,7 @@
           <h5>Recovered Solana Address</h5>
           <sm-copy id="recovered_btc_addr"></sm-copy>
         </div>
-        <sm-input id="retrieve_btc_addr_field" type="password" placeholder="Solana Seed" class="password-field"
+        <sm-input id="retrieve_btc_addr_field" type="password" placeholder="Solana Seed OR Private Key" class="password-field"
           data-seed-key required autofocus>
           <label slot="right" class="interact">
             <input type="checkbox" class="hidden" autocomplete="off" readonly
@@ -550,17 +550,13 @@
               return {
                 isValid: false,
                 errorText:
-                  "Please enter a Solana Seed OR Bitcoin Private Key OR FLO Private Key",
+                  "Please enter a Solana Seed, Solana Private Key, Bitcoin Private Key OR FLO Private Key",
               };
             return {
               isValid: (() => {
                 try {
-                  const secret =
-                    value.length < 64
-                      ? floSolana.wif2SolanaSecret(value)
-                      : floSolana.solanaSeed2SolanaSecret(value);
                   const secretKey =
-                    floSolana.solanaSecret2UsableInCode(secret);
+                    floSolana.solanaPrivateKey2UsableInCode(value);
                   const keypair = solanaWeb3.Keypair.fromSecretKey(
                     Uint8Array.from(
                       secretKey.toString().split(",").map(Number)
@@ -571,7 +567,7 @@
                   return false;
                 }
               })(),
-              errorText: `Invalid Solana Seed OR Bitcoin Private Key OR FLO Private Key`,
+              errorText: `Invalid Solana Seed, Solana Private Key, Bitcoin Private Key OR FLO Private Key`,
             };
           },
         },
@@ -581,12 +577,13 @@
             if (!value)
               return {
                 isValid: false,
-                errorText: "Please enter a Solana Seed",
+                errorText: "Please enter a Solana Seed or Private Key",
               };
             return {
               isValid: (() => {
                 try {
-                  const secret = floSolana.solanaSeed2SolanaSecret(value);
+                  const secret =
+                    floSolana.solanaPrivateKey2SolanaSecret(value);
                   const secretKey =
                     floSolana.solanaSecret2UsableInCode(secret);
                   const keypair = solanaWeb3.Keypair.fromSecretKey(
@@ -599,7 +596,7 @@
                   return false;
                 }
               })(),
-              errorText: `Invalid Solana Seed. Please check and try again`,
+              errorText: `Invalid Solana Seed or Private Key. Please check and try again`,
             };
           },
         },
@@ -3387,11 +3384,7 @@
     function checkSenderBalance() {
       let address;
       const secret = getRef("private_key_input").value;
-      const pKey =
-        secret.length < 64
-          ? floSolana.wif2SolanaSecret(secret)
-          : floSolana.solanaSeed2SolanaSecret(secret);
-      const privateKey = floSolana.solanaSecret2UsableInCode(pKey);
+      const privateKey = floSolana.solanaPrivateKey2UsableInCode(secret);
       if (!privateKey)
         return notify(`Please enter sender's private key to check balance`);
       if (privateKey) {
@@ -3477,11 +3470,7 @@
         if (!confirmation) return;
 
         const secret = getRef("private_key_input").value.trim();
-        const pKey =
-          secret.length < 64
-            ? floSolana.wif2SolanaSecret(secret)
-            : floSolana.solanaSeed2SolanaSecret(secret);
-        let privateKey = floSolana.solanaSecret2UsableInCode(pKey);
+        let privateKey = floSolana.solanaPrivateKey2UsableInCode(secret);
 
         console.log("private key", privateKey);
         const senderKeypair = solanaWeb3.Keypair.fromSecretKey(privateKey);
@@ -3757,7 +3746,9 @@
         let seed = getRef("retrieve_btc_addr_field").value.trim();
         getRef("recovered_btc_addr_wrapper").classList.remove("hidden");
         getRef("recovered_btc_addr").value =
-          floSolana.solanaSeed2SolanaAddress(seed);
+          floSolana.solanaSecret2SolanaAddress(
+            floSolana.solanaPrivateKey2SolanaSecret(seed)
+          );
       }
       if (document.startViewTransition) {
         document.startViewTransition(() => {
@@ -3780,6 +3771,10 @@
                 <div>
                   <h5>Solana Address</h5>
                   <sm-copy value="${solanaKeyPair.publicKey}"></sm-copy>
+                </div>
+                <div>
+                  <h5>Solana Private Key</h5>
+                  <sm-copy value="${solanaKeyPair.secretKey}"></sm-copy>
                 </div>
               </li>
               <li class="grid gap-0-5">
