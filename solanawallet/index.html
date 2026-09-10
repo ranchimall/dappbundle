@@ -1751,7 +1751,6 @@
             '<sm-spinner class="justify-self-center margin-top-1-5"></sm-spinner>';
 
           const signatures = await getSolanaTransactionHistory(address);
-          console.log("signatures", signatures);
           if (signatures.length === 0) {
             getRef("transactions_list").textContent = "No transactions found";
             return;
@@ -3024,9 +3023,7 @@
         const walletPublicKey = new solanaWeb3.PublicKey(walletAddressString);
 
         const walletBalance = await connection.getBalance(walletPublicKey);
-        console.log(
-          `Wallet balance: ${walletBalance / solanaWeb3.LAMPORTS_PER_SOL} SOL`
-        );
+        
         return walletBalance;
       } catch (err) {
         notify(err, "error");
@@ -3243,7 +3240,7 @@
                 </div>
                 <sm-input
                   id="private_key_input"
-                  placeholder="Sender's Solana Seed OR Bitcoin Private Key OR FLO Private Key"
+                  placeholder="Sender's Solana Seed OR BTC OR FLO Private Key"
                   oninput=${handleSenderInput}
                   data-private-key
                   class="password-field"
@@ -3381,7 +3378,7 @@
       target.focusIn();
     }
 
-    function checkSenderBalance() {
+  function checkSenderBalance() {
       let address;
       const secret = getRef("private_key_input").value;
       const privateKey = floSolana.solanaPrivateKey2UsableInCode(secret);
@@ -3391,10 +3388,8 @@
         const privateKeyArray = Uint8Array.from(
           privateKey.toString().split(",").map(Number)
         );
-        console.log(privateKeyArray);
         const keypair = solanaWeb3.Keypair.fromSecretKey(privateKeyArray);
         address = keypair.publicKey.toString();
-        console.log("solana address", address);
       }
       getRef("sender_balance_container").classList.remove("hidden");
       renderElem(
@@ -3404,39 +3399,34 @@
       const promises = [getWalletBalance(address)];
 
       Promise.all(promises)
-        .then(([solBalance, tokenBalance]) => {
+        .then(([solBalance]) => {
+          const solAmount = solBalance / solanaWeb3.LAMPORTS_PER_SOL;
           renderElem(
             getRef("sender_balance_container"),
             html`
-                <div
-                  class="grid gap-1 w-100"
-                  style="padding: 1rem; border-radius: 0.5rem; border: solid thin rgba(var(--text-color),0.3)"
-                >
-                  <div class="grid">
-                    <p class="label">Sender address</p>
-                    <sm-copy value=${address}
-                      ><p>${address}</p>
-                      <p></p
-                    ></sm-copy>
-                  </div>
-                  <p>
-                    Balance:
-                    <b class="amount-shown">${solBalance} SOL</b>
-                    ${selectedAsset !== "sol"
-                ? html`|
-                          <b class="amount-shown"
-                            >${tokenBalance} ${selectedAsset.toUpperCase()}</b
-                          >`
-                : ""}
-                  </p>
+              <div
+                class="grid gap-1 w-100"
+                style="padding: 1rem; border-radius: 0.5rem; border: solid thin rgba(var(--text-color),0.3)"
+              >
+                <div class="grid">
+                  <p class="label">Sender address</p>
+                  <sm-copy value=${address}
+                    ><p>${address}</p>
+                    <p></p
+                  ></sm-copy>
                 </div>
-              `
+                <p>
+                  Balance:
+                  <b class="amount-shown">${solAmount.toFixed(9)} SOL</b>
+                </p>
+              </div>
+            `
           );
         })
         .catch((err) => {
           notify(err, "error");
         });
-    }
+}
     function handleSenderInput(e) {
       getRef("check_balance_button").disabled = !e.target.isValid;
       if (!e.target.isValid) {
@@ -3453,108 +3443,110 @@
         `Amount should be grater than 0.000001 ${asset.toUpperCase()}`
       );
     }
-    async function sendTx() {
-      const receiver = getRef("send_tx_form")
-        .querySelector(".receiver-address")
-        .value.trim();
-      const amount = parseFloat(
-        getRef("send_tx_form").querySelector(".receiver-amount").value.trim()
-      );
-      const asset = "sol";
+async function sendTx() {
+  const receiver = getRef("send_tx_form")
+    .querySelector(".receiver-address")
+    .value.trim();
+  const amount = parseFloat(
+    getRef("send_tx_form").querySelector(".receiver-amount").value.trim()
+  );
+  const asset = "sol";
+
+  try {
+    const confirmation = await getConfirmation("Send transaction", {
+      message: `You are about to send ${amount} ${asset.toUpperCase()} to ${receiver}`,
+      confirmText: "Send",
+    });
+    if (!confirmation) return;
+
+    buttonLoader("send_tx_button", true);
+
+    // ==========================================
+    // PRIVATE KEY PARSING (Unified logic)
+    // ==========================================
+    const secret = getRef("private_key_input").value.trim();
+    if (!secret) {
+      throw new Error("Please enter a private key");
+    }
+
+    // Use the canonical parser from floSolana.js
+    const privateKey = floSolana.solanaPrivateKey2UsableInCode(secret);
+    const senderKeypair = solanaWeb3.Keypair.fromSecretKey(privateKey);
+
+    // ==========================================
+    //  VALIDATE AMOUNT & BUILD TRANSACTION
+    // ==========================================
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error("Please enter a valid SOL amount");
+    }
+
+    const receiverPublicKey = new solanaWeb3.PublicKey(receiver);
+    
+    // Ensure lamports is an integer
+    const lamports = Math.round(amount * solanaWeb3.LAMPORTS_PER_SOL);
+    window.Buffer = window.Buffer || ethereumjs.Buffer.Buffer;
+    const transaction = new solanaWeb3.Transaction().add(
+      solanaWeb3.SystemProgram.transfer({
+        fromPubkey: senderKeypair.publicKey,
+        toPubkey: receiverPublicKey,
+        lamports: lamports,
+      })
+    );
+
+    // ==========================================
+    // SEND TRANSACTION
+    // ==========================================
+    const signature = await solanaWeb3.sendAndConfirmTransaction(
+      connection,
+      transaction,
+      [senderKeypair]
+    );
+
+    showTransactionResult("confirmed", { txHash: signature });
+    getRef("send_tx_form").reset();
+    getRef("sender_balance_container").classList.add("hidden");
+
+  } catch (e) {
+    console.error("Solana transaction error:", e);
+
+    // ---- Safe error handling ----
+    if (e instanceof solanaWeb3.SendTransactionError) {
+      console.error("Transaction simulation failed:", e.message);
+      let logs = [];
       try {
-        const confirmation = await getConfirmation("Send transaction", {
-          message: `You are about to send ${amount} ${asset.toUpperCase()} to ${receiver}`,
-          confirmText: "Send",
-        });
-        buttonLoader("send_tx_button", true);
-        if (!confirmation) return;
-
-        const secret = getRef("private_key_input").value.trim();
-        let privateKey = floSolana.solanaPrivateKey2UsableInCode(secret);
-
-        console.log("private key", privateKey);
-        const senderKeypair = solanaWeb3.Keypair.fromSecretKey(privateKey);
-
-        // if (/^[0-9a-fA-F]{64}$/.test(privateKey)) {
-        //   privateKey = coinjs.privkey2wif(privateKey);
-        // }
-        // privateKey = coinjs.wif2privkey(privateKey).privkey;
-
-        const receiverPublicKey = new solanaWeb3.PublicKey(receiver);
-        console.log("receiver", receiverPublicKey);
-        Buffer = ethereumjs.Buffer.Buffer;
-        const transaction = new solanaWeb3.Transaction().add(
-          solanaWeb3.SystemProgram.transfer({
-            fromPubkey: senderKeypair.publicKey,
-            toPubkey: receiverPublicKey,
-            lamports: amount * solanaWeb3.LAMPORTS_PER_SOL, // Convert SOL to lamports
-          })
-        );
-
-        const signature = await solanaWeb3.sendAndConfirmTransaction(
-          connection,
-          transaction,
-          [senderKeypair]
-        );
-        showTransactionResult("pending", { txHash: signature });
-        try {
-          await connection.confirmTransaction(signature, "confirmed");
-          showTransactionResult("confirmed", { txHash: signature });
-        } catch (error) {
-          showTransactionResult("failed", { description: error.message });
-        }
-        showTransactionResult("confirmed", { txHash: signature });
-
-        getRef("send_tx_form").reset();
-        getRef("sender_balance_container").classList.add("hidden");
-
-        const addressOfKey = floSolana.solanaSeed2SolanaAddress(secret);
-        const balance = await walletBalance(addressOfKey);
-        console.log("balance", balance);
-      } catch (e) {
-        console.error(e.message);
-        if (e instanceof solanaWeb3.SendTransactionError) {
-          console.error("Transaction simulation failed:", e.message);
-
-          // Attempt to get logs
-          const logs = e.getLogs();
-          if (logs && logs.length > 0) {
-            console.error("Transaction logs:", logs);
-          } else {
-            console.error("No logs available.");
-          }
-          notify(
-            "Transaction failed. Please check your account balance and try again.",
-            "error"
-          );
+        logs = e.getLogs ? e.getLogs() : [];
+      } catch (_) { /* ignore */ }
+      if (logs && logs.length > 0) {
+        console.error("Transaction logs:", logs);
+      } else {
+        console.error("No logs available.");
+      }
+      notify("Transaction failed. Please check your account balance and try again.", "error");
+      showTransactionResult("failed", {
+        description: "Transaction failed. Please check your account balance and try again.",
+      });
+    } else if (e.message) {
+      const regex = /\(error=({.*?}),/;
+      const match = e.message.match(regex);
+      if (match && match[1]) {
+        const { code } = JSON.parse(match[1]);
+        if (code === -32000) {
           showTransactionResult("failed", {
-            description:
-              "Transaction failed. Please check your account balance and try again.",
+            description: `Insufficient ${asset.toUpperCase()} balance`,
           });
-        }
-        if (e.message) {
-          const regex = /\(error=({.*?}),/;
-          const match = e.message.match(regex);
-          if (match && match[1]) {
-            const { code } = JSON.parse(match[1]);
-            if (code === -32000) {
-              showTransactionResult("failed", {
-                description: `Insufficient ${asset.toUpperCase()} balance`,
-              });
-            } else {
-              showTransactionResult("failed", { description: e.message });
-            }
-          } else {
-            showTransactionResult("failed", { description: e.message });
-          }
         } else {
           showTransactionResult("failed", { description: e.message });
         }
-      } finally {
-        buttonLoader("send_tx_button", false);
+      } else {
+        showTransactionResult("failed", { description: e.message });
       }
+    } else {
+      showTransactionResult("failed", { description: e.message });
     }
-
+  } finally {
+    buttonLoader("send_tx_button", false);
+  }
+}
     function showTransactionResult(status, { txHash, description = "" }) {
       switch (status) {
         case "pending":
