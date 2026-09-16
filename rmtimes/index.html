@@ -1826,7 +1826,9 @@
 
         let tempVoteCount = 0
         getRef('upvote_button').addEventListener('mouseup', function () {
-            if (typeof floDapps.user.id !== 'undefined') {
+            let isLoggedIn = false;
+            try { floDapps.user.id; isLoggedIn = true; } catch (e) { }
+            if (isLoggedIn) {
                 tempVoteCount++;
                 const animOptions = {
                     fill: 'forwards',
@@ -1880,7 +1882,9 @@
             })
         })
         getRef('upvote_button').addEventListener('click', debounce(() => {
-            if (typeof floDapps.user.id !== 'undefined') {
+            let isLoggedIn = false;
+            try { floDapps.user.id; isLoggedIn = true; } catch (e) { }
+            if (isLoggedIn) {
                 floCloudAPI.sendApplicationData({
                     voteCount: tempVoteCount,
                 }, `article_${pagesData.params.articleID}_votes`)
