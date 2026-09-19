@@ -135,6 +135,15 @@
               <span class="nav-item__title"> Create </span>
             </a>
           </li>
+          <li>
+            <a class="nav-item interactive" href="#/buy">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+                <path d="M0 0h24v24H0V0z" fill="none" />
+                <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z" />
+              </svg>
+              <span class="nav-item__title"> Buy Token </span>
+            </a>
+          </li>
         </ul>
       </nav>
       <div id="page_container"></div>
@@ -215,8 +224,16 @@
         expirationDays: 60,
       };
     </script>
+    <script>
+      const NAVIERSTOK_MINT = "4svsyTi5yRpVUUHFcKqDozCuEdhhP3H1VPy4xuTQpump";
+      const TSMX_MINT = "XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV";
+      const TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+      const SPL_TOKEN_PROGRAM_ID = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+    </script>
     <script src="https://unpkg.com/uhtml@3.0.1/es.js"></script>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bn.js@5.2.1/lib/bn.min.js"></script>
+    <script src="scripts/pump-sdk.bundle.js"></script>
     <script src="scripts/components.min.js" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/bs58@5.0.0/index.min.js"></script>
   <script src="scripts/btcwallet_scripts_lib.js" type="text/javascript"></script>
@@ -235,6 +252,7 @@
     <script src="scripts/ether.umd.min.js" type="text/javascript"></script>
     <script src="scripts/ethOperator.js" type="text/javascript"></script>
     <script>
+      window.Buffer = window.Buffer || ethereumjs.Buffer.Buffer;
       const uiGlobals = {};
       const { html, svg, render: renderElem } = uhtml;
       uiGlobals.connectionErrorNotification = [];
@@ -3030,7 +3048,7 @@
             }
           };
           const connection = new solanaWeb3.Connection(
-            "https://mainnet.helius-rpc.com/?api-key=e6f2d1ac-b6cb-4b03-8cb0-79f1d91d6805"
+            "https://mainnet.helius-rpc.com/?api-key=1d8c5ab3-db9b-4218-8233-03fac721923e"
           );
           function determineInputType(input) {
             try {
@@ -3240,7 +3258,7 @@
                   </div>
                   <sm-input
                     id="private_key_input"
-                    placeholder="Sender's Solana Seed OR BTC OR FLO Private Key"
+                    placeholder="Sol Seed or BTC or FLO Private Key"
                     oninput=${handleSenderInput}
                     data-private-key
                     class="password-field"
@@ -3373,11 +3391,160 @@
             }
           });
 
+         router.addRoute("buy", (state) => {
+          getRef("page_container").dataset.page = "buy";
+          renderElem(
+            getRef("page_container"),
+            html`
+              <sm-form id="buy_tx_form" class="grid gap-2.5" style="width: min(32rem, 100%);margin: 2rem auto;padding: 0 1rem; box-sizing: border-box;">
+              <fieldset class="flex flex-direction-column gap-1">
+                <div class="flex space-between align-center gap-1">
+                  <div class="flex flex-direction-column gap-0.5">
+                    <h4>Sender</h4>
+                    <p>SOL will be deducted from equivalent Solana address</p>
+                  </div>
+                  <button id="check_buyer_balance_button" class="button button--small button--colored" onclick="checkBuyerBalance()" disabled>
+                    Check balance
+                  </button>
+                </div>
+                <sm-input
+                  id="buy_private_key_input"
+                  placeholder="Sol Seed or BTC or FLO Private Key"
+                  oninput="validateBuyForm()"  
+                  data-private-key
+                  class="password-field"
+                  type="password"
+                  animate
+                  required
+                >
+                   <svg class="icon" slot="icon" xmlns="http://www.w3.org/2000/svg" enable-background="new 0 0 24 24" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+    <g><rect fill="none" height="24" width="24"></rect></g>
+    <g><path d="M21,10h-8.35C11.83,7.67,9.61,6,7,6c-3.31,0-6,2.69-6,6s2.69,6,6,6c2.61,0,4.83-1.67,5.65-4H13l2,2l2-2l2,2l4-4.04L21,10z M7,15c-1.65,0-3-1.35-3-3c0-1.65,1.35-3,3-3s3,1.35,3,3C10,13.65,8.65,15,7,15z"></path></g>
+  </svg>
+  
+  <label slot="right" class="interact">
+    <input type="checkbox" class="hidden" autocomplete="off" readonly onchange="togglePrivateKeyVisibility(this)" />
+    <svg class="icon invisible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+      <title>Hide password</title>
+      <path d="M0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0zm0 0h24v24H0z" fill="none"></path>
+      <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"></path>
+    </svg>
+    <svg class="icon visible" xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000">
+      <title>Show password</title>
+      <path d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+    </svg>
+  </label>
+                </sm-input>
+                <div id="buyer_balance_container" class="flex align-center gap-0-3 hidden"></div>
+              </fieldset>
+              
+              <fieldset class="flex flex-direction-column gap-1.5">
+                <div class="flex flex-direction-column gap-1">
+                  <h4>Token to Buy</h4>
+                  <div class="grid gap-1">
+                    <sm-input
+                      id="buy_token_mint"
+                      placeholder="Token Mint Address"
+                      oninput="validateBuyForm()"  
+                      data-sol-address
+                      animate
+                      required
+                    ></sm-input>
+                    <div class="flex flex-direction-column gap-0.5">
+                      <sm-input
+                        id="buy_sol_amount"
+                        class="amount-shown flex-1"
+                        placeholder="SOL Amount to Spend"
+                        type="number"
+                        step="0.000001"
+                        min="0.000001"
+                        error-text="Amount should be greater than 0.000001 SOL"
+                        oninput="validateBuyForm()" 
+                        animate
+                        required
+                      >
+                        <div class="asset-symbol flex" slot="icon">
+    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="#000000">
+      <path d="M16 0c8.837 0 16 7.163 16 16s-7.163 16-16 16S0 24.837 0 16 7.163 0 16 0zm8.706 19.517H10.34a.59.59 0 00-.415.17l-2.838 2.815a.291.291 0 00.207.498H21.66a.59.59 0 00.415-.17l2.838-2.816a.291.291 0 00-.207-.497zm-3.046-5.292H7.294l-.068.007a.291.291 0 00-.14.49l2.84 2.816.07.06c.1.07.22.11.344.11h14.366l.068-.007a.291.291 0 00.14-.49l-2.84-2.816-.07-.06a.59.59 0 00-.344-.11zM24.706 9H10.34a.59.59 0 00-.415.17l-2.838 2.816a.291.291 0 00.207.497H21.66a.59.59 0 00.415-.17l2.838-2.815A.291.291 0 0024.706 9z" />
+    </svg>
+        </div>
+                      </sm-input>
+                    </div>
+                    <div class="flex flex-direction-column gap-0.5">
+                      <sm-input
+                        id="buy_slippage"
+                        class="flex-1"
+                        placeholder="Slippage (%)"  
+                        type="number"
+                        step="0.1"
+                        min="0.1"
+                        value="15"
+                        oninput="validateBuyForm()" 
+                        animate
+                        required
+                      ></sm-input>
+                    </div>
+                  </div>
+                </div>
+                <div class="multi-state-button margin-top-1">
+                  <button id="buy_tx_button" class="button button--primary" type="submit" disabled onclick="buyTx()">
+                    Buy Token
+                  </button>
+                </div>
+              </fieldset>
+            </sm-form>
+            `
+          );
+        }); 
+
           function togglePrivateKeyVisibility(input) {
             const target = input.closest("sm-input");
             target.type = target.type === "password" ? "text" : "password";
             target.focusIn();
           }
+
+        function validateBuyForm() {
+          const pkValid = getRef("buy_private_key_input").isValid;
+          const mintValid = getRef("buy_token_mint").isValid;
+          const amountValid = parseFloat(getRef("buy_sol_amount").value) > 0;
+          const slippageValid = parseFloat(getRef("buy_slippage").value) > 0;
+
+          getRef("check_buyer_balance_button").disabled = !pkValid;
+
+          getRef("buy_tx_button").disabled = !(pkValid && mintValid && amountValid && slippageValid);
+        }
+
+        function checkBuyerBalance() {
+          const secret = getRef("buy_private_key_input").value;
+          const privateKey = floSolana.solanaPrivateKey2UsableInCode(secret);
+          if (!privateKey) return notify(`Please enter sender's private key to check balance`);
+
+          const privateKeyArray = Uint8Array.from(privateKey.toString().split(",").map(Number));
+          const keypair = solanaWeb3.Keypair.fromSecretKey(privateKeyArray);
+          const address = keypair.publicKey.toString();
+
+          getRef("buyer_balance_container").classList.remove("hidden");
+          renderElem(getRef("buyer_balance_container"), html` Loading balance...<sm-spinner></sm-spinner> `);
+
+          getWalletBalance(address)
+            .then((solBalance) => {
+              const solAmount = solBalance / solanaWeb3.LAMPORTS_PER_SOL;
+              renderElem(
+                getRef("buyer_balance_container"),
+                html`
+                  <div class="grid gap-1 w-100" style="padding: 1rem; border-radius: 0.5rem; border: solid thin rgba(var(--text-color),0.3)">
+                    <div class="grid">
+                      <p class="label">Sender address</p>
+                      <sm-copy value=${address}><p>${address}</p></sm-copy>
+                    </div>
+                    <p>Balance: <b class="amount-shown">${solAmount.toFixed(9)} SOL</b></p>
+                  </div>
+                `
+              );
+            })
+            .catch((err) => notify(err, "error"));
+        }
 
         function checkSenderBalance() {
             let address;
@@ -3546,6 +3713,255 @@
           }
         } finally {
           buttonLoader("send_tx_button", false);
+        }
+      }
+      async function confirmAndReturn(txid, blockhash, lastValidBlockHeight) {
+        if (blockhash && lastValidBlockHeight) {
+          const res = await connection.confirmTransaction(
+            { signature: txid, blockhash, lastValidBlockHeight },
+            "confirmed"
+          );
+          if (res?.value?.err) {
+            throw new Error("Transaction failed on-chain: " + JSON.stringify(res.value.err));
+          }
+          return txid;
+        }
+
+        for (let i = 0; i < 60; i++) {
+          await new Promise((r) => setTimeout(r, 1000));
+          const { value } = await connection.getSignatureStatuses([txid]);
+          const status = value[0];
+          if (status) {
+            if (status.err) {
+              throw new Error("Transaction failed on-chain: " + JSON.stringify(status.err));
+            }
+            if (status.confirmationStatus === "confirmed" || status.confirmationStatus === "finalized") {
+              return txid;
+            }
+          }
+        }
+        throw new Error("Transaction not confirmed after 60s. Signature: " + txid);
+      }
+      async function swapSolToTsmx(senderKeypair, lamports, slippageBps) {
+        const userPublicKey = senderKeypair.publicKey.toBase58();
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          let txid = null;
+          try {
+            const quoteUrl =
+              `https://lite-api.jup.ag/swap/v1/quote?inputMint=So11111111111111111111111111111111111111112` +
+              `&outputMint=${TSMX_MINT}&amount=${lamports}&slippageBps=${slippageBps}&maxAccounts=48`;
+            const quoteRes = await fetch(quoteUrl);
+            if (!quoteRes.ok) {
+              const errText = await quoteRes.text();
+              throw new Error(`Jupiter quote failed (${quoteRes.status}): ${errText.slice(0, 300)}`);
+            }
+            const quote = await quoteRes.json();
+            if (!quote.routePlan || quote.routePlan.length === 0) {
+              throw new Error(`No Jupiter route found for SOL -> TSMx (outAmount=${quote.outAmount ?? "n/a"})`);
+            }
+
+            const swapRes = await fetch("https://lite-api.jup.ag/swap/v1/swap", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                quoteResponse: quote,
+                userPublicKey,
+                wrapAndUnwrapSol: true,
+                dynamicComputeUnitLimit: true,
+                prioritizationFeeLamports: 200000,
+              }),
+            });
+            if (!swapRes.ok) {
+              const errText = await swapRes.text();
+              throw new Error(`Jupiter swap build failed (${swapRes.status}): ${errText.slice(0, 300)}`);
+            }
+            const { swapTransaction } = await swapRes.json();
+            if (!swapTransaction) throw new Error("Jupiter returned no swapTransaction");
+            window.Buffer = window.Buffer || ethereumjs.Buffer.Buffer;
+            const txBuf = Uint8Array.from(atob(swapTransaction), (c) => c.charCodeAt(0));
+            if (txBuf.length > 1232) throw new Error(`Jupiter route too large (${txBuf.length} bytes) - retrying for a smaller route`);
+            const swapTx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
+            swapTx.sign([senderKeypair]);
+            txid = await connection.sendRawTransaction(swapTx.serialize(), {
+              skipPreflight: false,
+              maxRetries: 3,
+            });
+            return await confirmAndReturn(txid);
+          } catch (e) {
+            console.log(`Step 1 attempt ${attempt}/3 failed:`, e.message);
+            if (txid) {
+              const { value } = await connection.getSignatureStatuses([txid]).catch(() => ({ value: [] }));
+              const st = value && value[0];
+              if (st && !st.err && (st.confirmationStatus === "confirmed" || st.confirmationStatus === "finalized")) return txid;
+              if (st && st.err) throw new Error("Transaction failed on-chain: " + JSON.stringify(st.err));
+            }
+            if (attempt === 3) throw e;
+            await new Promise((r) => setTimeout(r, 1000));
+          }
+        }
+      }
+      const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+      const SYSTEM_PROGRAM_ID = new solanaWeb3.PublicKey("11111111111111111111111111111111");
+      function getAssociatedTokenAddress(mint, owner, tokenProgramId) {
+        const [address] = solanaWeb3.PublicKey.findProgramAddressSync(
+          [owner.toBuffer(), tokenProgramId.toBuffer(), mint.toBuffer()],
+          ASSOCIATED_TOKEN_PROGRAM_ID
+        );
+        return address;
+      }
+      function createIdempotentAtaInstruction(owner, ata, mint, tokenProgram) {
+        return new solanaWeb3.TransactionInstruction({
+          keys: [
+            { pubkey: owner, isSigner: true, isWritable: true },
+            { pubkey: ata, isSigner: false, isWritable: true },
+            { pubkey: owner, isSigner: false, isWritable: false },
+            { pubkey: mint, isSigner: false, isWritable: false },
+            { pubkey: SYSTEM_PROGRAM_ID, isSigner: false, isWritable: false },
+            { pubkey: tokenProgram, isSigner: false, isWritable: false },
+          ],
+          programId: ASSOCIATED_TOKEN_PROGRAM_ID,
+          data: (window.Buffer || ethereumjs.Buffer.Buffer).from([1]),
+        });
+      }
+      async function getTsmxBalance(userPublicKey) {
+        const tsmxMint = new solanaWeb3.PublicKey(TSMX_MINT);
+        const token2022 = new solanaWeb3.PublicKey(TOKEN_2022_PROGRAM_ID);
+        const ata = getAssociatedTokenAddress(tsmxMint, userPublicKey, token2022);
+        const info = await connection.getTokenAccountBalance(ata).catch(() => null);
+        return info ? BigInt(info.value.amount) : 0n;
+      }
+      async function buyNavierstokWithTsmx(senderKeypair, tsmxRaw, slippagePercent) {
+        if (!window.PumpSDK) throw new Error("Pump SDK not loaded");
+        if (typeof window.BN !== "function") throw new Error("bn.js not loaded");
+        window.Buffer = window.Buffer || ethereumjs.Buffer.Buffer;
+
+        const userPublicKey = senderKeypair.publicKey;
+        const mint = new solanaWeb3.PublicKey(NAVIERSTOK_MINT);
+        const token2022 = new solanaWeb3.PublicKey(TOKEN_2022_PROGRAM_ID);
+
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            const online = new window.PumpSDK.OnlinePumpSdk(connection);
+            const global = await online.fetchGlobal();
+            const feeConfig = await online.fetchFeeConfig();
+            const curveData = await online.fetchCurveWithQuote(mint);
+
+            const curve = curveData.bondingCurve;
+            const quoteMint = new solanaWeb3.PublicKey(curveData.quoteMint);
+            const quoteTokenProgram = new solanaWeb3.PublicKey(curveData.quoteTokenProgram);
+
+            const BN = curve.virtualQuoteReserves.constructor;
+            const tsmxAmountRaw = new BN(tsmxRaw.toString(10));
+
+            const amount = window.PumpSDK.getBuyTokenAmountFromSolAmount({
+              global,
+              feeConfig,
+              mintSupply: curve.tokenTotalSupply,
+              bondingCurve: curve,
+              amount: tsmxAmountRaw,
+              quoteMint: curve.quoteMint,
+            });
+
+            const associatedUser = getAssociatedTokenAddress(mint, userPublicKey, token2022);
+
+            const offline = new window.PumpSDK.PumpSdk();
+            const ix = await offline.buyV2Instruction({
+              global,
+              mint,
+              creator: new solanaWeb3.PublicKey(curve.creator),
+              user: userPublicKey,
+              associatedUser,
+              amount,
+              quoteAmount: tsmxAmountRaw,
+              slippage: slippagePercent,
+              tokenProgram: token2022,
+              quoteMint,
+              quoteTokenProgram,
+              mayhemMode: false,
+            });
+
+            const tx = new solanaWeb3.Transaction();
+            tx.add(solanaWeb3.ComputeBudgetProgram.setComputeUnitLimit({ units: 200000 }));
+            tx.add(solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 200000 }));
+
+            const baseAtaInfo = await connection.getAccountInfo(associatedUser);
+            if (!baseAtaInfo) {
+              tx.add(createIdempotentAtaInstruction(userPublicKey, associatedUser, mint, token2022));
+            }
+
+            tx.add(ix);
+            tx.feePayer = userPublicKey;
+            const latest = await connection.getLatestBlockhash();
+            tx.recentBlockhash = latest.blockhash;
+            tx.sign(senderKeypair);
+
+            const txid = await connection.sendRawTransaction(tx.serialize(), {
+              skipPreflight: false,
+              maxRetries: 3,
+            });
+            return await confirmAndReturn(txid, latest.blockhash, latest.lastValidBlockHeight);
+          } catch (e) {
+            console.log(`Step 2 attempt ${attempt}/3 failed:`, e.message);
+            if (attempt === 3) throw e;
+          }
+        }
+      }
+      async function buyTx() {
+        const tokenMint = getRef("buy_token_mint").value.trim();
+        const solAmount = parseFloat(getRef("buy_sol_amount").value.trim());
+        const slippagePercent = parseFloat(getRef("buy_slippage").value.trim());
+        const slippageBps = Math.round(slippagePercent * 100);
+
+        if (!tokenMint || isNaN(solAmount) || solAmount <= 0) return notify("Please enter a valid token mint and SOL amount", "error");
+        if (tokenMint !== NAVIERSTOK_MINT) return notify("Buy is currently locked to the NAVIERSTOK token", "error");
+
+        const confirmation = await getConfirmation("Buy Token", {
+          message: `You are about to spend ${solAmount} SOL to buy ${tokenMint} (two-step: SOL -> TSMx -> NAVIERSTOK)`,
+          confirmText: "Buy",
+        });
+        if (!confirmation) return;
+
+        buttonLoader("buy_tx_button", true);
+
+        try {
+          const secret = getRef("buy_private_key_input").value.trim();
+          const privateKey = floSolana.solanaPrivateKey2UsableInCode(secret);
+          const senderKeypair = solanaWeb3.Keypair.fromSecretKey(privateKey);
+          const userPublicKey = senderKeypair.publicKey;
+
+          const lamports = Math.round(solAmount * solanaWeb3.LAMPORTS_PER_SOL);
+
+          const balanceBefore = await getTsmxBalance(userPublicKey);
+
+          notify("Step 1/2: swapping SOL to TSMx...", "info");
+          const step1Txid = await swapSolToTsmx(senderKeypair, lamports, slippageBps);
+          notify(`Step 1 complete (${step1Txid.slice(0, 8)}...). Waiting for TSMx balance...`, "success");
+
+          let tsmxRaw = 0n;
+          for (let i = 0; i < 20; i++) {
+            await new Promise((r) => setTimeout(r, 2000));
+            const current = await getTsmxBalance(userPublicKey);
+            if (current > balanceBefore + 1000n) {
+              tsmxRaw = current;
+              console.log(`TSMx balance after ${(i + 1) * 2}s:`, tsmxRaw.toString());
+              break;
+            }
+          }
+          if (tsmxRaw <= 1000n) {
+            throw new Error(`TSMx balance too small (${tsmxRaw.toString()} raw) - use a fresh wallet`);
+          }
+
+          notify("Step 2/2: swapping TSMx to NAVIERSTOK...", "info");
+          const txid = await buyNavierstokWithTsmx(senderKeypair, tsmxRaw, slippagePercent);
+
+          showTransactionResult("confirmed", { txHash: txid });
+          getRef("buy_tx_form").reset();
+          getRef("buyer_balance_container").classList.add("hidden");
+        } catch (e) {
+          console.error("Buy error:", e);
+          showTransactionResult("failed", { description: e.message });
+        } finally {
+          buttonLoader("buy_tx_button", false);
         }
       }
           function showTransactionResult(status, { txHash, description = "" }) {
