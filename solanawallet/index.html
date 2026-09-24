@@ -321,6 +321,9 @@
           case "success":
             icon = `<svg class="icon icon--success" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M10 15.172l9.192-9.193 1.415 1.414L10 18l-6.364-6.364 1.414-1.414z"/></svg>`;
             break;
+          case "info":
+            icon = `<svg class="icon icon--info" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>`;
+            break;
           case "error":
             icon = `<svg class="icon icon--error" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7v2h2v-2h-2zm0-8v6h2V7h-2z"/></svg>`;
             options.pinned = true;
@@ -936,6 +939,12 @@
             return `${value} SOL`;
           }
           let currentWalletAddress = "";
+          let preferredSpendMode = null;
+          let detectDebounce = null;
+          let detectedSpendKey = "";
+          let detectingTsmx = false;
+          let existingTsmxBalance = 0n;
+          let existingTsmxDecimals = 6;
 
           function testHistoricalAPIAndRenderToggle() {
             // Get date from a week ago for testing historical data
@@ -2443,6 +2452,7 @@
                 for (const keys in solanaContacts) {
                   const walletAddress =
                     solanaContacts[keys].walletAddressOrSignature;
+                  if (!walletAddress) continue;
 
                   const isFloAddr = solanaContacts[keys].isfloaddr;
                   console.log("isfloaddr", isFloAddr);
@@ -2460,7 +2470,7 @@
                             >
                               <sm-chip value=${walletAddress} selected>SOL</sm-chip>
                               <sm-chip value=${isFloAddr}
-                                >${isFloAddr.startsWith("bc")
+                                >${String(isFloAddr || "").startsWith("bc")
                           ? "BTC"
                           : "FLO"}</sm-chip
                               >
@@ -3090,6 +3100,10 @@
             if (!walletAddressOrSignature) {
               walletAddressOrSignature = getRef("wallet_address_input").value;
             }
+            walletAddressOrSignature = (walletAddressOrSignature || "").trim();
+            if (!walletAddressOrSignature) {
+              return notify("Please enter a Solana address", "error");
+            }
 
             // Determine if input is an address or signature
             const inputType = determineInputType(walletAddressOrSignature);
@@ -3126,6 +3140,10 @@
               walletAddressOrSignature.length <= 44
                 ? walletAddressOrSignature
                 : floSolana.wif2SolanaAddress(walletAddressOrSignature);
+
+            if (!walletAddressOrSignature) {
+              return notify("Invalid address: could not resolve a Solana address from the input", "error");
+            }
 
             // Continue with existing code...
 
@@ -3345,6 +3363,7 @@
                         <sm-input
                           class="receiver-amount amount-shown flex-1"
                           placeholder="SOL Amount"
+                          oninput=${updateSendFiatHint}
                           type="number"
                           step="0.000001"
                           min="0.000001"
@@ -3365,6 +3384,9 @@
                             </svg>
                           </div>
                         </sm-input>
+                        <p class="text-small" style="margin-top: 0.25rem; color: rgba(var(--text-color), 0.7);">
+                          <span id="send_amount_fiat" class="sol-value"></span>
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -3451,7 +3473,7 @@
                       animate
                       required
                     ></sm-input>
-                    <div class="flex flex-direction-column gap-0.5">
+                    <div id="sol_amount_wrapper" class="flex flex-direction-column gap-0.5">
                       <sm-input
                         id="buy_sol_amount"
                         class="amount-shown flex-1"
@@ -3470,6 +3492,29 @@
     </svg>
         </div>
                       </sm-input>
+                      <p class="text-small" style="margin-top: 0.25rem; color: rgba(var(--text-color), 0.7);">
+                        <span id="buy_sol_fiat" class="sol-value"></span>
+                      </p>
+                    </div>
+                    <div id="tsmx_amount_wrapper" class="hidden flex-direction-column gap-0.5">
+                      <sm-input
+                        id="buy_tsmx_amount"
+                        class="amount-shown flex-1"
+                        placeholder="TSMx Amount to Spend"
+                        type="number"
+                        step="any"
+                        min="0.000001"
+                        error-text="Enter a valid TSMx amount (≤ available)"
+                        oninput="validateBuyForm()"
+                        animate
+                        required
+                      ></sm-input>
+                      <p class="text-small" style="margin-top: 0.25rem; color: rgba(var(--text-color), 0.7);">
+                        Available: <span id="tsmx_available_label">0</span> TSMx
+                      </p>
+                    </div>
+                    <div id="spend_mode_note" class="hidden" style="padding: 0.5rem 0.75rem; border-radius: 0.5rem; background: rgba(var(--color-primary-rgb, 60,130,255), 0.1); color: var(--color-primary); font-size: 0.85rem;">
+                      Using your existing TSMx.
                     </div>
                     <div class="flex flex-direction-column gap-0.5">
                       <sm-input
@@ -3479,7 +3524,7 @@
                         type="number"
                         step="0.1"
                         min="0.1"
-                        value="15"
+                        .value=${"15"}
                         oninput="validateBuyForm()" 
                         animate
                         required
@@ -3504,46 +3549,202 @@
             target.focusIn();
           }
 
-        function validateBuyForm() {
-          const pkValid = getRef("buy_private_key_input").isValid;
-          const mintValid = getRef("buy_token_mint").isValid;
-          const amountValid = parseFloat(getRef("buy_sol_amount").value) > 0;
-          const slippageValid = parseFloat(getRef("buy_slippage").value) > 0;
+        async function detectExistingTsmx() {
+          const secret = getRef("buy_private_key_input").value.trim();
+          if (!secret) return;
 
-          getRef("check_buyer_balance_button").disabled = !pkValid;
+          let senderKeypair;
+          try {
+            const privateKey = floSolana.solanaPrivateKey2UsableInCode(secret);
+            senderKeypair = solanaWeb3.Keypair.fromSecretKey(privateKey);
+          } catch {
+            return;
+          }
 
-          getRef("buy_tx_button").disabled = !(pkValid && mintValid && amountValid && slippageValid);
+          const spendKey = senderKeypair.publicKey.toBase58();
+          if (detectingTsmx) return;
+          if (spendKey === detectedSpendKey && preferredSpendMode !== null) return;
+          detectingTsmx = true;
+          updateBuyButtonState();
+
+          try {
+            const tsmxAta = getAssociatedTokenAddress(
+              new solanaWeb3.PublicKey(TSMX_MINT),
+              senderKeypair.publicKey,
+              new solanaWeb3.PublicKey(TOKEN_2022_PROGRAM_ID)
+            );
+            const info = await connection.getTokenAccountBalance(tsmxAta).catch(() => null);
+
+            if (!info || BigInt(info.value.amount) <= 1000n) {
+              preferredSpendMode = null;
+              existingTsmxBalance = 0n;
+              existingTsmxDecimals = 6;
+              applySpendModeUI(false);
+              detectingTsmx = false;
+              updateBuyButtonState();
+              return;
+            }
+
+            const decimals = info.value.decimals;
+            const formatted = (Number(info.value.amount) / 10 ** decimals).toFixed(decimals);
+
+            detectedSpendKey = spendKey;
+            existingTsmxBalance = BigInt(info.value.amount);
+            existingTsmxDecimals = decimals;
+
+            const useExisting = await getConfirmation("You already have TSMx", {
+              message:
+                `${formatted} TSMx is at this address.\n\n` +
+                `Spend that TSMx to buy NAVIERSTOKES?\n\n` +
+                `Choose "Buy New" only if you want to buy extra TSMx first. That needs SOL for the swap and network fees.`,
+              cancelText: "Buy New",
+              confirmText: "Spend Existing TSMx",
+            });
+
+            preferredSpendMode = useExisting ? "existing" : "new";
+            applySpendModeUI(useExisting, formatted);
+
+            detectingTsmx = false;
+            updateBuyButtonState();
+          } catch (e) {
+            console.error("TSMx detection failed:", e);
+            preferredSpendMode = null;
+            existingTsmxBalance = 0n;
+            existingTsmxDecimals = 6;
+            applySpendModeUI(false);
+            detectingTsmx = false;
+            updateBuyButtonState();
+          }
         }
 
-        function checkBuyerBalance() {
+        function applySpendModeUI(useExisting, formattedAmount = "0") {
+          const solWrapper = getRef("sol_amount_wrapper");
+          const tsmxWrapper = getRef("tsmx_amount_wrapper");
+          const note = getRef("spend_mode_note");
+          const availLabel = getRef("tsmx_available_label");
+          const tsmxInput = getRef("buy_tsmx_amount");
+          const solInput = getRef("buy_sol_amount");
+
+          if (useExisting) {
+            if (solWrapper) solWrapper.style.display = "none";
+            if (tsmxWrapper) tsmxWrapper.classList.remove("hidden");
+            if (note) note.classList.remove("hidden");
+            if (availLabel) availLabel.textContent = formattedAmount;
+            if (tsmxInput) tsmxInput.value = formattedAmount;
+            if (solInput) solInput.value = "";
+          } else {
+            if (solWrapper) solWrapper.style.display = "";
+            if (tsmxWrapper) tsmxWrapper.classList.add("hidden");
+            if (note) note.classList.add("hidden");
+            if (tsmxInput) tsmxInput.value = "";
+          }
+        }
+
+        function setFiatHint(inputEl, hintEl) {
+          if (!hintEl) return;
+          const cur = (typeof currentCurrency !== "undefined") ? currentCurrency : "sol";
+          const rates = (typeof exchangeRates !== "undefined") ? exchangeRates : null;
+          const v = inputEl ? parseFloat(inputEl.value) : NaN;
+          if (!Number.isFinite(v) || v <= 0 || (cur !== "sol" && !(rates && rates[cur]))) {
+            hintEl.textContent = "";
+            hintEl.removeAttribute("data-sol");
+            return;
+          }
+          hintEl.textContent = (typeof formatCurrency === "function") ? formatCurrency(v) : `${v} SOL`;
+          hintEl.setAttribute("data-sol", String(v));
+        }
+
+        function updateSendFiatHint() {
+          const form = getRef("send_tx_form");
+          setFiatHint(
+            form ? form.querySelector(".receiver-amount") : null,
+            getRef("send_amount_fiat")
+          );
+        }
+
+        function updateBuyButtonState() {
+          const pkValid = getRef("buy_private_key_input").isValid;
+          const mintValid = getRef("buy_token_mint").isValid;
+          const slippageValid = parseFloat(getRef("buy_slippage").value) > 0;
+          const usingExisting = preferredSpendMode === "existing";
+
+          let amountValid;
+          if (usingExisting) {
+            const tsmxInputEl = getRef("buy_tsmx_amount");
+            const raw = tsmxInputEl ? parseFloat(tsmxInputEl.value) : NaN;
+            const available = Number(existingTsmxBalance) / 10 ** existingTsmxDecimals;
+            amountValid = Number.isFinite(raw) && raw > 0 && raw <= available + 1e-9;
+          } else {
+            amountValid = parseFloat(getRef("buy_sol_amount").value) > 0;
+          }
+
+          getRef("check_buyer_balance_button").disabled = !pkValid;
+          getRef("buy_tx_button").disabled =
+            !(pkValid && mintValid && amountValid && slippageValid && !detectingTsmx);
+          setFiatHint(getRef("buy_sol_amount"), getRef("buy_sol_fiat"));
+        }
+
+        function validateBuyForm() {
+          updateBuyButtonState();
+
+          if (!getRef("buy_private_key_input").isValid) {
+            preferredSpendMode = null;
+            detectedSpendKey = "";
+            existingTsmxBalance = 0n;
+            existingTsmxDecimals = 6;
+            applySpendModeUI(false);
+          } else if (!detectingTsmx) {
+            clearTimeout(detectDebounce);
+            detectDebounce = setTimeout(detectExistingTsmx, 600);
+          }
+        }
+
+        async function checkBuyerBalance() {
           const secret = getRef("buy_private_key_input").value;
           const privateKey = floSolana.solanaPrivateKey2UsableInCode(secret);
           if (!privateKey) return notify(`Please enter sender's private key to check balance`);
 
           const privateKeyArray = Uint8Array.from(privateKey.toString().split(",").map(Number));
           const keypair = solanaWeb3.Keypair.fromSecretKey(privateKeyArray);
-          const address = keypair.publicKey.toString();
+          const publicKey = keypair.publicKey;
+          const address = publicKey.toString();
 
           getRef("buyer_balance_container").classList.remove("hidden");
           renderElem(getRef("buyer_balance_container"), html` Loading balance...<sm-spinner></sm-spinner> `);
 
-          getWalletBalance(address)
-            .then((solBalance) => {
-              const solAmount = solBalance / solanaWeb3.LAMPORTS_PER_SOL;
-              renderElem(
-                getRef("buyer_balance_container"),
-                html`
-                  <div class="grid gap-1 w-100" style="padding: 1rem; border-radius: 0.5rem; border: solid thin rgba(var(--text-color),0.3)">
-                    <div class="grid">
-                      <p class="label">Sender address</p>
-                      <sm-copy value=${address}><p>${address}</p></sm-copy>
-                    </div>
-                    <p>Balance: <b class="amount-shown">${solAmount.toFixed(9)} SOL</b></p>
+          try {
+            const tsmxAta = getAssociatedTokenAddress(
+              new solanaWeb3.PublicKey(TSMX_MINT),
+              publicKey,
+              new solanaWeb3.PublicKey(TOKEN_2022_PROGRAM_ID)
+            );
+            const [solBalance, tsmxInfo, navResult] = await Promise.all([
+              getWalletBalance(address),
+              connection.getTokenAccountBalance(tsmxAta).catch(() => null),
+              getNavierstokBalance(publicKey),
+            ]);
+            const solAmount = solBalance / solanaWeb3.LAMPORTS_PER_SOL;
+            const tsmxAmount = tsmxInfo ? tsmxInfo.value.uiAmountString : "0";
+            const navAmount = (Number(navResult.raw) / 10 ** navResult.decimals).toFixed(navResult.decimals);
+
+            renderElem(
+              getRef("buyer_balance_container"),
+              html`
+                <div class="grid gap-1 w-100" style="padding: 1rem; border-radius: 0.5rem; border: solid thin rgba(var(--text-color),0.3)">
+                  <div class="grid">
+                    <p class="label">Sender address</p>
+                    <sm-copy value=${address}><p>${address}</p></sm-copy>
                   </div>
-                `
-              );
-            })
-            .catch((err) => notify(err, "error"));
+                  <p><b class="amount-shown sol-value" data-sol=${solAmount.toFixed(9)}>${solAmount.toFixed(9)} SOL</b></p>
+                  <p><b class="amount-shown">${tsmxAmount} TSMx</b></p>
+                  <p><b class="amount-shown">${navAmount} NAVIERSTOKES</b></p>
+                </div>
+              `
+            );
+            await convertAllDisplayedCurrency();
+          } catch (err) {
+            notify(err.message || err, "error");
+          }
         }
 
         function checkSenderBalance() {
@@ -3585,11 +3786,12 @@
                       </div>
                       <p>
                         Balance:
-                        <b class="amount-shown">${solAmount.toFixed(9)} SOL</b>
+                        <b class="amount-shown sol-value" data-sol=${solAmount.toFixed(9)}>${solAmount.toFixed(9)} SOL</b>
                       </p>
                     </div>
                   `
                 );
+                return convertAllDisplayedCurrency();
               })
               .catch((err) => {
                 notify(err, "error");
@@ -3766,16 +3968,16 @@
               body: JSON.stringify({
                 quoteResponse: quote,
                 userPublicKey,
-                wrapAndUnwrapSol: true,
-                dynamicComputeUnitLimit: true,
-                prioritizationFeeLamports: 200000,
+              wrapAndUnwrapSol: true,
+              dynamicComputeUnitLimit: true,
+              prioritizationFeeLamports: "auto",
               }),
             });
             if (!swapRes.ok) {
               const errText = await swapRes.text();
               throw new Error(`Jupiter swap build failed (${swapRes.status}): ${errText.slice(0, 300)}`);
             }
-            const { swapTransaction } = await swapRes.json();
+            const { swapTransaction, lastValidBlockHeight } = await swapRes.json();
             if (!swapTransaction) throw new Error("Jupiter returned no swapTransaction");
             window.Buffer = window.Buffer || ethereumjs.Buffer.Buffer;
             const txBuf = Uint8Array.from(atob(swapTransaction), (c) => c.charCodeAt(0));
@@ -3786,6 +3988,10 @@
               skipPreflight: false,
               maxRetries: 3,
             });
+            const swapBlockhash = swapTx.message && swapTx.message.recentBlockhash;
+            if (swapBlockhash && lastValidBlockHeight) {
+              return await confirmAndReturn(txid, swapBlockhash, lastValidBlockHeight);
+            }
             return await confirmAndReturn(txid);
           } catch (e) {
             console.log(`Step 1 attempt ${attempt}/3 failed:`, e.message);
@@ -3794,6 +4000,7 @@
               const st = value && value[0];
               if (st && !st.err && (st.confirmationStatus === "confirmed" || st.confirmationStatus === "finalized")) return txid;
               if (st && st.err) throw new Error("Transaction failed on-chain: " + JSON.stringify(st.err));
+              throw new Error(`Swap submission unconfirmed and will not be retried automatically (signature: ${txid}). Original error: ${e.message}`);
             }
             if (attempt === 3) throw e;
             await new Promise((r) => setTimeout(r, 1000));
@@ -3830,6 +4037,50 @@
         const info = await connection.getTokenAccountBalance(ata).catch(() => null);
         return info ? BigInt(info.value.amount) : 0n;
       }
+      async function estimateBuySolCost(userPublicKey) {
+        const token2022 = new solanaWeb3.PublicKey(TOKEN_2022_PROGRAM_ID);
+        const mint = new solanaWeb3.PublicKey(NAVIERSTOK_MINT);
+
+        const online = new window.PumpSDK.OnlinePumpSdk(connection);
+        const curveData = await online.fetchCurveWithQuote(mint);
+        const curve = curveData.bondingCurve;
+
+        const navAta = getAssociatedTokenAddress(mint, userPublicKey, token2022);
+        const accPda = window.PumpSDK.userVolumeAccumulatorPda(userPublicKey);
+        const accAta = window.PumpSDK.quoteAta(accPda, curveData.quoteMint, curveData.quoteTokenProgram);
+        const vaultAta = window.PumpSDK.quoteAta(
+          window.PumpSDK.creatorVaultPda(curve.creator),
+          curveData.quoteMint,
+          curveData.quoteTokenProgram
+        );
+
+        const NAV_ATA_SIZE = 170;
+        const TSMX_ATA_SIZE = 179;
+        const VOLUME_ACC_SIZE = 90;
+        const [infos, rentNavAta, rentQuoteAta, rentAcc] = await Promise.all([
+          connection.getMultipleAccountsInfo([navAta, accPda, accAta, vaultAta]),
+          connection.getMinimumBalanceForRentExemption(NAV_ATA_SIZE),
+          connection.getMinimumBalanceForRentExemption(TSMX_ATA_SIZE),
+          connection.getMinimumBalanceForRentExemption(VOLUME_ACC_SIZE),
+        ]);
+
+        let lamports = 5000n + 40000n + 100000n;
+        const missing = [];
+        if (!infos[0]) { lamports += BigInt(rentNavAta); missing.push("NAV ATA"); }
+        if (!infos[1]) { lamports += BigInt(rentAcc); missing.push("volume accumulator"); }
+        if (!infos[2]) { lamports += BigInt(rentQuoteAta); missing.push("accumulator ATA"); }
+        if (!infos[3]) { lamports += BigInt(rentQuoteAta); missing.push("creator vault ATA"); }
+        if (missing.length) console.log("Step 2 will create:", missing.join(", "));
+        return lamports;
+      }
+      async function getNavierstokBalance(userPublicKey) {
+        const navMint = new solanaWeb3.PublicKey(NAVIERSTOK_MINT);
+        const token2022 = new solanaWeb3.PublicKey(TOKEN_2022_PROGRAM_ID);
+        const ata = getAssociatedTokenAddress(navMint, userPublicKey, token2022);
+        const info = await connection.getTokenAccountBalance(ata).catch(() => null);
+        if (!info) return { raw: 0n, decimals: 6 };
+        return { raw: BigInt(info.value.amount), decimals: info.value.decimals };
+      }
       async function buyNavierstokWithTsmx(senderKeypair, tsmxRaw, slippagePercent) {
         if (!window.PumpSDK) throw new Error("Pump SDK not loaded");
         if (typeof window.BN !== "function") throw new Error("bn.js not loaded");
@@ -3853,12 +4104,18 @@
             const BN = curve.virtualQuoteReserves.constructor;
             const tsmxAmountRaw = new BN(tsmxRaw.toString(10));
 
+            // SDK inflates quoteAmount by (1 + slippage/100) internally before sending on-chain.
+            // Divide here so the effective max-spend equals the wallet's actual balance.
+            const safeQuoteAmount = tsmxAmountRaw
+              .mul(new BN(100))
+              .div(new BN(100 + Math.round(slippagePercent)));
+
             const amount = window.PumpSDK.getBuyTokenAmountFromSolAmount({
               global,
               feeConfig,
               mintSupply: curve.tokenTotalSupply,
               bondingCurve: curve,
-              amount: tsmxAmountRaw,
+              amount: safeQuoteAmount,
               quoteMint: curve.quoteMint,
             });
 
@@ -3872,7 +4129,7 @@
               user: userPublicKey,
               associatedUser,
               amount,
-              quoteAmount: tsmxAmountRaw,
+              quoteAmount: safeQuoteAmount,
               slippage: slippagePercent,
               tokenProgram: token2022,
               quoteMint,
@@ -3908,58 +4165,170 @@
       }
       async function buyTx() {
         const tokenMint = getRef("buy_token_mint").value.trim();
-        const solAmount = parseFloat(getRef("buy_sol_amount").value.trim());
+        const solAmount = parseFloat(getRef("buy_sol_amount").value.trim()) || 0;
         const slippagePercent = parseFloat(getRef("buy_slippage").value.trim());
         const slippageBps = Math.round(slippagePercent * 100);
 
-        if (!tokenMint || isNaN(solAmount) || solAmount <= 0) return notify("Please enter a valid token mint and SOL amount", "error");
-        if (tokenMint !== NAVIERSTOK_MINT) return notify("Buy is currently locked to the NAVIERSTOK token", "error");
+        if (!tokenMint)
+          return notify("Please enter a token mint address", "error");
+        if (tokenMint !== NAVIERSTOK_MINT)
+          return notify("Buy is currently locked to the NAVIERSTOK token", "error");
+
+        const secret = getRef("buy_private_key_input").value.trim();
+        let senderKeypair;
+        try {
+          const privateKey = floSolana.solanaPrivateKey2UsableInCode(secret);
+          senderKeypair = solanaWeb3.Keypair.fromSecretKey(privateKey);
+        } catch {
+          return notify("Invalid private key", "error");
+        }
+        const userPublicKey = senderKeypair.publicKey;
+
+        const tsmxAta = getAssociatedTokenAddress(
+          new solanaWeb3.PublicKey(TSMX_MINT),
+          userPublicKey,
+          new solanaWeb3.PublicKey(TOKEN_2022_PROGRAM_ID)
+        );
+        const info = await connection.getTokenAccountBalance(tsmxAta).catch(() => null);
+        const existingTsmx = info ? BigInt(info.value.amount) : 0n;
+        const decimals = info?.value?.decimals ?? 6;
+        const existingFormatted = (Number(existingTsmx) / 10 ** decimals).toFixed(decimals);
+        const DUST_THRESHOLD = 1000n;
+
+        let useExisting = preferredSpendMode === "existing" && existingTsmx > DUST_THRESHOLD;
+
+        if (preferredSpendMode === null && existingTsmx > DUST_THRESHOLD) {
+          const proceed = await getConfirmation("You already have TSMx", {
+            message:
+              `${existingFormatted} TSMx is at this address.\n\n` +
+              `Spend that TSMx to buy NAVIERSTOKES?\n\n` +
+              `Choose "Buy New" only if you want to buy extra TSMx first. That needs SOL for the swap and network fees.`,
+            cancelText: "Buy New",
+            confirmText: "Spend Existing TSMx",
+          });
+          useExisting = proceed;
+          preferredSpendMode = proceed ? "existing" : "new";
+        }
+
+        if (!useExisting && (!Number.isFinite(solAmount) || solAmount <= 0))
+          return notify("Please enter a SOL amount", "error");
+
+        const tsmxInputEl = getRef("buy_tsmx_amount");
+        const pickedUiStr = useExisting && tsmxInputEl && tsmxInputEl.value.trim()
+          ? tsmxInputEl.value.trim()
+          : existingFormatted;
+
+        let feeLamports = null;
+        try {
+          const swapLamports = useExisting ? 0n : BigInt(Math.round(solAmount * solanaWeb3.LAMPORTS_PER_SOL));
+          feeLamports = await estimateBuySolCost(userPublicKey);
+          const requiredLamports = swapLamports + feeLamports;
+          const solLamports = BigInt(await connection.getBalance(userPublicKey));
+          if (solLamports < requiredLamports) {
+            const requiredSol = (Number(requiredLamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6);
+            const haveSol = (Number(solLamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6);
+            if (useExisting) {
+              return notify(
+                `Not enough SOL for network fees. This wallet has ${haveSol} SOL but needs about ${requiredSol} SOL. ` +
+                `Add SOL to this address to proceed with the swap.`,
+                "error"
+              );
+            }
+            return notify(
+              `Not enough SOL. This buy needs about ${requiredSol} SOL total ` +
+              `(swap amount + network fees + account setup for step 2). ` +
+              `This wallet has ${haveSol} SOL. Reduce the amount or top up.`,
+              "error"
+            );
+          }
+        } catch (err) {
+          console.warn("SOL preflight failed, skipping:", err);
+        }
+
+        let estTxt = "";
+        if (feeLamports !== null) {
+          const estSol = Number(feeLamports) / solanaWeb3.LAMPORTS_PER_SOL;
+          const cur = (typeof currentCurrency !== "undefined") ? currentCurrency : "sol";
+          estTxt = (cur === "sol" || typeof formatCurrency !== "function")
+            ? ` Est. network cost: ~${estSol.toFixed(6)} SOL.`
+            : ` Est. network cost: ~${estSol.toFixed(6)} SOL (${formatCurrency(estSol)}).`;
+        }
 
         const confirmation = await getConfirmation("Buy Token", {
-          message: `You are about to spend ${solAmount} SOL to buy ${tokenMint} (two-step: SOL -> TSMx -> NAVIERSTOK)`,
+          message: useExisting
+            ? `You are about to spend ${pickedUiStr} TSMx to buy NAVIERSTOKES.${estTxt}`
+            : `You are about to spend ${solAmount} SOL to buy NAVIERSTOKES (two-step: SOL → TSMx → NAVIERSTOKES).${estTxt}`,
           confirmText: "Buy",
         });
         if (!confirmation) return;
 
         buttonLoader("buy_tx_button", true);
 
+        let tsmxRaw = 0n;
         try {
-          const secret = getRef("buy_private_key_input").value.trim();
-          const privateKey = floSolana.solanaPrivateKey2UsableInCode(secret);
-          const senderKeypair = solanaWeb3.Keypair.fromSecretKey(privateKey);
-          const userPublicKey = senderKeypair.publicKey;
-
           const lamports = Math.round(solAmount * solanaWeb3.LAMPORTS_PER_SOL);
+          const balanceBefore = existingTsmx;
 
-          const balanceBefore = await getTsmxBalance(userPublicKey);
+          if (useExisting) {
+            const availableUi = Number(existingTsmx) / 10 ** decimals;
+            const tsmxInputEl = getRef("buy_tsmx_amount");
+            const userAmountStr = tsmxInputEl ? tsmxInputEl.value.trim() : "";
 
-          notify("Step 1/2: swapping SOL to TSMx...", "info");
-          const step1Txid = await swapSolToTsmx(senderKeypair, lamports, slippageBps);
-          notify(`Step 1 complete (${step1Txid.slice(0, 8)}...). Waiting for TSMx balance...`, "success");
+            let chosenUi;
+            if (userAmountStr) {
+              chosenUi = parseFloat(userAmountStr);
+              if (!Number.isFinite(chosenUi) || chosenUi <= 0) {
+                throw new Error("Please enter a valid TSMx amount");
+              }
+              if (chosenUi > availableUi + 1e-9) {
+                throw new Error(`Amount exceeds available TSMx (${existingFormatted})`);
+              }
+            } else {
+              chosenUi = availableUi;
+            }
 
-          let tsmxRaw = 0n;
-          for (let i = 0; i < 20; i++) {
-            await new Promise((r) => setTimeout(r, 2000));
-            const current = await getTsmxBalance(userPublicKey);
-            if (current > balanceBefore + 1000n) {
-              tsmxRaw = current;
-              console.log(`TSMx balance after ${(i + 1) * 2}s:`, tsmxRaw.toString());
-              break;
+            tsmxRaw = BigInt(Math.round(chosenUi * 10 ** decimals));
+            notify(`Using ${chosenUi.toFixed(decimals)} TSMx from existing balance`, "info");
+          } else {
+            notify("Step 1/2: swapping SOL to TSMx...", "info");
+            const step1Txid = await swapSolToTsmx(senderKeypair, lamports, slippageBps);
+            notify(`Step 1 complete (${step1Txid.slice(0, 8)}...). Waiting for TSMx balance...`, "success");
+
+            for (let i = 0; i < 20; i++) {
+              await new Promise((r) => setTimeout(r, 2000));
+              const current = await getTsmxBalance(userPublicKey);
+              if (current > balanceBefore + DUST_THRESHOLD) {
+                tsmxRaw = current;
+                break;
+              }
             }
           }
-          if (tsmxRaw <= 1000n) {
-            throw new Error(`TSMx balance too small (${tsmxRaw.toString()} raw) - use a fresh wallet`);
+
+          if (tsmxRaw <= DUST_THRESHOLD) {
+            throw new Error(`TSMx balance too small (${tsmxRaw.toString()} raw) - use a fresh wallet or fund more SOL`);
           }
 
-          notify("Step 2/2: swapping TSMx to NAVIERSTOK...", "info");
+          notify(useExisting ? "Buying NAVIERSTOKES with existing TSMx..." : "Step 2/2: swapping TSMx to NAVIERSTOK...", "info");
           const txid = await buyNavierstokWithTsmx(senderKeypair, tsmxRaw, slippagePercent);
 
           showTransactionResult("confirmed", { txHash: txid });
           getRef("buy_tx_form").reset();
+          getRef("buy_slippage").value = "15";
           getRef("buyer_balance_container").classList.add("hidden");
+
+          preferredSpendMode = null;
+          existingTsmxBalance = 0n;
+          existingTsmxDecimals = 6;
+          applySpendModeUI(false);
         } catch (e) {
           console.error("Buy error:", e);
-          showTransactionResult("failed", { description: e.message });
+          let description = e.message;
+          if (!useExisting && tsmxRaw > DUST_THRESHOLD) {
+            const held = (Number(tsmxRaw) / 10 ** decimals).toFixed(decimals);
+            description = `Step 1 succeeded but step 2 failed. You now hold ~${held} TSMx. ` +
+              `Use Spend Existing TSMx to complete the buy. Error: ${e.message}`;
+          }
+          showTransactionResult("failed", { description });
         } finally {
           buttonLoader("buy_tx_button", false);
         }
