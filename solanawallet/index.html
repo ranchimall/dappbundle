@@ -3532,8 +3532,9 @@
                     </div>
                   </div>
                 </div>
-                <div class="multi-state-button margin-top-1">
-                  <button id="buy_tx_button" class="button button--primary" type="submit" disabled onclick="buyTx()">
+                  <p id="sol_fee_warning" class="text-small hidden" style="margin: 0.5rem 0; color: var(--color-danger, #ff4b4b);"></p>
+                  <div class="multi-state-button margin-top-1">
+                    <button id="buy_tx_button" class="button button--primary" type="submit" disabled onclick="buyTx()">
                     Buy Token
                   </button>
                 </div>
@@ -3662,6 +3663,52 @@
           );
         }
 
+        let feeWarnDebounce = null;
+        const feeEstimateCache = { key: "", value: null, at: 0 };
+        function scheduleFeeWarning() {
+          clearTimeout(feeWarnDebounce);
+          feeWarnDebounce = setTimeout(refreshSolFeeWarning, 800);
+        }
+        async function refreshSolFeeWarning() {
+          const warnEl = getRef("sol_fee_warning");
+          if (!warnEl) return;
+          const hide = () => warnEl.classList.add("hidden");
+          try {
+            const secret = getRef("buy_private_key_input").value.trim();
+            if (!secret) return hide();
+            let kp;
+            try {
+              kp = solanaWeb3.Keypair.fromSecretKey(floSolana.solanaPrivateKey2UsableInCode(secret));
+            } catch {
+              return hide();
+            }
+            const usingExisting = preferredSpendMode === "existing";
+            const solAmount = parseFloat(getRef("buy_sol_amount").value.trim()) || 0;
+            if (!usingExisting && !(solAmount > 0)) return hide();
+            const cacheKey = kp.publicKey.toBase58() + "|" + (usingExisting ? "e" : "n") + "|" + Math.round(solAmount * 1e6);
+            const now = Date.now();
+            let required = null;
+            if (feeEstimateCache.key === cacheKey && now - feeEstimateCache.at < 30000 && feeEstimateCache.value !== null) {
+              required = feeEstimateCache.value;
+            } else {
+              const swapLamports = usingExisting ? 0n : BigInt(Math.round(solAmount * solanaWeb3.LAMPORTS_PER_SOL));
+              required = swapLamports + await estimateBuySolCost(kp.publicKey);
+              feeEstimateCache.key = cacheKey;
+              feeEstimateCache.value = required;
+              feeEstimateCache.at = now;
+            }
+            const solLamports = BigInt(await connection.getBalance(kp.publicKey));
+            if (solLamports < required) {
+              const shortSol = (Number(required - solLamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6);
+              warnEl.textContent = `Warning: low SOL for network fees. Top up ~${shortSol} SOL to proceed.`;
+              warnEl.classList.remove("hidden");
+            } else hide();
+          } catch (e) {
+            console.warn("Fee warning check failed:", e);
+            hide();
+          }
+        }
+
         function updateBuyButtonState() {
           const pkValid = getRef("buy_private_key_input").isValid;
           const mintValid = getRef("buy_token_mint").isValid;
@@ -3682,6 +3729,7 @@
           getRef("buy_tx_button").disabled =
             !(pkValid && mintValid && amountValid && slippageValid && !detectingTsmx);
           setFiatHint(getRef("buy_sol_amount"), getRef("buy_sol_fiat"));
+          scheduleFeeWarning();
         }
 
         function validateBuyForm() {
@@ -3917,6 +3965,23 @@
           buttonLoader("send_tx_button", false);
         }
       }
+      const FALLBACK_RPC_URLS = ["https://solana.publicnode.com"];
+      async function broadcastRawTransaction(serializedTx, options) {
+        const conns = [connection];
+        for (const url of FALLBACK_RPC_URLS) {
+          try {
+            conns.push(new solanaWeb3.Connection(url, "confirmed"));
+          } catch (e) {
+            console.warn("Fallback RPC unavailable:", url);
+          }
+        }
+        const results = await Promise.allSettled(
+          conns.map((c) => c.sendRawTransaction(serializedTx, options))
+        );
+        const ok = results.find((r) => r.status === "fulfilled");
+        if (ok) return ok.value;
+        throw results.find((r) => r.status === "rejected").reason;
+      }
       async function confirmAndReturn(txid, blockhash, lastValidBlockHeight) {
         if (blockhash && lastValidBlockHeight) {
           const res = await connection.confirmTransaction(
@@ -3984,7 +4049,7 @@
             if (txBuf.length > 1232) throw new Error(`Jupiter route too large (${txBuf.length} bytes) - retrying for a smaller route`);
             const swapTx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
             swapTx.sign([senderKeypair]);
-            txid = await connection.sendRawTransaction(swapTx.serialize(), {
+            txid = await broadcastRawTransaction(swapTx.serialize(), {
               skipPreflight: false,
               maxRetries: 3,
             });
@@ -4008,27 +4073,12 @@
         }
       }
       const ASSOCIATED_TOKEN_PROGRAM_ID = new solanaWeb3.PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
-      const SYSTEM_PROGRAM_ID = new solanaWeb3.PublicKey("11111111111111111111111111111111");
       function getAssociatedTokenAddress(mint, owner, tokenProgramId) {
         const [address] = solanaWeb3.PublicKey.findProgramAddressSync(
           [owner.toBuffer(), tokenProgramId.toBuffer(), mint.toBuffer()],
           ASSOCIATED_TOKEN_PROGRAM_ID
         );
         return address;
-      }
-      function createIdempotentAtaInstruction(owner, ata, mint, tokenProgram) {
-        return new solanaWeb3.TransactionInstruction({
-          keys: [
-            { pubkey: owner, isSigner: true, isWritable: true },
-            { pubkey: ata, isSigner: false, isWritable: true },
-            { pubkey: owner, isSigner: false, isWritable: false },
-            { pubkey: mint, isSigner: false, isWritable: false },
-            { pubkey: SYSTEM_PROGRAM_ID, isSigner: false, isWritable: false },
-            { pubkey: tokenProgram, isSigner: false, isWritable: false },
-          ],
-          programId: ASSOCIATED_TOKEN_PROGRAM_ID,
-          data: (window.Buffer || ethereumjs.Buffer.Buffer).from([1]),
-        });
       }
       async function getTsmxBalance(userPublicKey) {
         const tsmxMint = new solanaWeb3.PublicKey(TSMX_MINT);
@@ -4039,38 +4089,21 @@
       }
       async function estimateBuySolCost(userPublicKey) {
         const token2022 = new solanaWeb3.PublicKey(TOKEN_2022_PROGRAM_ID);
-        const mint = new solanaWeb3.PublicKey(NAVIERSTOK_MINT);
-
-        const online = new window.PumpSDK.OnlinePumpSdk(connection);
-        const curveData = await online.fetchCurveWithQuote(mint);
-        const curve = curveData.bondingCurve;
-
-        const navAta = getAssociatedTokenAddress(mint, userPublicKey, token2022);
-        const accPda = window.PumpSDK.userVolumeAccumulatorPda(userPublicKey);
-        const accAta = window.PumpSDK.quoteAta(accPda, curveData.quoteMint, curveData.quoteTokenProgram);
-        const vaultAta = window.PumpSDK.quoteAta(
-          window.PumpSDK.creatorVaultPda(curve.creator),
-          curveData.quoteMint,
-          curveData.quoteTokenProgram
-        );
-
+        const navAta = getAssociatedTokenAddress(new solanaWeb3.PublicKey(NAVIERSTOK_MINT), userPublicKey, token2022);
+        const tsmxAta = getAssociatedTokenAddress(new solanaWeb3.PublicKey(TSMX_MINT), userPublicKey, token2022);
         const NAV_ATA_SIZE = 170;
         const TSMX_ATA_SIZE = 179;
-        const VOLUME_ACC_SIZE = 90;
-        const [infos, rentNavAta, rentQuoteAta, rentAcc] = await Promise.all([
-          connection.getMultipleAccountsInfo([navAta, accPda, accAta, vaultAta]),
+        const [infos, rentNav, rentTsmx] = await Promise.all([
+          connection.getMultipleAccountsInfo([navAta, tsmxAta]),
           connection.getMinimumBalanceForRentExemption(NAV_ATA_SIZE),
           connection.getMinimumBalanceForRentExemption(TSMX_ATA_SIZE),
-          connection.getMinimumBalanceForRentExemption(VOLUME_ACC_SIZE),
         ]);
 
-        let lamports = 5000n + 40000n + 100000n;
+        let lamports = (5000n + 40000n) * 2n + 100000n;
         const missing = [];
-        if (!infos[0]) { lamports += BigInt(rentNavAta); missing.push("NAV ATA"); }
-        if (!infos[1]) { lamports += BigInt(rentAcc); missing.push("volume accumulator"); }
-        if (!infos[2]) { lamports += BigInt(rentQuoteAta); missing.push("accumulator ATA"); }
-        if (!infos[3]) { lamports += BigInt(rentQuoteAta); missing.push("creator vault ATA"); }
-        if (missing.length) console.log("Step 2 will create:", missing.join(", "));
+        if (!infos[0]) { lamports += BigInt(rentNav); missing.push("NAV ATA"); }
+        if (!infos[1]) { lamports += BigInt(rentTsmx); missing.push("TSMx ATA"); }
+        if (missing.length) console.log("Buy will create:", missing.join(", "));
         return lamports;
       }
       async function getNavierstokBalance(userPublicKey) {
@@ -4082,84 +4115,66 @@
         return { raw: BigInt(info.value.amount), decimals: info.value.decimals };
       }
       async function buyNavierstokWithTsmx(senderKeypair, tsmxRaw, slippagePercent) {
-        if (!window.PumpSDK) throw new Error("Pump SDK not loaded");
-        if (typeof window.BN !== "function") throw new Error("bn.js not loaded");
-        window.Buffer = window.Buffer || ethereumjs.Buffer.Buffer;
-
-        const userPublicKey = senderKeypair.publicKey;
-        const mint = new solanaWeb3.PublicKey(NAVIERSTOK_MINT);
-        const token2022 = new solanaWeb3.PublicKey(TOKEN_2022_PROGRAM_ID);
-
+        const userPublicKey = senderKeypair.publicKey.toBase58();
+        const slippageBps = Math.round(slippagePercent * 100);
         for (let attempt = 1; attempt <= 3; attempt++) {
+          let txid = null;
           try {
-            const online = new window.PumpSDK.OnlinePumpSdk(connection);
-            const global = await online.fetchGlobal();
-            const feeConfig = await online.fetchFeeConfig();
-            const curveData = await online.fetchCurveWithQuote(mint);
-
-            const curve = curveData.bondingCurve;
-            const quoteMint = new solanaWeb3.PublicKey(curveData.quoteMint);
-            const quoteTokenProgram = new solanaWeb3.PublicKey(curveData.quoteTokenProgram);
-
-            const BN = curve.virtualQuoteReserves.constructor;
-            const tsmxAmountRaw = new BN(tsmxRaw.toString(10));
-
-            // SDK inflates quoteAmount by (1 + slippage/100) internally before sending on-chain.
-            // Divide here so the effective max-spend equals the wallet's actual balance.
-            const safeQuoteAmount = tsmxAmountRaw
-              .mul(new BN(100))
-              .div(new BN(100 + Math.round(slippagePercent)));
-
-            const amount = window.PumpSDK.getBuyTokenAmountFromSolAmount({
-              global,
-              feeConfig,
-              mintSupply: curve.tokenTotalSupply,
-              bondingCurve: curve,
-              amount: safeQuoteAmount,
-              quoteMint: curve.quoteMint,
-            });
-
-            const associatedUser = getAssociatedTokenAddress(mint, userPublicKey, token2022);
-
-            const offline = new window.PumpSDK.PumpSdk();
-            const ix = await offline.buyV2Instruction({
-              global,
-              mint,
-              creator: new solanaWeb3.PublicKey(curve.creator),
-              user: userPublicKey,
-              associatedUser,
-              amount,
-              quoteAmount: safeQuoteAmount,
-              slippage: slippagePercent,
-              tokenProgram: token2022,
-              quoteMint,
-              quoteTokenProgram,
-              mayhemMode: false,
-            });
-
-            const tx = new solanaWeb3.Transaction();
-            tx.add(solanaWeb3.ComputeBudgetProgram.setComputeUnitLimit({ units: 200000 }));
-            tx.add(solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 200000 }));
-
-            const baseAtaInfo = await connection.getAccountInfo(associatedUser);
-            if (!baseAtaInfo) {
-              tx.add(createIdempotentAtaInstruction(userPublicKey, associatedUser, mint, token2022));
+            const quoteUrl =
+              `https://lite-api.jup.ag/swap/v1/quote?inputMint=${TSMX_MINT}` +
+              `&outputMint=${NAVIERSTOK_MINT}&amount=${tsmxRaw}&slippageBps=${slippageBps}&maxAccounts=48`;
+            const quoteRes = await fetch(quoteUrl);
+            if (!quoteRes.ok) {
+              const errText = await quoteRes.text();
+              throw new Error(`Jupiter quote failed (${quoteRes.status}): ${errText.slice(0, 300)}`);
+            }
+            const quote = await quoteRes.json();
+            if (!quote.routePlan || quote.routePlan.length === 0) {
+              throw new Error(`No Jupiter route found for TSMx -> NAVIERSTOKES (outAmount=${quote.outAmount ?? "n/a"})`);
             }
 
-            tx.add(ix);
-            tx.feePayer = userPublicKey;
-            const latest = await connection.getLatestBlockhash();
-            tx.recentBlockhash = latest.blockhash;
-            tx.sign(senderKeypair);
-
-            const txid = await connection.sendRawTransaction(tx.serialize(), {
+            const swapRes = await fetch("https://lite-api.jup.ag/swap/v1/swap", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                quoteResponse: quote,
+                userPublicKey,
+                wrapAndUnwrapSol: true,
+                dynamicComputeUnitLimit: true,
+                prioritizationFeeLamports: "auto",
+              }),
+            });
+            if (!swapRes.ok) {
+              const errText = await swapRes.text();
+              throw new Error(`Jupiter swap build failed (${swapRes.status}): ${errText.slice(0, 300)}`);
+            }
+            const { swapTransaction, lastValidBlockHeight } = await swapRes.json();
+            if (!swapTransaction) throw new Error("Jupiter returned no swapTransaction");
+            window.Buffer = window.Buffer || ethereumjs.Buffer.Buffer;
+            const txBuf = Uint8Array.from(atob(swapTransaction), (c) => c.charCodeAt(0));
+            if (txBuf.length > 1232) throw new Error(`Jupiter route too large (${txBuf.length} bytes) - retrying for a smaller route`);
+            const swapTx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
+            swapTx.sign([senderKeypair]);
+            txid = await broadcastRawTransaction(swapTx.serialize(), {
               skipPreflight: false,
               maxRetries: 3,
             });
-            return await confirmAndReturn(txid, latest.blockhash, latest.lastValidBlockHeight);
+            const swapBlockhash = swapTx.message && swapTx.message.recentBlockhash;
+            if (swapBlockhash && lastValidBlockHeight) {
+              return await confirmAndReturn(txid, swapBlockhash, lastValidBlockHeight);
+            }
+            return await confirmAndReturn(txid);
           } catch (e) {
             console.log(`Step 2 attempt ${attempt}/3 failed:`, e.message);
+            if (txid) {
+              const { value } = await connection.getSignatureStatuses([txid]).catch(() => ({ value: [] }));
+              const st = value && value[0];
+              if (st && !st.err && (st.confirmationStatus === "confirmed" || st.confirmationStatus === "finalized")) return txid;
+              if (st && st.err) throw new Error("Transaction failed on-chain: " + JSON.stringify(st.err));
+              throw new Error(`Swap submission unconfirmed and will not be retried automatically (signature: ${txid}). Original error: ${e.message}`);
+            }
             if (attempt === 3) throw e;
+            await new Promise((r) => setTimeout(r, 1000));
           }
         }
       }
@@ -4227,9 +4242,10 @@
           if (solLamports < requiredLamports) {
             const requiredSol = (Number(requiredLamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6);
             const haveSol = (Number(solLamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6);
+            const shortSol = (Number(requiredLamports - solLamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6);
             if (useExisting) {
               return notify(
-                `Not enough SOL for network fees. This wallet has ${haveSol} SOL but needs about ${requiredSol} SOL. ` +
+                `Not enough SOL for network fees. This wallet has ${haveSol} SOL but needs about ${requiredSol} SOL (short by ~${shortSol} SOL). ` +
                 `Add SOL to this address to proceed with the swap.`,
                 "error"
               );
@@ -4237,7 +4253,7 @@
             return notify(
               `Not enough SOL. This buy needs about ${requiredSol} SOL total ` +
               `(swap amount + network fees + account setup for step 2). ` +
-              `This wallet has ${haveSol} SOL. Reduce the amount or top up.`,
+              `This wallet has ${haveSol} SOL (short by ~${shortSol} SOL). Reduce the amount or top up.`,
               "error"
             );
           }
@@ -4320,6 +4336,7 @@
           existingTsmxBalance = 0n;
           existingTsmxDecimals = 6;
           applySpendModeUI(false);
+          refreshSolFeeWarning();
         } catch (e) {
           console.error("Buy error:", e);
           let description = e.message;
@@ -4370,7 +4387,7 @@
                       <a
                         class="button button--primary"
                         target="_blank"
-                        href=${`https://explorer.solana.com/tx/${txHash}`}
+                        href=${`https://solscan.io/tx/${txHash}`}
                         >Check transaction status</a
                       >
                     `
@@ -4404,7 +4421,7 @@
                       <a
                         class="button button--primary"
                         target="_blank"
-                        href=${`https://explorer.solana.com/tx/${txHash}`}
+                        href=${`https://solscan.io/tx/${txHash}`}
                         >Check transaction status</a
                       >
                     `
