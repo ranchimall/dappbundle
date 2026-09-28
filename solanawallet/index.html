@@ -3473,9 +3473,8 @@
                     <h4>Token to Send</h4>
                    <div class="grid gap-1">
                      <div class="flex flex-direction-column gap-0.5">
-                      <sm-select id="transfer_token_select" onchange="validateTransferForm()">
-                        <sm-option value="" selected>Choose your token</sm-option>
-                        <sm-option value="SOL">SOL</sm-option>
+                       <sm-select id="transfer_token_select" onchange="validateTransferForm()">
+                         <sm-option value="SOL" selected>SOL</sm-option>
                        </sm-select>
                      </div>
                      <sm-input
@@ -3575,7 +3574,12 @@
                       data-sol-address
                       animate
                       required
-                    ></sm-input>
+                      ></sm-input>
+                    <div class="flex flex-direction-column gap-0.5">
+                      <sm-select id="buy_pay_token" onchange="validateBuyForm()">
+                        <sm-option value="SOL" selected>SOL</sm-option>
+                      </sm-select>
+                    </div>
                     <div id="sol_amount_wrapper" class="flex flex-direction-column gap-0.5">
                       <sm-input
                         id="buy_pay_amount"
@@ -3600,12 +3604,6 @@
                       <p class="text-small" style="margin-top: 0.25rem; color: rgba(var(--text-color), 0.7);">
                         <span id="buy_sol_fiat" class="sol-value"></span>
                       </p>
-                    </div>
-                    <div class="flex flex-direction-column gap-0.5">
-                      <sm-select id="buy_pay_token" onchange="validateBuyForm()">
-                        <sm-option value="" selected>Choose your token</sm-option>
-                        <sm-option value="SOL">SOL</sm-option>
-                      </sm-select>
                     </div>
                     <div class="flex flex-direction-column gap-0.5">
                       <sm-input
@@ -3734,8 +3732,8 @@
             buyTokensKey = addr;
             pairedProbeKey = "";
             const prev = sel.value;
-            const keep = (prev && buyPayTokens.some((t) => t.id === prev)) ? prev : "";
-            setSelectOptions(sel, `<sm-option value="">Choose your token</sm-option>` + buyPayTokens.map((t) =>
+            const keep = buyPayTokens.some((t) => t.id === prev) ? prev : "SOL";
+            setSelectOptions(sel, buyPayTokens.map((t) =>
               `<sm-option value="${t.id}">${t.symbol} — ${t.uiAmountString}</sm-option>`
             ).join(""), keep, updateBuyButtonState);
             clearTimeout(pairedProbeDebounce);
@@ -3749,7 +3747,18 @@
           try {
             const target = getRef("buy_token_mint").value.trim();
             const sel = getRef("buy_pay_token");
-            if (!target || !sel || sel.value !== "") return;
+            const mintInput = getRef("buy_token_mint");
+            if (mintInput) {
+              if (!target) mintInput.setAttribute("placeholder", "Token Mint Address");
+              else if (target === SOL_MINT) mintInput.setAttribute("placeholder", "Solana (SOL)");
+              else {
+                try {
+                  const tm = await resolveTokenMeta(target);
+                  mintInput.setAttribute("placeholder", tm ? `${tm.name} (${tm.symbol})` : "Token Mint Address");
+                } catch { mintInput.setAttribute("placeholder", "Token Mint Address"); }
+              }
+            }
+            if (!target || !sel) return;
             if (!buyPayTokens.some((t) => t.id !== "SOL") || target === pairedProbeKey) return;
             const quoteUrl =
               `https://lite-api.jup.ag/swap/v1/quote?inputMint=${SOL_MINT}` +
@@ -3768,10 +3777,8 @@
             mints.delete(SOL_MINT);
             mints.delete(target);
             const held = buyPayTokens.find((t) => t.id !== "SOL" && mints.has(t.id));
-            if (held) {
-              sel.value = held.id;
-              notify(`Paying with ${held.symbol} — found a direct route to this token`, "info");
-              updateBuyButtonState();
+            if (held && held.id !== sel.value) {
+              notify(`${held.symbol} has a direct route to this token — select it in Pay With to use it`, "info");
             }
           } catch (e) {
             console.warn("Paired detection failed:", e);
@@ -3805,7 +3812,7 @@
           } else {
             transferTokens = [];
             transferTokensKey = "";
-            setSelectOptions(getRef("transfer_token_select"), `<sm-option value="" selected>Choose your token</sm-option><sm-option value="SOL">SOL</sm-option>`, "", updateTransferButtonState);
+            setSelectOptions(getRef("transfer_token_select"), `<sm-option value="SOL" selected>SOL</sm-option>`, "SOL", updateTransferButtonState);
           }
         }
 
@@ -3823,8 +3830,8 @@
             transferTokens = tokens;
             transferTokensKey = addr;
             const prev = sel.value;
-            const keep = (prev && transferTokens.some((t) => t.id === prev)) ? prev : "";
-            setSelectOptions(sel, `<sm-option value="">Choose your token</sm-option>` + transferTokens.map((t) =>
+            const keep = transferTokens.some((t) => t.id === prev) ? prev : "SOL";
+            setSelectOptions(sel, transferTokens.map((t) =>
               `<sm-option value="${t.id}">${t.symbol} — ${t.uiAmountString}</sm-option>`
             ).join(""), keep, updateTransferButtonState);
           } catch (e) {
@@ -3942,6 +3949,8 @@
             const txid = await broadcastRawTransaction(tx.serialize(), { skipPreflight: false, maxRetries: 3 });
             showTransactionResult("confirmed", { txHash: txid });
             getRef("transfer_stocks_form").reset();
+            const transferFiatAfter = getRef("transfer_amount_fiat");
+            if (transferFiatAfter) { transferFiatAfter.textContent = ""; transferFiatAfter.removeAttribute("data-sol"); }
             refreshTransferTokens();
           } catch (e) {
             console.error("Transfer error:", e);
@@ -4034,13 +4043,13 @@
             buyPayTokens = [];
             buyTokensKey = "";
             pairedProbeKey = "";
-            setSelectOptions(getRef("buy_pay_token"), `<sm-option value="" selected>Choose your token</sm-option><sm-option value="SOL">SOL</sm-option>`, "", updateBuyButtonState);
+            setSelectOptions(getRef("buy_pay_token"), `<sm-option value="SOL" selected>SOL</sm-option>`, "SOL", updateBuyButtonState);
           } else {
             clearTimeout(payTokensDebounce);
             payTokensDebounce = setTimeout(refreshBuyPayTokens, 600);
-            clearTimeout(pairedProbeDebounce);
-            pairedProbeDebounce = setTimeout(suggestPaymentToken, 900);
           }
+          clearTimeout(pairedProbeDebounce);
+          pairedProbeDebounce = setTimeout(suggestPaymentToken, 900);
         }
 
         async function checkBuyerBalance() {
@@ -4475,8 +4484,19 @@
             : ` Est. network cost: ~${estSol.toFixed(6)} SOL (${formatCurrency(estSol)}).`;
         }
 
+        let targetSymbol = targetMint;
+        if (targetMint === SOL_MINT) {
+          targetSymbol = "SOL";
+        } else {
+          try {
+            const targetMeta = await resolveTokenMeta(targetMint);
+            targetSymbol = (targetMeta && targetMeta.symbol) || (targetMint.slice(0, 4) + "…" + targetMint.slice(-4));
+          } catch {
+            targetSymbol = targetMint.slice(0, 4) + "…" + targetMint.slice(-4);
+          }
+        }
         const confirmation = await getConfirmation("Buy Token", {
-          message: `You are about to swap ${payAmount} ${paySymbol} for ${targetMint} via Jupiter.${estTxt}`,
+          message: `You are about to swap ${payAmount} ${paySymbol} for ${targetSymbol} via Jupiter.${estTxt}`,
           confirmText: "Buy",
         });
         if (!confirmation) return;
@@ -4488,6 +4508,9 @@
           showTransactionResult("confirmed", { txHash: txid });
           getRef("buy_tx_form").reset();
           getRef("buy_slippage").value = "15";
+          getRef("buy_token_mint").setAttribute("placeholder", "Token Mint Address");
+          const buyFiatAfter = getRef("buy_sol_fiat");
+          if (buyFiatAfter) { buyFiatAfter.textContent = ""; buyFiatAfter.removeAttribute("data-sol"); }
           getRef("buyer_balance_container").classList.add("hidden");
           refreshBuyPayTokens();
         } catch (e) {
