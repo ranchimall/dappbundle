@@ -3468,6 +3468,7 @@
                     <sm-input
                       id="buy_token_mint"
                       placeholder="Token Mint Address"
+                      .value=${state.params?.mint || ""}
                       oninput="validateBuyForm()"  
                       data-sol-address
                       animate
@@ -3478,6 +3479,7 @@
                         id="buy_sol_amount"
                         class="amount-shown flex-1"
                         placeholder="SOL Amount to Spend"
+                        .value=${state.params?.amount || ""}
                         type="number"
                         step="0.000001"
                         min="0.000001"
@@ -3542,6 +3544,12 @@
             </sm-form>
             `
           );
+          // Auto-validate and calculate when redirected from URL parameters
+          if (state.params?.mint || state.params?.amount) {
+            setTimeout(() => {
+              validateBuyForm();
+            }, 100);
+          }
         }); 
 
           function togglePrivateKeyVisibility(input) {
