@@ -3473,9 +3473,19 @@
                     <h4>Token to Send</h4>
                    <div class="grid gap-1">
                      <div class="flex flex-direction-column gap-0.5">
-                       <sm-select id="transfer_token_select" onchange="validateTransferForm()">
-                         <sm-option value="SOL" selected>SOL</sm-option>
-                       </sm-select>
+                       <sm-chips id="transfer_token_select" onchange="validateTransferForm()">
+                       </sm-chips>
+                       <div id="transfer_tokens_loading" class="hidden" style="margin-top: 0.25rem;">
+                         <div class="flex align-center justify-center" style="width: 100%; padding: 0.5rem 0;">
+                           <sm-spinner></sm-spinner>
+                         </div>
+                       </div>
+                       <p class="text-small" style="margin-top: 0.25rem; color: rgba(var(--text-color), 0.7);">
+                         <span id="transfer_tokens_hint">Enter your private key above to load your tokens.</span>
+                       </p>
+                       <p class="text-small" style="margin-top: 0.25rem; color: rgba(var(--text-color), 0.7);">
+                         <span id="transfer_token_balance"></span>
+                       </p>
                      </div>
                      <sm-input
                        id="transfer_receiver"
@@ -3576,16 +3586,25 @@
                       required
                       ></sm-input>
                     <div class="flex flex-direction-column gap-0.5">
-                      <sm-select id="buy_pay_token" onchange="validateBuyForm()">
-                        <sm-option value="SOL" selected>SOL</sm-option>
-                      </sm-select>
+                      <sm-chips id="buy_pay_token" onchange="validateBuyForm()">
+                      </sm-chips>
+                      <div id="buy_tokens_loading" class="hidden" style="margin-top: 0.25rem;">
+                        <div class="flex align-center justify-center" style="width: 100%; padding: 0.5rem 0;">
+                          <sm-spinner></sm-spinner>
+                        </div>
+                      </div>
+                      <p class="text-small" style="margin-top: 0.25rem; color: rgba(var(--text-color), 0.7);">
+                        <span id="buy_tokens_hint">Enter your private key above to load your tokens.</span>
+                      </p>
+                      <p class="text-small" style="margin-top: 0.25rem; color: rgba(var(--text-color), 0.7);">
+                        <span id="buy_token_balance"></span>
+                      </p>
                     </div>
                     <div id="sol_amount_wrapper" class="flex flex-direction-column gap-0.5">
                       <sm-input
                         id="buy_pay_amount"
                         class="amount-shown flex-1"
                         placeholder="Amount to Spend"
-                        placeholder="SOL Amount to Spend"
                         .value=${state.params?.amount || ""}
                         type="number"
                         step="0.000001"
@@ -3645,22 +3664,18 @@
             target.focusIn();
           }
 
-        function setSelectOptions(sel, optionsHtml, keepValue, onDone) {
-          if (!sel) return;
-          sel.innerHTML = optionsHtml;
-          setTimeout(() => {
-            if (!sel.isConnected) return;
-            try { sel.value = keepValue; } catch (e) {}
-            if (onDone) onDone();
-          }, 50);
+        function fetchWithTimeout(url, options, ms) {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), ms || 15000);
+          const opts = Object.assign({}, options, { signal: controller.signal });
+          return fetch(url, opts).finally(() => clearTimeout(timer));
         }
-
         const tokenMetaCache = {};
         async function resolveTokenMeta(mintStr) {
           if (tokenMetaCache[mintStr]) return tokenMetaCache[mintStr];
           let meta = null;
           try {
-            const res = await fetch(`https://lite-api.jup.ag/tokens/v2/search?query=${mintStr}`);
+            const res = await fetchWithTimeout(`https://lite-api.jup.ag/tokens/v2/search?query=${mintStr}`, {}, 15000);
             if (res.ok) {
               const data = await res.json();
               const hit = Array.isArray(data)
@@ -3720,26 +3735,40 @@
         async function refreshBuyPayTokens() {
           const sel = getRef("buy_pay_token");
           if (!sel) return;
+          const loader = getRef("buy_tokens_loading");
           try {
             const secret = getRef("buy_private_key_input").value.trim();
-            if (!secret) return;
+            if (!secret) {
+              const buyHintEmpty = getRef("buy_tokens_hint");
+              if (buyHintEmpty) buyHintEmpty.closest("p").classList.remove("hidden");
+              return;
+            }
             const kp = solanaWeb3.Keypair.fromSecretKey(floSolana.solanaPrivateKey2UsableInCode(secret));
             const addr = kp.publicKey.toBase58();
             if (addr === buyTokensKey && buyPayTokens.length) { updateBuyButtonState(); return; }
+            if (loader) loader.classList.remove("hidden");
             const tokens = await fetchAllUserTokens(kp.publicKey);
             await resolveTokenSymbols(tokens);
+            let kpNow = null;
+            try {
+              kpNow = solanaWeb3.Keypair.fromSecretKey(floSolana.solanaPrivateKey2UsableInCode(getRef("buy_private_key_input").value.trim()));
+            } catch {}
+            if (!kpNow || kpNow.publicKey.toBase58() !== addr) return;
             buyPayTokens = tokens;
             buyTokensKey = addr;
             pairedProbeKey = "";
-            const prev = sel.value;
-            const keep = buyPayTokens.some((t) => t.id === prev) ? prev : "SOL";
-            setSelectOptions(sel, buyPayTokens.map((t) =>
-              `<sm-option value="${t.id}">${t.symbol} — ${t.uiAmountString}</sm-option>`
-            ).join(""), keep, updateBuyButtonState);
+            sel.innerHTML = buyPayTokens.map((t) =>
+              `<sm-chip value="${t.id}">${t.symbol}</sm-chip>`
+            ).join("");
+            const buyHintDone = getRef("buy_tokens_hint");
+            if (buyHintDone) buyHintDone.closest("p").classList.add("hidden");
+            updateBuyButtonState();
             clearTimeout(pairedProbeDebounce);
             pairedProbeDebounce = setTimeout(suggestPaymentToken, 900);
           } catch (e) {
             console.warn("Pay token refresh failed:", e);
+          } finally {
+            if (loader) loader.classList.add("hidden");
           }
         }
 
@@ -3763,7 +3792,7 @@
             const quoteUrl =
               `https://lite-api.jup.ag/swap/v1/quote?inputMint=${SOL_MINT}` +
               `&outputMint=${target}&amount=1000000&slippageBps=2000&maxAccounts=48`;
-            const res = await fetch(quoteUrl);
+            const res = await fetchWithTimeout(quoteUrl, {}, 15000);
             if (!res.ok) return;
             const quote = await res.json();
             if (!quote.routePlan || !quote.routePlan.length) return;
@@ -3802,6 +3831,11 @@
           if (amountValid && tokenId !== "SOL") amountValid = !!entry && ui <= entry.uiAmount + 1e-9;
           getRef("transfer_send_button").disabled = !(pkValid && recvValid && amountValid);
           setFiatHint(tokenId === "SOL" ? getRef("transfer_amount") : null, getRef("transfer_amount_fiat"));
+          const trBalEl = getRef("transfer_token_balance");
+          if (trBalEl) {
+            const trEntry = tokenId ? (transferTokens || []).find((t) => t.id === tokenId) : null;
+            trBalEl.textContent = trEntry ? `Available: ${trEntry.uiAmountString} ${trEntry.symbol}` : "";
+          }
         }
 
         function validateTransferForm() {
@@ -3812,30 +3846,48 @@
           } else {
             transferTokens = [];
             transferTokensKey = "";
-            setSelectOptions(getRef("transfer_token_select"), `<sm-option value="SOL" selected>SOL</sm-option>`, "SOL", updateTransferButtonState);
+            const transferSelReset = getRef("transfer_token_select");
+            if (transferSelReset) transferSelReset.innerHTML = "";
+            const transferHintReset = getRef("transfer_tokens_hint");
+            if (transferHintReset) transferHintReset.closest("p").classList.remove("hidden");
+            updateTransferButtonState();
           }
         }
 
         async function refreshTransferTokens() {
           const sel = getRef("transfer_token_select");
           if (!sel) return;
+          const loader = getRef("transfer_tokens_loading");
           try {
             const secret = getRef("transfer_private_key").value.trim();
-            if (!secret) return;
+            if (!secret) {
+              const transferHintEmpty = getRef("transfer_tokens_hint");
+              if (transferHintEmpty) transferHintEmpty.closest("p").classList.remove("hidden");
+              return;
+            }
             const kp = solanaWeb3.Keypair.fromSecretKey(floSolana.solanaPrivateKey2UsableInCode(secret));
             const addr = kp.publicKey.toBase58();
             if (addr === transferTokensKey && transferTokens.length) { updateTransferButtonState(); return; }
+            if (loader) loader.classList.remove("hidden");
             const tokens = await fetchAllUserTokens(kp.publicKey);
             await resolveTokenSymbols(tokens);
+            let kpNow = null;
+            try {
+              kpNow = solanaWeb3.Keypair.fromSecretKey(floSolana.solanaPrivateKey2UsableInCode(getRef("transfer_private_key").value.trim()));
+            } catch {}
+            if (!kpNow || kpNow.publicKey.toBase58() !== addr) return;
             transferTokens = tokens;
             transferTokensKey = addr;
-            const prev = sel.value;
-            const keep = transferTokens.some((t) => t.id === prev) ? prev : "SOL";
-            setSelectOptions(sel, transferTokens.map((t) =>
-              `<sm-option value="${t.id}">${t.symbol} — ${t.uiAmountString}</sm-option>`
-            ).join(""), keep, updateTransferButtonState);
+            sel.innerHTML = transferTokens.map((t) =>
+              `<sm-chip value="${t.id}">${t.symbol}</sm-chip>`
+            ).join("");
+            const transferHintDone = getRef("transfer_tokens_hint");
+            if (transferHintDone) transferHintDone.closest("p").classList.add("hidden");
+            updateTransferButtonState();
           } catch (e) {
             console.warn("Transfer token refresh failed:", e);
+          } finally {
+            if (loader) loader.classList.add("hidden");
           }
         }
 
@@ -3949,6 +4001,12 @@
             const txid = await broadcastRawTransaction(tx.serialize(), { skipPreflight: false, maxRetries: 3 });
             showTransactionResult("confirmed", { txHash: txid });
             getRef("transfer_stocks_form").reset();
+            transferTokens = [];
+            transferTokensKey = "";
+            const transferSelAfter = getRef("transfer_token_select");
+            if (transferSelAfter) transferSelAfter.innerHTML = "";
+            const transferBalAfter = getRef("transfer_token_balance");
+            if (transferBalAfter) transferBalAfter.textContent = "";
             const transferFiatAfter = getRef("transfer_amount_fiat");
             if (transferFiatAfter) { transferFiatAfter.textContent = ""; transferFiatAfter.removeAttribute("data-sol"); }
             refreshTransferTokens();
@@ -4034,6 +4092,11 @@
           getRef("check_buyer_balance_button").disabled = !pkValid;
           getRef("buy_tx_button").disabled = !(pkValid && mintValid && amountValid && slippageValid);
           setFiatHint(payId === "SOL" ? getRef("buy_pay_amount") : null, getRef("buy_sol_fiat"));
+          const buyBalEl = getRef("buy_token_balance");
+          if (buyBalEl) {
+            const curEntry = payId ? (buyPayTokens || []).find((t) => t.id === payId) : null;
+            buyBalEl.textContent = curEntry ? `Available: ${curEntry.uiAmountString} ${curEntry.symbol}` : "";
+          }
           scheduleFeeWarning();
         }
 
@@ -4043,7 +4106,11 @@
             buyPayTokens = [];
             buyTokensKey = "";
             pairedProbeKey = "";
-            setSelectOptions(getRef("buy_pay_token"), `<sm-option value="SOL" selected>SOL</sm-option>`, "SOL", updateBuyButtonState);
+            const buySelReset = getRef("buy_pay_token");
+            if (buySelReset) buySelReset.innerHTML = "";
+            const buyHintReset = getRef("buy_tokens_hint");
+            if (buyHintReset) buyHintReset.closest("p").classList.remove("hidden");
+            updateBuyButtonState();
           } else {
             clearTimeout(payTokensDebounce);
             payTokensDebounce = setTimeout(refreshBuyPayTokens, 600);
@@ -4512,6 +4579,13 @@
           const buyFiatAfter = getRef("buy_sol_fiat");
           if (buyFiatAfter) { buyFiatAfter.textContent = ""; buyFiatAfter.removeAttribute("data-sol"); }
           getRef("buyer_balance_container").classList.add("hidden");
+          buyPayTokens = [];
+          buyTokensKey = "";
+          pairedProbeKey = "";
+          const buySelAfter = getRef("buy_pay_token");
+          if (buySelAfter) buySelAfter.innerHTML = "";
+          const buyBalAfter = getRef("buy_token_balance");
+          if (buyBalAfter) buyBalAfter.textContent = "";
           refreshBuyPayTokens();
         } catch (e) {
           console.error("Buy error:", e);
