@@ -1007,13 +1007,13 @@
         parseFloat(document.getElementById("swapSlippage").value) || 15;
       renderBridgeDone();
       showSwapConfirm({
-        title: "Confirm Swap: SOL to NAVIERSTOKES",
+        title: "Confirm Swap: SOL to NAVIERSTOK",
         rows: [
           [
             "Swap",
             "You are about to swap " +
               active.swapSol.toFixed(6) +
-              " SOL for NAVIERSTOKES via Jupiter. Est. network cost: ~" +
+              " SOL for NAVIERSTOK via Jupiter. Est. network cost: ~" +
               active.feeSol +
               " SOL.",
           ],
@@ -1286,13 +1286,13 @@
         parseFloat(document.getElementById("swapSlippage").value) || 15;
       renderBridgeDone();
       showSwapConfirm({
-        title: "Confirm Swap: SOL to NAVIERSTOKES",
+        title: "Confirm Swap: SOL to NAVIERSTOK",
         rows: [
           [
             "Swap",
             "You are about to swap " +
               active.swapSol.toFixed(6) +
-              " SOL for NAVIERSTOKES via Jupiter. Est. network cost: ~" +
+              " SOL for NAVIERSTOK via Jupiter. Est. network cost: ~" +
               active.feeSol +
               " SOL.",
           ],
