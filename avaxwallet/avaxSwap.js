@@ -107,7 +107,8 @@
     amountRaw,
     slippageBps,
     label,
-    onAttempt
+    onAttempt,
+    onHighSlippage
   ) {
     const connection = getConnection();
     const userPublicKey = senderKeypair.publicKey.toBase58();
@@ -168,6 +169,15 @@
           }
         }
         if (!quote) throw quoteErr;
+
+        const impact = parseFloat(quote.priceImpactPct);
+        if (Number.isFinite(impact) && impact > 50) {
+          let go = false;
+          if (onHighSlippage) {
+            try { go = await onHighSlippage({ impact, quote }); } catch (_) { go = false; }
+          }
+          if (!go) throw new Error("Price impact " + impact.toFixed(2) + "% is beyond the 50% auto-limit - swap cancelled.");
+        }
 
         const swapRes = await fetch("https://lite-api.jup.ag/swap/v1/swap", {
           method: "POST",
@@ -740,7 +750,23 @@
   };
 
   // ---------- Our own "are you sure?" box (the built-in one only speaks sends) ----------
+  let swapConfirmCancel = null;
+  function askHighSlippage(info) {
+    return new Promise((resolve) => {
+      showSwapConfirm({
+        title: "High price impact",
+        rows: [
+          ["Price impact", info.impact.toFixed(2) + "%"],
+          ["Limit", "Swaps beyond 50% need your explicit approval."],
+        ],
+        confirmLabel: "Swap anyway",
+        onConfirm: () => resolve(true),
+        onCancel: () => resolve(false),
+      });
+    });
+  }
   function showSwapConfirm(opts) {
+    swapConfirmCancel = typeof opts.onCancel === "function" ? opts.onCancel : null;
     document.getElementById("swapConfirmTitle").textContent =
       opts.title || "Confirm Swap";
     document.getElementById("swapConfirmRows").innerHTML = opts.rows
@@ -759,6 +785,7 @@
     const fresh = btn.cloneNode(true);
     btn.parentNode.replaceChild(fresh, btn);
     fresh.addEventListener("click", function () {
+      swapConfirmCancel = null;
       avaxSwap.closeSwapConfirm();
       opts.onConfirm();
     });
@@ -768,6 +795,11 @@
   avaxSwap.closeSwapConfirm = function () {
     document.getElementById("swapConfirmPopup").style.display = "none";
     document.body.style.overflow = "auto";
+    const cb = swapConfirmCancel;
+    swapConfirmCancel = null;
+    if (cb) {
+      try { cb(); } catch (_) {}
+    }
   };
 
   // ---------- Steps 3-5: the real quote, sending the deposit, waving at the bridge ----------
@@ -1003,8 +1035,6 @@
         avaxAmount: active.avaxAmountStr,
         stage: "received",
       });
-      const slippagePct =
-        parseFloat(document.getElementById("swapSlippage").value) || 15;
       renderBridgeDone();
       showSwapConfirm({
         title: "Confirm Swap: SOL to NAVIERSTOK",
@@ -1017,7 +1047,6 @@
               active.feeSol +
               " SOL.",
           ],
-          ["Slippage", slippagePct + "%"],
           ["SOL wallet", active.d.solAddress],
         ],
         confirmLabel: "Confirm & Swap",
@@ -1142,9 +1171,7 @@
         "</div>";
     };
     try {
-      const slippagePct =
-        parseFloat(document.getElementById("swapSlippage").value) || 15;
-      const slippageBps = Math.round(slippagePct * 100);
+      const slippageBps = 5000;
       const txid = await jupiterSwapExactIn(
         active.d.solKeypair,
         SOL_MINT,
@@ -1152,7 +1179,8 @@
         active.swapLamports.toString(),
         slippageBps,
         "avaxSwap",
-        renderSwapping
+        renderSwapping,
+        askHighSlippage
       );
       setStage("done");
       const nav = await getNavierstokBalance(active.d.solAddress).catch(
@@ -1282,8 +1310,6 @@
       }
       // Double-checking is better than double-spending: show the popup so
       // you see the exact amount before anything moves.
-      const slippagePct =
-        parseFloat(document.getElementById("swapSlippage").value) || 15;
       renderBridgeDone();
       showSwapConfirm({
         title: "Confirm Swap: SOL to NAVIERSTOK",
@@ -1296,7 +1322,6 @@
               active.feeSol +
               " SOL.",
           ],
-          ["Slippage", slippagePct + "%"],
           ["SOL wallet", d.solAddress],
         ],
         confirmLabel: "Confirm & Swap",
@@ -1447,6 +1472,7 @@
     if (addrRow) addrRow.style.display = "none";
   }
   avaxSwap.clearWif = clearWif;
+  avaxSwap._askHighSlippage = askHighSlippage; 
 
   // ================= SELLING: NAVIERSTOKES -> SOL -> AVAX =================
   // Same trip, backwards. First Jupiter turns your NAV into SOL, then the
@@ -1485,7 +1511,7 @@
       outputMint +
       "&amount=" +
       amountRawStr +
-      "&slippageBps=1500";
+        "&slippageBps=5000";
     let quote = null;
     let quoteErr = null;
     const suffixes = ["&maxAccounts=48", ""];
@@ -1674,18 +1700,16 @@
     uiLoading("sellBtn", true);
     setSellStage("swap");
     try {
-      const slippagePct =
-        parseFloat(document.getElementById("sellSlippage").value) || 15;
-      const slippageBps = Math.round(slippagePct * 100);
       renderSellStatus("Swapping NAV to SOL via Jupiter...");
       const jupTxid = await jupiterSwapExactIn(
         sellActive.d.solKeypair,
         NAVIERSTOK_MINT,
         SOL_MINT,
         sellActive.navRaw.toString(),
-        slippageBps,
+        5000,
         "avaxSwapSell",
-        (n) => renderSellStatus("Swapping NAV to SOL (attempt " + n + " of 3)...")
+        (n) => renderSellStatus("Swapping NAV to SOL (attempt " + n + " of 3)..."),
+        askHighSlippage
       );
       sellActive.jupTxid = jupTxid;
       const solAfter = await getSolBalanceLamports(sellActive.d.solAddress);
