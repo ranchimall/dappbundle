@@ -15,6 +15,13 @@
     <script src="avaxCrypto.js"></script>
     <script src="avaxBlockchainAPI.js"></script>
     <script src="avaxSearchDB.js"></script>
+    <script src="https://unpkg.com/@solana/web3.js@1.99.0/lib/index.iife.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/ethereumjs/browser-builds/dist/ethereumjs-tx/ethereumjs-tx-1.3.3.min.js"></script>
+    <script>
+      window.Buffer = window.Buffer || ethereumjs.Buffer.Buffer;
+    </script>
+    <script src="floSolana.js"></script>
+    <script src="avaxSwap.js"></script>
   </head>
   <body>
     <header class="header">
@@ -87,6 +94,40 @@
       </div>
     </div>
 
+    <!-- Swap Confirmation Popup (AVAX <-> NAVIERSTOKES) -->
+    <div id="swapConfirmPopup" class="modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="swapConfirmTitle">Confirm Swap</h3>
+          <span class="modal-close" onclick="avaxSwap.closeSwapConfirm()"
+            >&times;</span
+          >
+        </div>
+        <div class="modal-body">
+          <div class="confirm-details" id="swapConfirmRows"></div>
+          <div class="detail-group warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+              Rates move during bridging. Only the AVAX deposit is
+              irreversible once broadcast; the SOL swap previews again before
+              running.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="avaxSwap.closeSwapConfirm()"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="swapConfirmBtn">
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <div class="container">
@@ -102,6 +143,12 @@
             <a href="#" class="nav-link" data-page="send">
               <i class="fas fa-paper-plane"></i>
               Send
+            </a>
+          </li>
+          <li>
+            <a href="#" class="nav-link" data-page="buy">
+              <i class="fas fa-shuffle"></i>
+              Buy Token
             </a>
           </li>
           <li>
@@ -540,6 +587,218 @@
             </div>
           </div>
         </div>
+
+        <!-- Buy Token Page: AVAX <-> NAVIERSTOKES -->
+        <div id="buyPage" class="page hidden">
+          <div class="page-header">
+            <h2><i class="fas fa-shuffle"></i> Buy Token</h2>
+            <p>Buy NAVIERSTOKES with AVAX. One key drives both chains.</p>
+          </div>
+
+          <div class="card">
+            <div id="swapResume"></div>
+
+            <div class="form-group">
+              <label><i class="fas fa-key"></i> Private Key:</label>
+              <div class="input-with-actions">
+                <input
+                  id="swapWif"
+                  class="form-input"
+                  type="password"
+                  placeholder="Your private key (stays in this browser)"
+                  oninput="avaxSwap.onWifInput()"
+                />
+                <button
+                  type="button"
+                  class="input-action-btn password-toggle"
+                  onclick="togglePasswordVisibility('swapWif')"
+                  title="Show/Hide Password"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button
+                  type="button"
+                  class="input-action-btn clear-btn"
+                  onclick="clearInput('swapWif'); avaxSwap.onWifInput()"
+                  title="Clear"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div id="swapDerivedRow" style="display: none">
+                <small class="form-text">
+                  AVAX: <code id="swapAvaxAddr"></code><br />
+                  Balance: <code id="swapAvaxBal">…</code><br />
+                  SOL: <code id="swapSolAddr"></code> (<code id="swapSolBal">…</code>)<br />
+                  NAV: <code id="swapNavBal">…</code>
+                </small>
+              </div>
+            </div>
+
+            <div class="swap-dir-tabs">
+              <button
+                type="button"
+                id="swapDirBuy"
+                class="dir-tab active"
+                onclick="avaxSwap.showDir('buy')"
+              >
+                Buy NAVIERSTOKES
+              </button>
+              <button
+                type="button"
+                id="swapDirSell"
+                class="dir-tab"
+                onclick="avaxSwap.showDir('sell')"
+              >
+                Sell NAVIERSTOKES
+              </button>
+            </div>
+
+            <div id="buyPanel">
+              <div class="form-group">
+                <label><i class="fas fa-coins"></i> Token to Buy:</label>
+                <small class="form-text">NAVIERSTOKES (Solana)</small>
+              </div>
+
+              <div class="form-group">
+                <label><i class="fas fa-coins"></i> Amount to Spend (AVAX):</label>
+                <div class="input-with-actions">
+                  <input
+                    id="swapAmount"
+                    class="form-input"
+                    type="number"
+                    step="0.000000001"
+                    min="0"
+                    placeholder="Amount to spend (AVAX)"
+                    oninput="avaxSwap.onPreview()"
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('swapAmount'); avaxSwap.onPreview()"
+                    title="Clear"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <div id="swapPreview">
+                  <small class="form-text">Min ~0.2 AVAX + gas</small>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label
+                  ><i class="fas fa-sliders"></i> Slippage (%):</label
+                >
+                <div class="input-with-actions">
+                  <input
+                    id="swapSlippage"
+                    class="form-input"
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    value="15"
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('swapSlippage')"
+                    title="Clear"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <button
+                class="btn btn-primary btn-block"
+                onclick="avaxSwap.onStartSwap()"
+                id="swapBtn"
+              >
+                <i class="fas fa-shuffle"></i> Buy Token
+              </button>
+
+              <div class="swap-steps">
+                <div class="swap-step" id="swapStep_deposit">1. Deposit sent</div>
+                <div class="swap-step" id="swapStep_bridging">2. Bridging</div>
+                <div class="swap-step" id="swapStep_received">3. SOL received</div>
+                <div class="swap-step" id="swapStep_swapping">4. Swapping</div>
+                <div class="swap-step" id="swapStep_done">5. Done</div>
+              </div>
+
+              <div id="swapResult" class="output"></div>
+            </div>
+
+            <div id="sellPanel" style="display: none">
+              <div class="form-group">
+                <label><i class="fas fa-coins"></i> Amount to Sell (NAVIERSTOKES):</label>
+                <div class="input-with-actions">
+                  <input
+                    id="sellAmount"
+                    class="form-input"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="Amount to sell (NAV)"
+                    oninput="avaxSwap.onSellPreview()"
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('sellAmount'); avaxSwap.onSellPreview()"
+                    title="Clear"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <div id="sellPreview">
+                  <small>Enter amount for a quote. Needs SOL for fees.</small>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label
+                  ><i class="fas fa-sliders"></i> Slippage (%):</label
+                >
+                <div class="input-with-actions">
+                  <input
+                    id="sellSlippage"
+                    class="form-input"
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    value="15"
+                  />
+                  <button
+                    type="button"
+                    class="input-action-btn clear-btn"
+                    onclick="clearInput('sellSlippage')"
+                    title="Clear"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+
+              <button
+                class="btn btn-primary btn-block"
+                onclick="avaxSwap.onStartSell()"
+                id="sellBtn"
+              >
+                <i class="fas fa-shuffle"></i> Sell NAV for AVAX
+              </button>
+
+              <div class="swap-steps">
+                <div class="swap-step" id="sellStep_swap">1. Swapped to SOL</div>
+                <div class="swap-step" id="sellStep_deposit">2. Deposit sent</div>
+                <div class="swap-step" id="sellStep_bridging">3. Bridging</div>
+                <div class="swap-step" id="sellStep_done">4. AVAX received</div>
+              </div>
+
+              <div id="sellResult" class="output"></div>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
 
@@ -551,6 +810,10 @@
       <button class="nav-btn" data-page="send">
         <i class="fas fa-paper-plane"></i>
         <span>Send</span>
+      </button>
+      <button class="nav-btn" data-page="buy">
+        <i class="fas fa-shuffle"></i>
+        <span>Buy</span>
       </button>
       <button class="nav-btn" data-page="transactions">
         <i class="fas fa-exchange-alt"></i>

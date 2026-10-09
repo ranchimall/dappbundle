@@ -2818,3 +2818,95 @@ body {
     padding: 0.2rem 0.4rem;
   }
 }
+
+/* Buy Token tab (AVAX <-> NAVIERSTOKES swaps) */
+.swap-steps {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0;
+  flex-wrap: wrap;
+}
+
+.swap-step {
+  flex: 1;
+  min-width: 90px;
+  text-align: center;
+  font-size: 12px;
+  padding: 8px 4px;
+  border-radius: 8px;
+  background: var(--surface-color, #f1f1f1);
+  opacity: 0.55;
+}
+
+.swap-step.step-active {
+  opacity: 1;
+  outline: 2px solid currentColor;
+}
+
+.swap-step.step-done {
+  opacity: 1;
+}
+
+.swap-step.step-done::after {
+  content: "\f00c";
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  color: #22c55e;
+  margin-left: 4px;
+}
+
+.swap-dir-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.dir-tab {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid currentColor;
+  background: transparent;
+  opacity: 0.6;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.dir-tab.active {
+  opacity: 1;
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+}
+
+.blockchain-section a,
+.blockchain-section a:visited,
+.blockchain-section a:hover,
+.blockchain-section a:active {
+  color: #fff;
+}
+
+#swapDerivedRow code {
+  word-break: break-all;
+}
+
+@media (max-width: 480px) {
+  .swap-step {
+    min-width: 64px;
+    font-size: 11px;
+    padding: 6px 2px;
+  }
+  .swap-steps {
+    gap: 4px;
+  }
+  .dir-tab {
+    padding: 8px 4px;
+    font-size: 14px;
+  }
+  .nav-btn {
+    min-width: 0;
+    flex: 1;
+    padding: 0.5rem 0.25rem;
+  }
+}
