@@ -195,9 +195,19 @@
           </p>
         </div>
         <sm-form>
-          <div id="recovered_btc_addr_wrapper" class="hidden">
-            <h5>Recovered Solana Address</h5>
-            <sm-copy id="recovered_btc_addr"></sm-copy>
+          <div id="recovered_btc_addr_wrapper" class="hidden grid gap-1">
+            <div class="grid gap-0-5">
+              <h5>Recovered Solana Address</h5>
+              <sm-copy id="recovered_btc_addr"></sm-copy>
+            </div>
+            <div class="grid gap-0-5">
+              <h5>Solana Private Key</h5>
+              <sm-copy id="recovered_sol_private_key"></sm-copy>
+            </div>
+            <div class="grid gap-0-5">
+              <h5>Solana Seed</h5>
+              <sm-copy id="recovered_sol_seed"></sm-copy>
+            </div>
           </div>
         <sm-input id="retrieve_btc_addr_field" type="password" placeholder="Solana Seed OR Private Key" class="password-field"
           data-seed-key required autofocus>
@@ -3507,10 +3517,15 @@
                          animate
                          required
                        ></sm-input>
-                       <p class="text-small" style="margin-top: 0.25rem; color: rgba(var(--text-color), 0.7);">
-                         <span id="transfer_amount_fiat" class="sol-value"></span>
-                       </p>
-                     </div>
+                        <p class="text-small" style="margin-top: 0.25rem; color: rgba(var(--text-color), 0.7);">
+                          <span id="transfer_amount_fiat" class="sol-value"></span>
+                        </p>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:0.25rem;">
+                          <button type="button" onclick="setTransferPercent(25)" style="border:1px solid currentColor;background:transparent;color:inherit;border-radius:8px;padding:4px 14px;cursor:pointer;font-size:0.8rem;opacity:0.85;">25%</button>
+                          <button type="button" onclick="setTransferPercent(50)" style="border:1px solid currentColor;background:transparent;color:inherit;border-radius:8px;padding:4px 14px;cursor:pointer;font-size:0.8rem;opacity:0.85;">50%</button>
+                          <button type="button" onclick="setTransferMax()" style="border:1px solid currentColor;background:transparent;color:inherit;border-radius:8px;padding:4px 14px;cursor:pointer;font-size:0.8rem;opacity:0.85;">MAX</button>
+                        </div>
+                      </div>
                    </div>
                  </div>
                  <div class="multi-state-button margin-top-1">
@@ -3623,20 +3638,11 @@
                       <p class="text-small" style="margin-top: 0.25rem; color: rgba(var(--text-color), 0.7);">
                         <span id="buy_sol_fiat" class="sol-value"></span>
                       </p>
-                    </div>
-                    <div class="flex flex-direction-column gap-0.5">
-                      <sm-input
-                        id="buy_slippage"
-                        class="flex-1"
-                        placeholder="Slippage (%)"  
-                        type="number"
-                        step="0.1"
-                        min="0.1"
-                        .value=${"15"}
-                        oninput="validateBuyForm()" 
-                        animate
-                        required
-                      ></sm-input>
+                      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:0.25rem;">
+                        <button type="button" onclick="setBuyPercent(25)" style="border:1px solid currentColor;background:transparent;color:inherit;border-radius:8px;padding:4px 14px;cursor:pointer;font-size:0.8rem;opacity:0.85;">25%</button>
+                        <button type="button" onclick="setBuyPercent(50)" style="border:1px solid currentColor;background:transparent;color:inherit;border-radius:8px;padding:4px 14px;cursor:pointer;font-size:0.8rem;opacity:0.85;">50%</button>
+                        <button type="button" onclick="setMaxBuyAmount()" style="border:1px solid currentColor;background:transparent;color:inherit;border-radius:8px;padding:4px 14px;cursor:pointer;font-size:0.8rem;opacity:0.85;">MAX</button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -3831,6 +3837,11 @@
           if (amountValid && tokenId !== "SOL") amountValid = !!entry && ui <= entry.uiAmount + 1e-9;
           getRef("transfer_send_button").disabled = !(pkValid && recvValid && amountValid);
           setFiatHint(tokenId === "SOL" ? getRef("transfer_amount") : null, getRef("transfer_amount_fiat"));
+          const trAmtInput = getRef("transfer_amount");
+          if (trAmtInput) {
+            const trLblEntry = tokenId ? (transferTokens || []).find((t) => t.id === tokenId) : null;
+            trAmtInput.setAttribute("placeholder", trLblEntry ? `${trLblEntry.symbol} Amount to Send` : "Amount to Send");
+          }
           const trBalEl = getRef("transfer_token_balance");
           if (trBalEl) {
             const trEntry = tokenId ? (transferTokens || []).find((t) => t.id === tokenId) : null;
@@ -3891,6 +3902,63 @@
           }
         }
 
+        async function resolveTransferContext() {
+          // Shared lookup for the percent/MAX fillers: who sends what.
+          const secret = getRef("transfer_private_key").value.trim();
+          if (!secret) throw new Error("Enter your private key first");
+          let senderKeypair;
+          try {
+            senderKeypair = solanaWeb3.Keypair.fromSecretKey(floSolana.solanaPrivateKey2UsableInCode(secret));
+          } catch {
+            throw new Error("Invalid private key");
+          }
+          const sel = getRef("transfer_token_select");
+          const tokenId = sel ? sel.value : "";
+          if (!tokenId) throw new Error("Select a token first");
+          return { senderKeypair, sender: senderKeypair.publicKey, tokenId };
+        }
+        async function fillTransferAmount(pct, isMax) {
+          // Fills pct% of balance (MAX = all minus fee dust for SOL, full
+          // balance for tokens). The submit-time checks still validate.
+          try {
+            const ctx = await resolveTransferContext();
+            if (ctx.tokenId === "SOL") {
+              const solBal = BigInt(await connection.getBalance(ctx.sender).catch(() => 0));
+              let lamports;
+              if (isMax) {
+                const DUST = 145000n; // base fee cover for a plain transfer
+                if (solBal <= DUST) return notify(`Not enough SOL for fees - top up first (have ${(Number(solBal) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6)} SOL).`, "error");
+                lamports = solBal - DUST;
+              } else {
+                if (solBal <= 0n) return notify("No SOL balance to take " + pct + "% of", "error");
+                lamports = (solBal * BigInt(pct)) / 100n;
+                if (lamports <= 0n) return notify("Balance too small for " + pct + "%", "error");
+              }
+              getRef("transfer_amount").value = (Number(lamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6);
+            } else {
+              let holdings = transferTokens;
+              try {
+                const fresh = await fetchAllUserTokens(ctx.sender);
+                if (fresh && fresh.length) { holdings = fresh; transferTokens = fresh; }
+              } catch (e) { console.warn("Holdings refresh failed, using cached:", e); }
+              await resolveTokenSymbols(holdings);
+              const entry = (holdings || []).find((t) => t.id === ctx.tokenId);
+              if (!entry) return notify("Selected token not found - re-enter your key", "error");
+              const amt = isMax ? entry.uiAmount : (entry.uiAmount * pct) / 100;
+              if (!(amt > 0)) return notify("Balance too small", "error");
+              getRef("transfer_amount").value = isMax ? entry.uiAmountString : amt.toFixed(Math.min(entry.decimals, 6));
+            }
+            if (typeof validateTransferForm === "function") validateTransferForm();
+          } catch (err) {
+            notify("Could not fill amount: " + (err.message || err), "error");
+          }
+        }
+        async function setTransferPercent(pct) {
+          await fillTransferAmount(pct, false);
+        }
+        async function setTransferMax() {
+          await fillTransferAmount(100, true);
+        }
         async function transferStockTx() {
           const secret = getRef("transfer_private_key").value.trim();
           let senderKeypair;
@@ -4080,7 +4148,6 @@
         function updateBuyButtonState() {
           const pkValid = getRef("buy_private_key_input").isValid;
           const mintValid = getRef("buy_token_mint").isValid;
-          const slippageValid = parseFloat(getRef("buy_slippage").value) > 0;
           const sel = getRef("buy_pay_token");
           const payId = sel ? sel.value : "";
           const payAmount = parseFloat(getRef("buy_pay_amount").value);
@@ -4090,8 +4157,13 @@
             amountValid = !!t && payAmount <= t.uiAmount + 1e-9;
           }
           getRef("check_buyer_balance_button").disabled = !pkValid;
-          getRef("buy_tx_button").disabled = !(pkValid && mintValid && amountValid && slippageValid);
+          getRef("buy_tx_button").disabled = !(pkValid && mintValid && amountValid);
           setFiatHint(payId === "SOL" ? getRef("buy_pay_amount") : null, getRef("buy_sol_fiat"));
+          const buyAmtInput = getRef("buy_pay_amount");
+          if (buyAmtInput) {
+            const lblEntry = payId ? (buyPayTokens || []).find((t) => t.id === payId) : null;
+            buyAmtInput.setAttribute("placeholder", lblEntry ? `${lblEntry.symbol} Amount to Spend` : "Amount to Spend");
+          }
           const buyBalEl = getRef("buy_token_balance");
           if (buyBalEl) {
             const curEntry = payId ? (buyPayTokens || []).find((t) => t.id === payId) : null;
@@ -4381,7 +4453,7 @@
         }
         throw new Error("Transaction not confirmed after 60s. Signature: " + txid);
       }
-      async function jupiterSwapExactIn(senderKeypair, inputMint, outputMint, amountRaw, slippageBps, label) {
+      async function jupiterSwapExactIn(senderKeypair, inputMint, outputMint, amountRaw, slippageBps, label, onHighSlippage) {
         const userPublicKey = senderKeypair.publicKey.toBase58();
         const shortIn = String(inputMint).slice(0, 4);
         const shortOut = String(outputMint).slice(0, 4);
@@ -4392,13 +4464,23 @@
               `https://lite-api.jup.ag/swap/v1/quote?inputMint=${inputMint}` +
               `&outputMint=${outputMint}&amount=${amountRaw}&slippageBps=${slippageBps}&maxAccounts=48`;
             const quoteRes = await fetch(quoteUrl);
-            if (!quoteRes.ok) {
-              const errText = await quoteRes.text();
+                if (!quoteRes.ok) {
+                  const errText = await quoteRes.text();
               throw new Error(`Jupiter quote failed (${quoteRes.status}): ${errText.slice(0, 300)}`);
-            }
+                }
             const quote = await quoteRes.json();
             if (!quote.routePlan || quote.routePlan.length === 0) {
               throw new Error(`No Jupiter route found for ${shortIn} -> ${shortOut} (outAmount=${quote.outAmount ?? "n/a"})`);
+            }
+            // No slippage setting anywhere: up to 50% price impact goes
+            // through silently, beyond that the user must explicitly agree.
+            const impact = parseFloat(quote.priceImpactPct);
+            if (Number.isFinite(impact) && impact > 50) {
+              let go = false;
+              if (onHighSlippage) {
+                try { go = await onHighSlippage({ impact, quote }); } catch (_) { go = false; }
+              }
+              if (!go) throw new Error(`Price impact ${impact.toFixed(2)}% is beyond the 50% auto-limit - swap cancelled.`);
             }
 
             const swapRes = await fetch("https://lite-api.jup.ag/swap/v1/swap", {
@@ -4478,18 +4560,156 @@
         if (!info) return { raw: 0n, decimals: 6 };
         return { raw: BigInt(info.value.amount), decimals: info.value.decimals };
       }
+      async function simulateBuySwap(userPublicKey, inputMint, targetMint, amountRaw, slippageBps) {
+        // Builds the exact transaction Jupiter would submit and runs the
+        // chain's own simulation on it: the same verdict broadcast would get,
+        // minus any money movement. This catches rent the static estimator
+        // cannot see (multi-hop intermediate accounts). Returns { ok:true }
+        // or { ok:false, shortfallSol, detail }. Never throws for simulation
+        // outcomes - only for transport-level trouble, which callers treat
+        // as "unknown, fall back to the estimate".
+        const userStr = userPublicKey.toBase58 ? userPublicKey.toBase58() : String(userPublicKey);
+        const quoteUrl =
+          `https://lite-api.jup.ag/swap/v1/quote?inputMint=${inputMint}` +
+          `&outputMint=${targetMint}&amount=${amountRaw}&slippageBps=${slippageBps}&maxAccounts=48`;
+        const quoteRes = await fetch(quoteUrl);
+        if (!quoteRes.ok) throw new Error(`Jupiter quote failed (${quoteRes.status})`);
+        const quote = await quoteRes.json();
+        if (!quote.routePlan || quote.routePlan.length === 0) throw new Error("No Jupiter route");
+        const swapRes = await fetch("https://lite-api.jup.ag/swap/v1/swap", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            quoteResponse: quote,
+            userPublicKey: userStr,
+            wrapAndUnwrapSol: true,
+            dynamicComputeUnitLimit: true,
+            prioritizationFeeLamports: "auto",
+          }),
+        });
+        if (!swapRes.ok) throw new Error(`Jupiter swap build failed (${swapRes.status})`);
+        const built = await swapRes.json();
+        if (!built.swapTransaction) throw new Error("Jupiter returned no swapTransaction");
+        window.Buffer = window.Buffer || ethereumjs.Buffer.Buffer;
+        const txBuf = Uint8Array.from(atob(built.swapTransaction), (c) => c.charCodeAt(0));
+        const swapTx = solanaWeb3.VersionedTransaction.deserialize(txBuf);
+        const sim = await connection.simulateTransaction(swapTx, { sigVerify: false, replaceRecentBlockhash: true });
+        const err = sim && sim.value && sim.value.err;
+        if (!err) return { ok: true };
+        const logs = (sim.value && sim.value.logs) || [];
+        let shortfallSol = null;
+        for (const line of logs) {
+          const m = /insufficient lamports (\d+), need (\d+)/.exec(line);
+          if (m) { shortfallSol = (Number(m[2]) - Number(m[1])) / solanaWeb3.LAMPORTS_PER_SOL; break; }
+        }
+        return { ok: false, shortfallSol, detail: JSON.stringify(err).slice(0, 120) };
+      }
+      async function resolvePayEntry(userPublicKey, payId) {
+        // Shared lookup for the percent/MAX fillers: what is being spent and
+        // how much of it exists. Throws a user-readable message when stuck.
+        if (!payId || payId === "SOL") {
+          const solLamports = BigInt(await connection.getBalance(userPublicKey));
+          return { inputMint: SOL_MINT, payDecimals: 9, paySymbol: "SOL", solLamports, entry: null };
+        }
+        let holdings = buyPayTokens;
+        try {
+          const fresh = await fetchAllUserTokens(userPublicKey);
+          if (fresh && fresh.length) { holdings = fresh; buyPayTokens = fresh; }
+        } catch (e) { console.warn("Holdings refresh failed, using cached:", e); }
+        await resolveTokenSymbols(holdings);
+        const entry = (holdings || []).find((t) => t.id === payId);
+        if (!entry) throw new Error("Selected payment token not found - re-enter your key");
+        return { inputMint: payId, payDecimals: entry.decimals, paySymbol: entry.symbol, solLamports: null, entry };
+      }
+      async function setBuyPercent(pct) {
+        // Fills pct% of the spendable balance. The simulation gate in buyTx
+        // still validates on Buy, so a fill can never promise what fails.
+        try {
+          const secret = getRef("buy_private_key_input").value.trim();
+          if (!secret) return notify("Enter your private key first", "error");
+          let senderKeypair;
+          try {
+            senderKeypair = solanaWeb3.Keypair.fromSecretKey(floSolana.solanaPrivateKey2UsableInCode(secret));
+          } catch {
+            return notify("Invalid private key", "error");
+          }
+          const targetMint = getRef("buy_token_mint").value.trim();
+          if (!targetMint) return notify("Enter a token mint first", "error");
+          const paySel = getRef("buy_pay_token");
+          const payId = paySel ? paySel.value : "";
+          const ctx = await resolvePayEntry(senderKeypair.publicKey, payId);
+          if (ctx.entry) {
+            const amt = ctx.entry.uiAmount * pct / 100;
+            if (!(amt > 0)) return notify("Balance too small for " + pct + "%", "error");
+            getRef("buy_pay_amount").value = amt.toFixed(Math.min(ctx.payDecimals, 6));
+          } else {
+            if (ctx.solLamports <= 0n) return notify("No SOL balance to take " + pct + "% of", "error");
+            const lamports = (ctx.solLamports * BigInt(pct)) / 100n;
+            if (lamports <= 0n) return notify("Balance too small for " + pct + "%", "error");
+            getRef("buy_pay_amount").value = (Number(lamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6);
+          }
+          if (typeof validateBuyForm === "function") validateBuyForm();
+        } catch (err) {
+          console.error("Percent fill failed:", err);
+          notify("Could not fill amount: " + (err.message || err), "error");
+        }
+      }
+      async function setMaxBuyAmount() {
+        // Fills the largest amount that leaves room for fees. This is a
+        // convenience fill only - the simulation gate in buyTx stays the
+        // single source of truth and still validates on Buy.
+        try {
+          const secret = getRef("buy_private_key_input").value.trim();
+          if (!secret) return notify("Enter your private key first", "error");
+          let senderKeypair;
+          try {
+            senderKeypair = solanaWeb3.Keypair.fromSecretKey(floSolana.solanaPrivateKey2UsableInCode(secret));
+          } catch {
+            return notify("Invalid private key", "error");
+          }
+          const userPublicKey = senderKeypair.publicKey;
+          const targetMint = getRef("buy_token_mint").value.trim();
+          if (!targetMint) return notify("Enter a token mint first", "error");
+          const paySel = getRef("buy_pay_token");
+          const payId = paySel ? paySel.value : "";
+          const inputMint = (!payId || payId === "SOL") ? SOL_MINT : payId;
+          const solLamports = BigInt(await connection.getBalance(userPublicKey));
+          if (inputMint === SOL_MINT) {
+            const RESERVE = 10000000n; // 0.01 SOL worst-case route cover
+            if (solLamports <= RESERVE) {
+              return notify(`Not enough SOL for fees - top up first (have ${(Number(solLamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6)} SOL).`, "error");
+            }
+            const maxLamports = solLamports - RESERVE;
+            getRef("buy_pay_amount").value = (Number(maxLamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6);
+          } else {
+            let holdings = buyPayTokens;
+            try {
+              const fresh = await fetchAllUserTokens(userPublicKey);
+              if (fresh && fresh.length) { holdings = fresh; buyPayTokens = fresh; }
+            } catch (e) { console.warn("Holdings refresh failed, using cached:", e); }
+            await resolveTokenSymbols(holdings);
+            const entry = (holdings || []).find((t) => t.id === payId);
+            if (!entry) return notify("Selected payment token not found - re-enter your key", "error");
+            getRef("buy_pay_amount").value = entry.uiAmountString;
+          }
+          if (typeof validateBuyForm === "function") validateBuyForm();
+        } catch (err) {
+          console.error("MAX failed:", err);
+          notify("Could not compute maximum: " + (err.message || err), "error");
+        }
+      }
       async function buyTx() {
         const targetMint = getRef("buy_token_mint").value.trim();
         const paySel = getRef("buy_pay_token");
         const payId = paySel ? paySel.value : "";
         if (!payId) return notify("Please select a payment token", "error");
         const payAmount = parseFloat(getRef("buy_pay_amount").value.trim());
-        const slippagePercent = parseFloat(getRef("buy_slippage").value.trim());
-        const slippageBps = Math.round(slippagePercent * 100);
+        // No slippage setting: everything up to 50% price impact is accepted
+        // silently, beyond that the swap asks first (see onHighSlippage below).
+        const slippageBps = 5000;
 
         if (!targetMint) return notify("Please enter a token mint address", "error");
         if (!Number.isFinite(payAmount) || payAmount <= 0) return notify("Please enter an amount to spend", "error");
-        if (!Number.isFinite(slippagePercent) || slippagePercent <= 0) return notify("Please enter slippage", "error");
 
         const secret = getRef("buy_private_key_input").value.trim();
         let senderKeypair;
@@ -4522,11 +4742,12 @@
         const amountRaw = BigInt(Math.round(payAmount * 10 ** payDecimals));
 
         let feeLamports = null;
+        let solLamports = 0n;
         try {
           feeLamports = await estimateBuySolCost(userPublicKey, targetMint);
           const swapLamports = payIsSol ? BigInt(Math.round(payAmount * solanaWeb3.LAMPORTS_PER_SOL)) : 0n;
           const requiredLamports = swapLamports + feeLamports;
-          const solLamports = BigInt(await connection.getBalance(userPublicKey));
+          solLamports = BigInt(await connection.getBalance(userPublicKey));
           if (solLamports < requiredLamports) {
             const requiredSol = (Number(requiredLamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6);
             const haveSol = (Number(solLamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6);
@@ -4540,6 +4761,41 @@
           }
         } catch (err) {
           console.warn("SOL preflight failed, skipping:", err);
+        }
+
+        // Definitive gate: simulate the exact transaction. The estimator above
+        // is a cheap prefilter; only this verdict matches what the chain will
+        // say at broadcast. Measurement trouble never blocks - it falls back
+        // to the estimate gate above.
+        try {
+          const sim = await simulateBuySwap(userPublicKey, inputMint, targetMint, amountRaw, slippageBps);
+          if (!sim.ok) {
+            const d = sim.detail || "";
+            const isFunds = sim.shortfallSol !== null || /Custom":1|0x1|nsufficient/i.test(d);
+            if (!isFunds) {
+              return notify(`This buy would fail on-chain (${d}). Try a smaller amount or retry later.`, "error");
+            }
+            let haveLamports = solLamports;
+            if (haveLamports === 0n) {
+              try { haveLamports = BigInt(await connection.getBalance(userPublicKey)); } catch (_) {}
+            }
+            const haveSol = (Number(haveLamports) / solanaWeb3.LAMPORTS_PER_SOL).toFixed(6);
+            if (sim.shortfallSol !== null && sim.shortfallSol > 0) {
+              const requiredSol = ((Number(haveLamports) / solanaWeb3.LAMPORTS_PER_SOL) + sim.shortfallSol).toFixed(6);
+              return notify(
+                `Not enough SOL. This buy needs about ${requiredSol} SOL total ` +
+                `(swap amount + network fees + account setup). ` +
+                `This wallet has ${haveSol} SOL (short by ~${sim.shortfallSol.toFixed(6)} SOL). Reduce the amount or top up.`,
+                "error"
+              );
+            }
+            return notify(
+              `Not enough SOL left for network costs after this amount. This wallet has ${haveSol} SOL. Reduce the amount or top up.`,
+              "error"
+            );
+          }
+        } catch (err) {
+          console.warn("Simulation preflight failed, skipping:", err);
         }
 
         let estTxt = "";
@@ -4571,10 +4827,13 @@
         buttonLoader("buy_tx_button", true);
         try {
           notify(`Swapping ${paySymbol} via Jupiter...`, "info");
-          const txid = await jupiterSwapExactIn(senderKeypair, inputMint, targetMint, amountRaw, slippageBps, "Swap");
+          const txid = await jupiterSwapExactIn(senderKeypair, inputMint, targetMint, amountRaw, slippageBps, "Swap",
+            async ({ impact }) => await getConfirmation("High price impact", {
+              message: `This swap moves the price by ${impact.toFixed(2)}%, beyond the 50% accepted silently. Swap anyway?`,
+              confirmText: "Swap anyway",
+            }));
           showTransactionResult("confirmed", { txHash: txid });
           getRef("buy_tx_form").reset();
-          getRef("buy_slippage").value = "15";
           getRef("buy_token_mint").setAttribute("placeholder", "Token Mint Address");
           const buyFiatAfter = getRef("buy_sol_fiat");
           if (buyFiatAfter) { buyFiatAfter.textContent = ""; buyFiatAfter.removeAttribute("data-sol"); }
@@ -4782,12 +5041,18 @@
 
           function retrieveSolanaAddr() {
             function retrieve() {
-              let seed = getRef("retrieve_btc_addr_field").value.trim();
+              let input = getRef("retrieve_btc_addr_field").value.trim();
+              // Derive the base58-encoded secret (64-byte full keypair)
+              const solanaSecret = floSolana.solanaPrivateKey2SolanaSecret(input);
+              // Derive the hex seed (first 32 bytes of the keypair)
+              const solanaSeed = floSolana.solanaSecret2SolanaSeed(solanaSecret);
+              // Derive the public address
+              const solanaAddress = floSolana.solanaSecret2SolanaAddress(solanaSecret);
+
               getRef("recovered_btc_addr_wrapper").classList.remove("hidden");
-              getRef("recovered_btc_addr").value =
-                floSolana.solanaSecret2SolanaAddress(
-                  floSolana.solanaPrivateKey2SolanaSecret(seed)
-                );
+              getRef("recovered_btc_addr").value = solanaAddress;
+              getRef("recovered_sol_private_key").value = solanaSecret;
+              getRef("recovered_sol_seed").value = solanaSeed;
             }
             if (document.startViewTransition) {
               document.startViewTransition(() => {
