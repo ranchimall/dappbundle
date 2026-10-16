@@ -210,18 +210,37 @@
         const uiGlobals = {}
         const { html, svg, render: renderElem } = uhtml;
         const { signal, computed, effect } = preactSignalsCore;
+        // Hoisted here (before any listener registration) so callbacks in this
+        // block never hit the TDZ even if registration order changes later.
+        const PENDING_TX_KEY = 'btc-wallet-pending-tx';
         uiGlobals.connectionErrorNotification = []
         //Checks for internet connection status
         if (!navigator.onLine)
-            uiGlobals.connectionErrorNotification.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
+            uiGlobals.connectionErrorNotification.push(notify('There seems to be a problem connecting to the internet. Please check your internet connection.', 'error'))
         window.addEventListener('offline', () => {
-            uiGlobals.connectionErrorNotification.push(notify('There seems to be a problem connecting to the internet, Please check you internet connection.', 'error'))
+            uiGlobals.connectionErrorNotification.push(notify('There seems to be a problem connecting to the internet. Please check your internet connection.', 'error'))
         })
         window.addEventListener('online', () => {
             uiGlobals.connectionErrorNotification.forEach(notification => {
                 getRef('notification_drawer').remove(notification)
             })
             notify('We are back online.', 'success')
+            try {
+                const stored = sessionStorage.getItem(PENDING_TX_KEY);
+                const storedTx = stored ? JSON.parse(stored) : null;
+                if (storedTx && storedTx.rawTxHex && (!router.state || router.state.page === 'send' || !router.state.page)) {
+                    notify('You have a signed transaction waiting. Press Send to rebroadcast it (same txid, safe).', 'success', {
+                        pinned: true,
+                        action: {
+                            label: 'Review',
+                            callback: () => {
+                                location.hash = '#/send';
+                                document.getElementById('notification_drawer').clearAll()
+                            }
+                        }
+                    })
+                }
+            } catch (_) { /* ignore storage errors */ }
         })
 
         // Use instead of document.getElementById
@@ -229,9 +248,23 @@
             return document.getElementById(elementId);
         }
         // displays a popup for asking permission. Use this instead of JS confirm
+        // Resolves false if the popup is dismissed any other way (Escape key,
+        // backdrop click, navigation) so callers never hang on a leaked promise.
         const getConfirmation = (title, options = {}) => {
             return new Promise(resolve => {
                 const { message = '', cancelText = 'Cancel', confirmText = 'OK', danger = false } = options
+                let settled = false;
+                const settle = (value) => {
+                    if (settled) return;
+                    settled = true;
+                    document.removeEventListener('popupclosed', onPopupClosed);
+                    resolve(value);
+                };
+                const onPopupClosed = (e) => {
+                    if (e && e.target && e.target.id === 'confirmation_popup')
+                        settle(false);
+                };
+                document.addEventListener('popupclosed', onPopupClosed);
                 openPopup('confirmation_popup', true)
                 getRef('confirm_title').innerText = title;
                 renderElem(getRef('confirm_message'), message);
@@ -244,12 +277,12 @@
                 else
                     confirmButton.classList.remove('button--danger')
                 confirmButton.onclick = () => {
+                    settle(true);
                     closePopup()
-                    resolve(true);
                 }
                 cancelButton.onclick = () => {
+                    settle(false);
                     closePopup()
-                    resolve(false);
                 }
             })
         }
@@ -1125,6 +1158,7 @@
                             <div id="fees_wrapper" class="grid gap-0-5 align-center"></div>
                         </div>
                         <div id="error_section"></div>
+                        <div id="pending_tx_banner"></div>
                         <div class="multi-state-button margin-bottom-1-5">
                             <button id="send_transaction" type="submit" class="button button--primary cta w-100" onclick=${handleSendTransaction}
                                 disabled>Send</button>
@@ -1134,6 +1168,7 @@
             `);
             addSenderInput();
             addReceiverInput();
+            renderPendingTxBanner();
         })
         router.addRoute('convert', (state) => {
             const { params: { from: convertingFrom = 'flo' } } = state;
@@ -1554,7 +1589,6 @@
             },
             queryResult(query) {
                 const type = checkQueryStringType(query);
-                console.log(type)
                 if (type === 'address') {
                     getRef('tx_details').classList.add('hidden')
                     render.addressDetails(query)
@@ -2021,6 +2055,138 @@
             openPopup('transaction_result_popup')
         }
 
+        // Holds the last signed-but-unbroadcast tx so a retry rebroadcasts the
+        // EXACT same hex (same txid) instead of building a conflicting tx.
+        // Persisted to sessionStorage so a page refresh doesn't lose it.
+        // NOTE: PENDING_TX_KEY is hoisted in the top ui_utils block.
+        const PENDING_TX_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24h
+        let pendingTx = null;
+        // Translates raw broadcast errors into plain language.
+        // Returns { title, advice }. Technical detail stays in <details>.
+        function friendlyBroadcastError(errMsg) {
+            const msg = String(errMsg || '');
+            if (/failed to fetch|load failed|networkerror|network error|abort|timeout|no api available/i.test(msg))
+                return {
+                    title: `Couldn't reach the network`,
+                    advice: `Your transaction was signed and saved. Your money hasn't moved yet. Check history, then press Send again to retry — it's the same transaction, so it's safe.`
+                };
+            if (/insufficient|not enough funds/i.test(msg))
+                return {
+                    title: `Not enough balance`,
+                    advice: `Your money hasn't moved. Top up or lower the amount and try again.`
+                };
+            if (/fee/i.test(msg))
+                return {
+                    title: `Transaction rejected (fee)`,
+                    advice: `Your money hasn't moved. Try a slightly higher fee, then send again.`
+                };
+            if (/double.?spend|conflict|already/i.test(msg))
+                return {
+                    title: `Already sent`,
+                    advice: `This transaction already reached the network. Check history for its status instead of sending again.`
+                };
+            return {
+                title: `Couldn't send`,
+                advice: `Your money hasn't moved. Check history before retrying.`
+            };
+        }
+        function savePendingTx(tx) {
+            pendingTx = tx;
+            try { sessionStorage.setItem(PENDING_TX_KEY, JSON.stringify(tx)); } catch (_) { /* storage unavailable */ }
+        }
+        function clearPendingTx() {
+            pendingTx = null;
+            try { sessionStorage.removeItem(PENDING_TX_KEY); } catch (_) { /* ignore */ }
+        }
+        function loadPendingTx() {
+            try {
+                const stored = sessionStorage.getItem(PENDING_TX_KEY);
+                if (!stored) return;
+                const tx = JSON.parse(stored);
+                if (!tx || !tx.rawTxHex) return;
+                if (tx.time && (Date.now() - tx.time > PENDING_TX_MAX_AGE_MS)) {
+                    try { sessionStorage.removeItem(PENDING_TX_KEY); } catch (_) { /* ignore */ }
+                    return; // expired
+                }
+                pendingTx = tx;
+            } catch (_) { pendingTx = null; }
+        }
+        function pendingTxAge(tx) {
+            if (!tx || !tx.time) return '';
+            const mins = Math.max(0, Math.round((Date.now() - tx.time) / 60000));
+            if (mins < 1) return 'just now';
+            if (mins < 60) return `${mins} min ago`;
+            const hrs = Math.round(mins / 60);
+            if (hrs < 24) return `${hrs} hr ago`;
+            return `${Math.round(hrs / 24)} day(s) ago`;
+        }
+        // Persistent banner on the Send page so a pending tx is visible without
+        // user action (e.g. after a refresh with no network change).
+        function renderPendingTxBanner() {
+            const banner = getRef('pending_tx_banner');
+            if (!banner) return;
+            if (!pendingTx)
+                loadPendingTx();
+            if (!pendingTx || !pendingTx.rawTxHex) {
+                renderElem(banner, html``);
+                return;
+            }
+            renderElem(banner, html`
+                <div class="grid gap-0-5" style="padding: 0.8rem; border: solid thin rgba(var(--text-color), 0.3); border-radius: 0.5rem; margin-bottom: 1rem;">
+                    <strong>Pending transaction (signed ${pendingTxAge(pendingTx)})</strong>
+                    <span class="wrap-around" style="font-size: 0.8rem; opacity: 0.7;">TXID: ${pendingTx.txid || 'unknown'}</span>
+                    <div class="flex gap-0-5">
+                        <button class="button button--primary button--small" onclick=${rebroadcastStoredTx}>Rebroadcast</button>
+                        <button class="button button--small" onclick=${discardStoredTx}>Discard</button>
+                    </div>
+                </div>
+            `);
+        }
+        async function rebroadcastStoredTx() {
+            loadPendingTx();
+            if (!pendingTx || !pendingTx.rawTxHex) {
+                notify('No pending transaction found.', 'error');
+                return;
+            }
+            const ok = await getConfirmation('Rebroadcast pending transaction', {
+                message: html`
+                    <div class="grid gap-0-5">
+                        <p>Signed ${pendingTxAge(pendingTx)}.</p>
+                        <p class="wrap-around" style="font-size: 0.8rem; opacity: 0.7;">TXID: ${pendingTx.txid || 'unknown'}</p>
+                        <p>Rebroadcast the <b>same</b> transaction? (Safe — same txid, cannot double-spend.)</p>
+                    </div>`,
+                confirmText: 'Rebroadcast',
+                cancelText: 'Cancel'
+            })
+            if (!ok) return;
+            const hexToSend = pendingTx.rawTxHex;
+            btcOperator.broadcastTx(hexToSend).then(txid => {
+                clearPendingTx();
+                renderPendingTxBanner();
+                showTransactionResult('success', txid);
+            }).catch(error => {
+                console.error(error)
+                if (error && error.txid && pendingTx) { pendingTx.txid = error.txid; savePendingTx(pendingTx); }
+                const rawMsg = (error && (error.message || error.body)) ? String(error.message || error.body) : String(error);
+                const friendly = friendlyBroadcastError(rawMsg);
+                notify(`<div style="display: grid; gap: 0.3rem;">
+                        <h4>${friendly.title}</h4>
+                        <p style="font-size: 0.9rem; opacity: 0.8">${friendly.advice}</p>
+                    </div>`, 'error');
+            })
+        }
+        async function discardStoredTx() {
+            const discard = await getConfirmation('Discard pending transaction?', {
+                message: 'Creating a new transaction on the same inputs will replace (RBF) the pending one if it reached the mempool. Continue?',
+                confirmText: 'Discard',
+                cancelText: 'Cancel',
+                danger: true
+            })
+            if (!discard) return;
+            clearPendingTx();
+            renderPendingTxBanner();
+        }
+
         async function handleSendTransaction(evt) {
             buttonLoader('send_transaction', true)
             const [senders, privKeys, receivers, amounts] = getTransactionInputs();
@@ -2033,6 +2199,105 @@
                     return;
                 }
                 fee = parseFloat((parseFloat(feeInput) / (globalExchangeRate[selectedCurrency.value] || 1)).toFixed(8));
+            }
+            if (!fee || isNaN(fee) || fee <= 0) {
+                notify('Could not calculate fee. Please re-enter the amount and try again.', 'error');
+                buttonLoader('send_transaction', false)
+                return;
+            }
+            // Fingerprint covers only the tx identity (fee excluded): the fee label is re-estimated on every validation and can drift by a satoshi, which must not trigger a false "discard" warning. Amounts are normalized to satoshis so currency round-trips (USD->BTC->USD) can't cause a 1-satoshi false mismatch either.
+            const normalizedAmounts = amounts.map(a => Math.round(a * 1e8));
+            const txFingerprint = JSON.stringify({ senders, receivers, amounts: normalizedAmounts });
+            // Restore pending tx after a page refresh, if any.
+            if (!pendingTx)
+                loadPendingTx();
+            // Drop expired pending tx (older than 24h).
+            if (pendingTx && pendingTx.time && (Date.now() - pendingTx.time > PENDING_TX_MAX_AGE_MS))
+                clearPendingTx();
+            // If a previous attempt was signed but failed to broadcast, rebroadcast
+            // the EXACT same hex instead of building a conflicting (RBF) transaction.
+            if (pendingTx && pendingTx.rawTxHex) {
+                // Self-heal: txid must always match the cached hex.
+                try {
+                    const recomputed = btcOperator.transactionID(pendingTx.rawTxHex);
+                    if (pendingTx.txid !== recomputed) {
+                        pendingTx.txid = recomputed;
+                        savePendingTx(pendingTx); // persist, don't just fix in-memory
+                    }
+                } catch (_) { /* keep stored txid */ }
+                if (pendingTx.fingerprint !== txFingerprint) {
+                    // User changed the form — building a new tx on the same UTXOs
+                    // would RBF-replace the pending one (sequence 0xfffffffd).
+                    // Never discard silently.
+                    const discard = await getConfirmation('Discard pending transaction?', {
+                        message: html`
+                            <div class="grid gap-0-5">
+                                <p>You have a signed transaction that failed to broadcast (TXID: <span class="wrap-around" style="font-size: 0.8rem;">${pendingTx.txid || 'unknown'}</span>).</p>
+                                <p>Creating a new transaction on the same inputs will <b>replace (RBF)</b> it if it actually reached the mempool — the old fee would be lost.</p>
+                                <p>Continue and discard the pending transaction?</p>
+                            </div>`,
+                        confirmText: 'Discard & continue',
+                        cancelText: 'Cancel',
+                        danger: true
+                    })
+                    if (!discard) {
+                        buttonLoader('send_transaction', false);
+                        return;
+                    }
+                    clearPendingTx();
+                } else {
+                    const rebroadcast = await getConfirmation('Rebroadcast pending transaction', {
+                        message: html`
+                            <div class="grid gap-0-5">
+                                <p>A transaction was already signed but failed to broadcast (signed ${pendingTxAge(pendingTx)}).</p>
+                                <p class="wrap-around" style="font-size: 0.8rem; opacity: 0.7;">TXID: ${pendingTx.txid || 'unknown'}</p>
+                                <p>Rebroadcast the <b>same</b> transaction? (Safe — same txid, cannot double-spend.)</p>
+                            </div>`,
+                        confirmText: 'Rebroadcast',
+                        cancelText: 'Discard & create new'
+                    })
+                    if (rebroadcast) {
+                        const hexToSend = pendingTx.rawTxHex;
+                        const pendingSender = (pendingTx.senders || [])[0];
+                        btcOperator.broadcastTx(hexToSend).then(txid => {
+                            console.debug('Rebroadcast succeeded:', txid);
+                            clearPendingTx();
+                            renderPendingTxBanner();
+                            showTransactionResult('success', txid);
+                            getRef('send_tx').reset();
+                        }).catch(error => {
+                            console.error(error)
+                            // Keep pendingTx so user can retry again; update txid if available
+                            if (error && error.txid && pendingTx) { pendingTx.txid = error.txid; savePendingTx(pendingTx); }
+                            renderPendingTxBanner();
+                            const rawMsg = (error && (error.message || error.body)) ? String(error.message || error.body) : String(error);
+                            const friendly = friendlyBroadcastError(rawMsg);
+                            notify(`
+                                <div style="display: grid; gap: 0.3rem;">
+                                    <h4>${friendly.title}</h4>
+                                    <p style="font-size: 0.9rem; opacity: 0.8">${friendly.advice}</p>
+                                    <details style="font-size: 0.8rem; opacity: 0.7;">
+                                        <summary>Technical details</summary>
+                                        <p style="word-break: break-word;">${rawMsg.slice(0, 300)}</p>
+                                    </details>
+                                </div>
+                                `, 'error', {
+                                action: {
+                                    label: 'Check History',
+                                    callback: () => {
+                                        location.hash = `/check_details?query=${pendingSender}`;
+                                        document.getElementById('notification_drawer').clearAll()
+                                    }
+                                }
+                            });
+                        }).finally(_ => {
+                            buttonLoader('send_transaction', false)
+                        })
+                        return;
+                    } else {
+                        clearPendingTx(); // user chose to discard and create a new tx
+                    }
+                }
             }
             const confirmation = await getConfirmation('Confirm Transaction', {
                 message: html`
@@ -2066,7 +2331,9 @@
                 return;
             }
             btcOperator.sendTx(senders, privKeys, receivers, amounts, fee).then(txid => {
-                console.log(txid);
+                console.debug('Send succeeded:', txid);
+                clearPendingTx();
+                renderPendingTxBanner();
                 showTransactionResult('success', txid);
                 getRef('send_tx').reset();
             }).catch(error => {
@@ -2074,10 +2341,36 @@
                 if (error.hasOwnProperty('hasInsufficientBalance')) {
                     notify('Insufficient balance', 'error')
                 } else {
+                    // Save signed hex so retry rebroadcasts the SAME tx (no conflicting RBF).
+                    if (error && error.rawTxHex) {
+                        let verifiedTxid = error.txid || null;
+                        try {
+                            const recomputed = btcOperator.transactionID(error.rawTxHex);
+                            verifiedTxid = recomputed; // hex is source of truth
+                        } catch (_) { /* keep error.txid */ }
+                        savePendingTx({
+                            rawTxHex: error.rawTxHex,
+                            txid: verifiedTxid,
+                            senders: [...senders],
+                            receivers: [...receivers],
+                            amounts: [...amounts],
+                            fee,
+                            fingerprint: txFingerprint,
+                            time: Date.now()
+                        });
+                    }
+                    const rawMsg = (error && (error.message || error.body)) ? String(error.message || error.body) : String(error);
+                    const friendly = friendlyBroadcastError(rawMsg);
+                    const canRebroadcast = Boolean(error && error.rawTxHex);
                     notify(`
                         <div style="display: grid; gap: 0.3rem;">
-                            <h4>Error sending transaction</h4>
-                            <p style="font-size: 0.9rem; opacity: 0.8">Please check transaction history before retrying.</p>
+                            <h4>${friendly.title}</h4>
+                            <p style="font-size: 0.9rem; opacity: 0.8">${friendly.advice}</p>
+                            ${canRebroadcast ? '<p style="font-size: 0.9rem; opacity: 0.8">Press Send again to retry the exact same transaction.</p>' : ''}
+                            <details style="font-size: 0.8rem; opacity: 0.7;">
+                                <summary>Technical details</summary>
+                                <p style="word-break: break-word;">${rawMsg.slice(0, 300)}</p>
+                            </details>
                         </div>
                         `, 'error', {
                         action: {
@@ -2091,6 +2384,7 @@
                     console.error(error)
                 }
             }).finally(_ => {
+                renderPendingTxBanner();
                 buttonLoader('send_transaction', false)
             })
         }

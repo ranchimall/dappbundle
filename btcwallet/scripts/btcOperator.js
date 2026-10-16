@@ -21,24 +21,64 @@
     let isTor = false;
     checkIfTor().then(result => isTor = result);
 
-    async function post(url, data, { asText = false } = {}) {
+    const FETCH_TIMEOUT_MS = 15000;
+
+    function fetchWithTimeout(url, options = {}, timeoutMs = FETCH_TIMEOUT_MS) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), timeoutMs);
+        return fetch(url, { ...options, signal: controller.signal })
+            .finally(() => clearTimeout(timeout));
+    }
+
+    async function post(url, data, { asText = false, timeoutMs = FETCH_TIMEOUT_MS } = {}) {
         try {
-            const response = await fetch(url, {
+            const response = await fetchWithTimeout(url, {
                 method: 'POST',
-                mode: 'no-cors',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(data)
-            })
+            }, timeoutMs)
             if (response.ok) {
                 return asText ? await response.text() : await response.json()
             } else {
-                throw response
+                // Try to extract a useful error message from the response body
+                let errBody;
+                try {
+                    errBody = asText ? await response.text() : await response.text();
+                } catch (_) { /* ignore body read errors */ }
+                const err = new Error(errBody || (`HTTP ${response.status} ${response.statusText}`));
+                err.status = response.status;
+                err.body = errBody;
+                throw err;
             }
         } catch (e) {
             throw e
         }
+    }
+
+    // POST raw transaction hex as plain text (Blockstream / Mempool style: POST {base}tx -> txid as text)
+    async function postRawText(url, rawTxHex, timeoutMs = FETCH_TIMEOUT_MS) {
+        const response = await fetchWithTimeout(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain'
+            },
+            body: rawTxHex
+        }, timeoutMs);
+        const bodyText = await response.text().catch(() => '');
+        if (response.ok) {
+            return (bodyText || '').trim();
+        }
+        const err = new Error(bodyText || (`HTTP ${response.status} ${response.statusText}`));
+        err.status = response.status;
+        err.body = bodyText;
+        throw err;
+    }
+
+    function isAlreadyBroadcastError(err) {
+        const msg = String((err && (err.message || err.body)) || err || '').toLowerCase();
+        return msg.includes('already') && (msg.includes('mempool') || msg.includes('known') || msg.includes('exists') || msg.includes('duplicate') || msg.includes('conflict') || msg.includes('txn-already') || msg.includes('confirmed') || msg.includes('in block') || msg.includes('in chain'));
     }
 
     // NOTE: some APIs may not support all functions properly hence they are omitted
@@ -59,12 +99,9 @@
                 }
             },
             async broadcast({ rawTxHex, url }) {
-                try {
-                    const result = await post(`${url || this.url}pushtx`, { tx: rawTxHex })
-                    return result.hash
-                } catch (e) {
-                    throw e
-                }
+                // Blockcypher docs: POST {base}txs/push with JSON { tx: <hex> }
+                const result = await post(`${url || this.url}txs/push`, { tx: rawTxHex })
+                return result?.tx?.hash || result?.hash || result;
             }
         },
         {
@@ -108,7 +145,8 @@
                 }
             },
             async broadcast({ rawTxHex, url }) {
-                return post(`${url || this.url}tx`, { tx: rawTxHex }, { asText: true })
+                // Blockstream expects the raw hex as plain text, returns txid as text
+                return postRawText(`${url || this.url}tx`, rawTxHex)
             }
         },
         {
@@ -148,7 +186,8 @@
                 }
             },
             async broadcast({ rawTxHex, url }) {
-                return post(`${url || this.url}tx`, { tx: rawTxHex }, { asText: true })
+                // Mempool expects the raw hex as plain text, returns txid as text
+                return postRawText(`${url || this.url}tx`, rawTxHex)
             }
         },
         {
@@ -214,37 +253,8 @@
             url: 'https://coinb.in/api/?uid=1&key=12345678901234567890123456789012&setmodule=bitcoin&request=sendrawtransaction',
             name: 'Coinb.in',
             broadcast({ rawTxHex }) {
-                return new Promise((resolve, reject) => {
-                    fetch(this.url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        },
-                        body: "rawtx=" + rawTxHex
-                    }).then(response => {
-                        console.log(response)
-                        response.text().then(resultText => {
-                            let r = resultText.match(/<result>.*<\/result>/);
-                            if (!r)
-                                reject(resultText);
-                            else {
-                                r = r.pop().replace('<result>', '').replace('</result>', '');
-                                if (r == '1') {
-                                    let txid = resultText.match(/<txid>.*<\/txid>/).pop().replace('<txid>', '').replace('</txid>', '');
-                                    resolve(txid);
-                                } else if (r == '0') {
-                                    let error
-                                    if (resultText.includes('<message>')) {
-                                        error = resultText.match(/<message>.*<\/message>/).pop().replace('<message>', '').replace('</message>', '');
-                                    } else {
-                                        error = resultText.match(/<response>.*<\/response>/).pop().replace('<response>', '').replace('</response>', '');
-                                    }
-                                    reject(decodeURIComponent(error.replace(/\+/g, " ")));
-                                } else reject(resultText);
-                            }
-                        }).catch(error => reject(error))
-                    }).catch(error => reject(error))
-                });
+                // Single implementation — delegates to the shared helper below
+                return broadcastViaCoinbin(rawTxHex);
             }
         }
     ]
@@ -426,10 +436,13 @@
     const DUST_AMT = 546,
         MIN_FEE_UPDATE = 219;
 
-    const fetch_api = btcOperator.fetch = function (api, { asText = false, url = 'https://blockchain.info/' } = {}) {
+    const fetch_api = btcOperator.fetch = function (api, { asText = false, url = 'https://blockchain.info/', timeoutMs = FETCH_TIMEOUT_MS } = {}) {
         return new Promise((resolve, reject) => {
             console.debug(url + api);
-            fetch(url + api).then(response => {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), timeoutMs);
+            fetch(url + api, { signal: controller.signal }).then(response => {
+                clearTimeout(timeout);
                 if (response.ok) {
                     (asText ? response.text() : response.json())
                         .then(result => resolve(result))
@@ -439,13 +452,13 @@
                         .then(result => reject(result))
                         .catch(error => reject(error))
                 }
-            }).catch(error => reject(error))
+            }).catch(error => { clearTimeout(timeout); reject(error) })
         })
     };
 
-    function get_fee_rate() {
+    function get_fee_rate(timeoutMs = FETCH_TIMEOUT_MS) {
         return new Promise((resolve, reject) => {
-            fetch('https://api.blockchain.info/mempool/fees').then(response => {
+            fetchWithTimeout('https://api.blockchain.info/mempool/fees', {}, timeoutMs).then(response => {
                 if (response.ok)
                     response.json()
                         .then(result => resolve(util.Sat_to_BTC(result.regular)))
@@ -456,46 +469,79 @@
         })
     }
 
-    const broadcastTx = btcOperator.broadcastTx = rawTxHex => new Promise((resolve, reject) => {
-        console.log('txHex:', rawTxHex)
-        // return multiApi('broadcast', { rawTxHex })
-        //     .then(result => {
-        //         resolve(result)
-        //     })
-        //     .catch(error => {
-        //         reject(error)
-        //     })
-        let url = 'https://coinb.in/api/?uid=1&key=12345678901234567890123456789012&setmodule=bitcoin&request=sendrawtransaction';
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: "rawtx=" + rawTxHex
-        }).then(response => {
-            console.log(response)
-            response.text().then(resultText => {
-                let r = resultText.match(/<result>.*<\/result>/);
-                if (!r)
-                    reject(resultText);
-                else {
-                    r = r.pop().replace('<result>', '').replace('</result>', '');
-                    if (r == '1') {
-                        let txid = resultText.match(/<txid>.*<\/txid>/).pop().replace('<txid>', '').replace('</txid>', '');
-                        resolve(txid);
-                    } else if (r == '0') {
-                        let error
-                        if (resultText.includes('<message>')) {
-                            error = resultText.match(/<message>.*<\/message>/).pop().replace('<message>', '').replace('</message>', '');
-                        } else {
-                            error = resultText.match(/<response>.*<\/response>/).pop().replace('<response>', '').replace('</response>', '');
-                        }
-                        reject(decodeURIComponent(error.replace(/\+/g, " ")));
-                    } else reject(resultText);
-                }
+    function broadcastViaCoinbin(rawTxHex, timeoutMs = FETCH_TIMEOUT_MS) {
+        return new Promise((resolve, reject) => {
+            let url = 'https://coinb.in/api/?uid=1&key=12345678901234567890123456789012&setmodule=bitcoin&request=sendrawtransaction';
+            fetchWithTimeout(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: "rawtx=" + rawTxHex
+            }, timeoutMs).then(response => {
+                console.debug('Coinb.in broadcast status:', response.status);
+                response.text().then(resultText => {
+                    const fail = msg => reject(msg instanceof Error ? msg : new Error(String(msg || 'Coinb.in parse failure')));
+                    let r = resultText.match(/<result>.*<\/result>/);
+                    if (!r)
+                        fail(resultText);
+                    else {
+                        r = r.pop().replace('<result>', '').replace('</result>', '');
+                        if (r == '1') {
+                            let txid = resultText.match(/<txid>.*<\/txid>/).pop().replace('<txid>', '').replace('</txid>', '');
+                            resolve(txid);
+                        } else if (r == '0') {
+                            let error
+                            if (resultText.includes('<message>')) {
+                                error = resultText.match(/<message>.*<\/message>/).pop().replace('<message>', '').replace('</message>', '');
+                            } else {
+                                error = resultText.match(/<response>.*<\/response>/).pop().replace('<response>', '').replace('</response>', '');
+                            }
+                            fail(decodeURIComponent(error.replace(/\+/g, " ")));
+                        } else fail(resultText);
+                    }
+                }).catch(error => reject(error))
             }).catch(error => reject(error))
-        }).catch(error => reject(error))
-    });
+        });
+    }
+
+    const broadcastTx = btcOperator.broadcastTx = async rawTxHex => {
+        console.debug('Broadcasting tx, hex length:', rawTxHex ? rawTxHex.length : 0);
+        const errors = [];
+        let localTxid = null;
+        try { localTxid = btcOperator.transactionID(rawTxHex); } catch (_) { /* hex may be invalid */ }
+        // Try dedicated broadcast endpoints in order. This avoids the old single-point-of-failure (coinb.in only) which caused intermittent "TypeError: Failed to fetch" even though the network was fine./ NOTE: we call each provider directly instead of multiApi() so that one transient broadcast failure does not put that provider into a 10-minute cool-down for unrelated reads (balance/txs/blocks).
+        const providers = APIs.filter(api => typeof api.broadcast === 'function');
+        for (const api of providers) {
+            try {
+                const txid = await api.broadcast({ rawTxHex });
+                if (txid)
+                    return txid;
+                throw new Error(`Empty response from ${api.name}`);
+            } catch (e) {
+                console.warn(`Broadcast via ${api.name} failed:`, e);
+                // If the tx is already in the mempool, the first attempt actually
+                // succeeded — treat it as success instead of asking for a retry.
+                if (isAlreadyBroadcastError(e)) {
+                    try {
+                        return btcOperator.transactionID(rawTxHex);
+                    } catch (_) { /* fall through */ }
+                }
+                errors.push(`${api.name}: ${(e && (e.message || e.body)) || e}`);
+            }
+        }
+        const networkFailures = errors.filter(m => /failed to fetch|load failed|networkerror|no api available|abort|timeout/i.test(m));
+        const fail = msg => {
+            const err = new Error(msg || 'Broadcast failed');
+            err.rawTxHex = rawTxHex; // lets callers rebroadcast the same hex
+            if (localTxid) err.txid = localTxid;
+            throw err;
+        };
+        if (networkFailures.length === errors.length && errors.length > 0) {
+            fail(`Network error while broadcasting (${errors.join(' | ')}). Your transaction was signed but may not have reached the network — please check history before retrying.`);
+        }
+        fail(errors.join(' | ') || 'Broadcast failed');
+    };
 
     Object.defineProperties(btcOperator, {
         newKeys: {
@@ -1192,9 +1238,27 @@
         options.sendingTx = true;
         return new Promise((resolve, reject) => {
             createSignedTx(senders, privkeys, receivers, amounts, fee, options).then(result => {
-                broadcastTx(result.transaction.serialize())
-                    .then(txid => resolve(txid))
-                    .catch(error => reject(error));
+                const rawTxHex = result.transaction.serialize();
+                let localTxid = null;
+                try { localTxid = btcOperator.transactionID(rawTxHex); } catch (_) { /* ignore */ }
+                broadcastTx(rawTxHex)
+                    .then(txid => resolve(txid || localTxid))
+                    .catch(error => {
+                        // Attach the signed hex so callers can safely REBROADCAST
+                        // the exact same transaction instead of building a new
+                        // (conflicting/RBF) one on retry.
+                        if (error && typeof error === 'object') {
+                            if (!error.rawTxHex) error.rawTxHex = rawTxHex;
+                            if (!error.txid && localTxid) error.txid = localTxid;
+                            reject(error);
+                        } else {
+                            const err = new Error(typeof error === 'string' ? error : 'Broadcast failed');
+                            err.cause = error;
+                            err.rawTxHex = rawTxHex;
+                            if (localTxid) err.txid = localTxid;
+                            reject(err);
+                        }
+                    });
             }).catch(error => reject(error))
         })
     }
